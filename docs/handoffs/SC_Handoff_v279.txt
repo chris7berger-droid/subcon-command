@@ -1,0 +1,73 @@
+SC Handoff v279 — IDENT-2 Team Crew Schedule eligibility (PR, not merged) — 2026-09-16
+
+SESSION SUMMARY
+Slice 2 of Team → Crew identity unification. Sales Command Team is now the
+place a person becomes available to Crew Scheduler. IDENT-1 schema was
+already live. No production people were linked. No invites sent. No
+assignments written. Crew Scheduler UI, Field Command, and PowerSync were
+not changed. TF2 remains paused.
+
+CHANGES IN THIS PR (NOT MERGED)
+Team member modal (Add + Edit) has a checkbox labeled
+"Available on Crew Schedule" under Role, above App Access, with the note
+"Eligibility for scheduling, not an app permission."
+
+Crew writes go through src/lib/crewEligibility.js:
+- ON + already linked: update name/phone from Team, unarchive
+- ON + exactly one safe unlinked name match (exact or Last, First flip):
+  link that row, then update name/phone from Team
+- ON + no match: insert crew { name, phone, team: Floater, archived false,
+  team_member_id }
+- ON + two or more name matches: error, do not link or create
+- ON + name owned by a different person: error
+- OFF + linked: archive the crew row (keep it; keep history)
+- OFF + no linked row: no crew write
+Never writes assignments or crew_status. IDENT-1 ON UPDATE CASCADE covers
+rename history.
+
+Email: required only when sending an invite / login. Add Without Invite
+may omit email (Crew Schedule-only). Field app access still requires email
+before invite. No placeholder emails.
+
+New members: Role Field defaults the checkbox ON; other roles default OFF
+until the checkbox is touched.
+
+DECISIONS
+Auto-link the single obvious unlinked name match; refuse ambiguous matches
+instead of a second confirm modal. Legacy unlinked crew rows stay until
+someone is linked from Team. No bulk backfill. Do not link Chris.
+
+NEW/CLOSED BACKLOG ITEMS
+IDENT-2 opened In Progress on this PR. IDENT-1 Slice 1 stays closed/live
+in command-suite-db. F61/B118/F56 leftovers not touched.
+
+VERIFICATION
+`node src/lib/crewEligibility.test.mjs` passed (Field default ON, other
+roles OFF, create, reuse linked, archive not delete, rename updates crew
+and does not write assignments, ambiguous match refused, invite needs
+email, save without invite does not).
+Focused eslint on the helper is clean. Team.jsx still has two pre-existing
+UnassignedWork hook warnings.
+`npm run build` passed.
+No production Team saves, no invites, no Chris/crew writes.
+
+NOT TOUCHED
+Crew Scheduler UI. assignments.team_member_id. Field Command. PowerSync.
+Invites. TF2. Existing roster backfill. Chris Berger / Chris Winn.
+
+NEXT SESSION — SLICE 3 STARTING POINT
+Do not start from Field, PowerSync, or a Chris/backfill.
+Start in sales-command Crew Scheduler: drive the active person list from
+linked unarchived crew (crew.team_member_id set, archived = false), and
+keep legacy unlinked rows visible. Do not write assignments.team_member_id.
+Do not send invites. Do not unpause TF2. Merge IDENT-2 only after Chris
+accepts the Team preview.
+
+FILES TO KNOW
+src/lib/crewEligibility.js
+src/lib/crewEligibility.test.mjs
+src/pages/Team.jsx
+docs/BACKLOG.md (IDENT-2)
+
+GIT STATE
+Branch feat/team-crew-schedule-eligibility. PR opened, not merged.

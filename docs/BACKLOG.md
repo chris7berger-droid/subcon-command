@@ -1,5 +1,7 @@
 # Sales Command — Backlog
 
+**IDENT-2 — T2 · In Progress (PR, not merged):** Team → Crew identity Slice 2 — Team-controlled Crew Schedule eligibility. Team modal adds **Available on Crew Schedule**. Field role defaults ON for new members; other roles default OFF. ON creates or reuses a linked `crew` row (`crew.team_member_id`); exactly one safe unlinked name match is linked; ambiguous matches fail clearly; OFF archives and does not delete. Email required only for invite/login; Crew Schedule-only people may exist without email. No bulk backfill, no Chris link, no Schedule/Field/PowerSync/assignment writes, no invites during tests. IDENT-1 schema is already live. Handoff v279.
+
 **PR61 — merged 2026-09-16 (`31caa32`):** /crew Midweek Update — today through Friday compact text (JOB #, coworkers, canonical `scheduled-off` as `(OFF — MAY CHANGE)`). Weekly/Sunday send unchanged. Desktop Schedules.jsx unchanged. No assignment or `crew_status` writes. Chris accepted the actual iPhone Vercel preview. Handoff v278.
 
 **PR60 — merged 2026-09-15 (`3bc81ac`):** Field Command Crews reads Crew Scheduler `assignments` (no `job_crew`). Scheduled Off is stored `scheduled-off`, distinct from Call In `off`, with create/see/edit/remove. Chris accepted the Ready preview. Handoff v277. F56 leftover polish #2–#4 remain.

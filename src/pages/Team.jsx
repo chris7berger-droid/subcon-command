@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { inits, fmtD } from "../lib/utils";
 import { ROLE_C } from "../lib/mockData";
+import {
+  applyCrewEligibility,
+  defaultCrewScheduleEligibility,
+  planCrewEligibility,
+  teamEmailBlockReason,
+} from "../lib/crewEligibility";
 import SectionHeader from "../components/SectionHeader";
 import DataTable from "../components/DataTable";
 import Pill from "../components/Pill";
@@ -21,6 +27,12 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
     role:   member?.role   || "Sales Rep",
     apps:   member?.apps   || tenantApps || ["sales"],
   });
+  const [availableOnCrewSchedule, setAvailableOnCrewSchedule] = useState(
+    member ? false : defaultCrewScheduleEligibility(member?.role || "Sales Rep")
+  );
+  const [eligibilityTouched, setEligibilityTouched] = useState(false);
+  const eligibilityTouchedRef = useRef(false);
+  const [crewHydrated, setCrewHydrated] = useState(!member);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
@@ -29,53 +41,112 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
 
   const set = k => v => setForm(f => ({ ...f, [k]: v }));
 
+  useEffect(() => {
+    if (!member?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("crew")
+        .select("name, archived, team_member_id")
+        .eq("team_member_id", member.id);
+      if (cancelled) return;
+      const row = (data || [])[0];
+      if (row && !eligibilityTouchedRef.current) setAvailableOnCrewSchedule(!row.archived);
+      setCrewHydrated(true);
+    })();
+    return () => { cancelled = true; };
+  }, [member?.id]);
+
   const handleSave = async (sendInvite = false) => {
+    if (!crewHydrated) { setError("Still loading crew eligibility."); return; }
     if (!form.name.trim()) { setError("Name is required."); return; }
-    if (!form.email.trim()) { setError("Email is required."); return; }
+    const emailBlock = teamEmailBlockReason(sendInvite, form.email, { fieldApp: form.apps?.includes("field") });
+    if (emailBlock) { setError(emailBlock); return; }
     setSaving(true);
     setError("");
     setSuccess("");
 
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+
     // Check for duplicates (exclude current member if editing)
+    const orParts = [`name.eq.${name}`];
+    if (email) orParts.push(`email.eq.${email}`);
+    if (phone) orParts.push(`phone.eq.${phone}`);
     const { data: dupes } = await supabase
       .from("team_members")
       .select("id, name, email, phone")
-      .or(`email.eq.${form.email.trim()},name.eq.${form.name.trim()}${form.phone.trim() ? `,phone.eq.${form.phone.trim()}` : ""}`);
+      .or(orParts.join(","));
     const conflicts = (dupes || []).filter(d => d.id !== member?.id);
     if (conflicts.length > 0) {
       const fields = [];
-      if (conflicts.some(d => d.email === form.email.trim())) fields.push("email");
-      if (conflicts.some(d => d.name === form.name.trim())) fields.push("name");
-      if (form.phone.trim() && conflicts.some(d => d.phone === form.phone.trim())) fields.push("phone");
-      setError(`This ${fields.join(", ")} is already in use by another team member.`);
+      if (email && conflicts.some(d => d.email === email)) fields.push("email");
+      if (conflicts.some(d => d.name === name)) fields.push("name");
+      if (phone && conflicts.some(d => d.phone === phone)) fields.push("phone");
+      setError(`This ${fields.join(", ") || "name"} is already in use by another team member.`);
       setSaving(false);
       return;
     }
+
+    const { data: crewRows, error: crewLoadErr } = await supabase
+      .from("crew")
+      .select("name, phone, archived, team_member_id, tenant_id, team");
+    if (crewLoadErr) { setError(crewLoadErr.message); setSaving(false); return; }
+
+    const plan = planCrewEligibility({
+      available: availableOnCrewSchedule,
+      teamMemberId: member?.id,
+      teamName: name,
+      teamPhone: phone,
+      crewRows: crewRows || [],
+    });
+    if (!plan.ok) { setError(plan.error); setSaving(false); return; }
+
     let memberId = member?.id;
+    let tenantId = member?.tenant_id;
+    const memberPayload = {
+      name,
+      email: email || null,
+      phone: phone || null,
+      role: form.role,
+      apps: form.apps,
+    };
     if (editing) {
       const { error: err } = await supabase
         .from("team_members")
-        .update({ name: form.name, email: form.email, phone: form.phone, role: form.role, apps: form.apps })
+        .update(memberPayload)
         .eq("id", member.id);
       if (err) { setError(err.message); setSaving(false); return; }
     } else {
       const { data: inserted, error: err } = await supabase
         .from("team_members")
-        .insert({ name: form.name, email: form.email, phone: form.phone, role: form.role, active: true, onboarded: !sendInvite, apps: form.apps })
-        .select("id")
+        .insert({ ...memberPayload, active: true, onboarded: !sendInvite })
+        .select("id, tenant_id")
         .single();
       if (err) { setError(err.message); setSaving(false); return; }
       memberId = inserted.id;
+      tenantId = inserted.tenant_id;
     }
+
+    const crewResult = await applyCrewEligibility(supabase, plan, { teamMemberId: memberId, tenantId });
+    if (!crewResult.ok) { setError(crewResult.error); setSaving(false); return; }
+
     if (sendInvite) {
-      await sendInviteEmail(form.email, form.name, memberId, !editing);
+      await sendInviteEmail(email, name, memberId, !editing, { keepMemberOnFail: crewResult.action !== "noop" });
     } else {
       setSaving(false);
       onSaved();
     }
   };
 
-  const sendInviteEmail = async (email, name, teamMemberId, isNew = false) => {
+  const sendInviteEmail = async (email, name, teamMemberId, isNew = false, { keepMemberOnFail = false } = {}) => {
+    const emailBlock = teamEmailBlockReason(true, email);
+    if (emailBlock) {
+      setError(emailBlock);
+      setSaving(false);
+      return;
+    }
     setInviting(true);
     setError("");
     // Mark as not onboarded so they see the welcome screen on first login
@@ -88,8 +159,8 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
     if (fnErr || data?.error) {
       const msg = data?.error || fnErr?.message || "Failed to send invite";
       // invite error — message shown to user below
-      // Roll back the inserted row if this was a new member
-      if (isNew) await supabase.from("team_members").delete().eq("id", teamMemberId);
+      // Roll back the inserted row if this was a new member and we did not write crew
+      if (isNew && !keepMemberOnFail) await supabase.from("team_members").delete().eq("id", teamMemberId);
       setError(msg);
       return;
     }
@@ -132,10 +203,32 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
 
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: F.ui, marginBottom: 4 }}>Role</div>
-            <select value={form.role} onChange={e => set("role")(e.target.value)}
+            <select value={form.role} onChange={e => {
+              const role = e.target.value;
+              set("role")(role);
+              if (!editing && !eligibilityTouched) {
+                setAvailableOnCrewSchedule(defaultCrewScheduleEligibility(role));
+              }
+            }}
               style={{ width: "100%", border: `1.5px solid ${C.borderStrong}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, fontFamily: F.ui, outline: "none", background: C.linenLight, color: C.textHead }}>
               {ROLES.map(r => <option key={r}>{r}</option>)}
             </select>
+          </div>
+
+          <div style={{ marginBottom: 14, padding: "10px 12px", background: availableOnCrewSchedule ? "rgba(48,207,172,0.07)" : "transparent", borderRadius: 8, border: `1px solid ${availableOnCrewSchedule ? "rgba(48,207,172,0.2)" : C.borderStrong}` }}>
+            <Checkbox
+              checked={availableOnCrewSchedule}
+              size={16}
+              onChange={(next) => {
+                eligibilityTouchedRef.current = true;
+                setEligibilityTouched(true);
+                setAvailableOnCrewSchedule(next);
+              }}
+              label="Available on Crew Schedule"
+            />
+            <div style={{ fontSize: 12, color: C.textFaint, fontFamily: F.ui, marginTop: 6, paddingLeft: 26 }}>
+              Eligibility for scheduling, not an app permission.
+            </div>
           </div>
 
           {tenantApps && tenantApps.length > 1 && (
@@ -215,7 +308,7 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
             </Btn>
           )}
           {editing ? (
-            <Btn sz="sm" v={member.auth_id ? undefined : "ghost"} onClick={() => handleSave(false)} disabled={saving}>{saving ? "Saving…" : "Save Changes"}</Btn>
+            <Btn sz="sm" v={member.auth_id ? undefined : "ghost"} onClick={() => handleSave(false)} disabled={saving || !crewHydrated}>{saving ? "Saving…" : "Save Changes"}</Btn>
           ) : (
             <>
               <Btn sz="sm" v="ghost" onClick={() => handleSave(false)} disabled={saving}>{saving ? "Saving…" : "Add Without Invite"}</Btn>
@@ -412,7 +505,7 @@ export default function Team({ teamMember }) {
         </button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ fontSize: 13, color: C.textMuted, fontFamily: F.ui }}>✉ <a href={`mailto:${m.email}`} style={{ color: C.tealDark }}>{m.email}</a></div>
+        <div style={{ fontSize: 13, color: C.textMuted, fontFamily: F.ui }}>✉ {m.email ? <a href={`mailto:${m.email}`} style={{ color: C.tealDark }}>{m.email}</a> : "No email"}</div>
         <div style={{ fontSize: 13, color: C.textMuted, fontFamily: F.ui }}>📱 {m.phone}</div>
       </div>
       {tenantApps.length > 1 && m.apps && (
