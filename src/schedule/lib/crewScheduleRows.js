@@ -1,6 +1,7 @@
 import { getJobStatus } from './jobStatus.js'
 import { buildJobTrips } from './trips.js'
 import { inRange, overlapsWeek, staffingForDay } from './allocations.js'
+import { activeScheduleCrew } from './scheduleCrew.js'
 
 // Keep UUID identity even when trips have identical or nested date spans.
 // Unlinked crew days appear once in their own row, never on a guessed trip.
@@ -79,7 +80,7 @@ export function crewCardRows(rows, name) {
 // Count people, not assignment rows: double booking must not inflate capacity.
 // Time off still takes precedence, matching the existing capacity denominator.
 export function crewWeekCapacity(rows, crew, statuses, dates, today) {
-  const roster = crew.filter(c => !c.archived)
+  const roster = activeScheduleCrew(crew)
   return { capacityDays: dates.map(date => {
     const available = [], assigned = [], out = []
     for (const person of roster) {

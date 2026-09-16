@@ -2,6 +2,7 @@ import { supabase } from '../../lib/supabase'
 import { loadMobilizationsByJobId, loadJobs } from './queries'
 import { jobRanges, overlapsWeek, staffingForDay, staffingSummary, pickAllocField } from './allocations'
 import { crewStatusUiLabel } from './crewStatus'
+import { activeScheduleCrew } from './scheduleCrew.js'
 
 // B103: every export shows every active job — same as the board. Routed through
 // loadJobs so prints get the call_log-joined names and the ⚠ "Needs fixing" flag
@@ -157,7 +158,7 @@ export async function printDailyStatus() {
     supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
     loadExportJobs(),
   ])
-  const crew = (crewRes.data || []).filter(c => !c.archived)
+  const crew = activeScheduleCrew(crewRes.data || [])
   const assignments = asgnRes.data || []
   const csMap = {}
   for (const c of (csRes.data || [])) {

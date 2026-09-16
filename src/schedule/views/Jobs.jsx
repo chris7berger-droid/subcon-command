@@ -11,6 +11,7 @@ import { NeedsAttention, NextUp, AtAGlance } from '../components/HomePanels'
 import JobsToPrepare from '../components/JobsToPrepare'
 import CombineDuplicatesModal from '../components/CombineDuplicatesModal'
 import { getJobStatus } from '../lib/jobStatus'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 
 // New Jobs (reskin chunk 1) — the old Home working surface, repainted. The plan:
 // old Home (capacity strip + panels + the "Jobs to Prepare" list) MOVES here and
@@ -168,7 +169,7 @@ export default function Jobs() {
     setBillingWorklist(billRes.data || [])
     setMaterials(matsRes.data || [])
     setDailyLogs(logsRes.data || [])
-    setCrew((crewRes.data || []).filter(c => !c.archived))
+    setCrew(activeScheduleCrew(crewRes.data || []))
     const csMap = {}
     for (const c of (csRes.data || [])) csMap[c.crew_name + '|' + c.date] = c.status
     setCrewStatusMap(csMap)

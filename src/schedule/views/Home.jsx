@@ -8,6 +8,7 @@ import {
 import { buildBillingSurface, num } from '../lib/billingForecast'
 import { getJobStatus } from '../lib/jobStatus'
 import { AtAGlance } from '../components/HomePanels'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 
 // New Home (reskin chunk 1) — a pure operations dashboard. NO working job rows
 // (those live on Jobs now). Answers "how are operations doing": KPI hero cards,
@@ -64,7 +65,7 @@ export default function Home() {
     setJobs(loadedJobs)
     setAllAssignments(allAsgnRes.data || [])
     setWeekAssignments(weekAsgnRes.data || [])
-    setCrew((crewRes.data || []).filter(c => !c.archived))
+    setCrew(activeScheduleCrew(crewRes.data || []))
     setMaterials(matsRes.data || [])
     setSurface(billRes || null)
     setActivity(actRes.error ? [] : (actRes.data || []))

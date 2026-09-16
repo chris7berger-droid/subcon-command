@@ -67,7 +67,7 @@ export default function MobsModal({ job, mobs = [], initialEditId = null, initia
   const [crewRefresh, setCrewRefresh] = useState(0)
   useEffect(() => {
     let alive = true
-    loadAllRows('crew', 'name, archived', { orderBy: 'name' }).then(({ data, error }) => {
+    loadAllRows('crew', 'name, archived, team_member_id', { orderBy: 'name' }).then(({ data, error }) => {
       if (!alive) return
       setCrewError(error?.message || null)
       setCrewNames(error ? [] : crewLeadNames(data || []))
