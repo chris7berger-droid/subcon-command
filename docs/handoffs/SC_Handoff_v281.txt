@@ -1,0 +1,61 @@
+SC Handoff v281 — IDENT-4 write team_member_id on new Schedule assignments (PR, not merged) — 2026-09-16
+
+SESSION SUMMARY
+Slice 4 of Team → Crew identity unification. When Crew Scheduler creates a
+NEW assignment for a linked crew person, the insert now includes
+assignments.team_member_id from that crew row. Legacy unlinked crew still
+insert null. Historical assignment rows are not rewritten. No production
+people were linked. No bulk backfill. Team UI, Field Command, PowerSync,
+schema, and TF2 were not changed.
+
+CHANGES IN THIS PR (NOT MERGED)
+Canonical payload helper: src/schedule/lib/assignmentIdentity.js
+- linked crew object -> team_member_id
+- unlinked/blank -> null
+- copy/move uses the source assignment UUID when no crew object is in hand
+- Crew List rename still updates crew_name only (UUID stays on the row)
+
+Wired at the only live Schedule insert: Schedule.jsx changeRowAssignments
+(assign modal, add/remove day, remove-from-trip). Delete still deletes
+that assignment only. YesV2 import left name-only (historical, no selected
+crew object, not a backfill).
+
+DECISIONS
+Do not name-match Team at write time. Do not backfill existing assignment
+rows. Board rendering stays crew_name. IDENT-1 CASCADE still covers rename
+history.
+
+NEW/CLOSED BACKLOG ITEMS
+IDENT-4 opened In Progress on this PR. IDENT-3 closed as merged PR #63
+d8c9eb7. F61/B118/F56 leftovers not touched.
+
+VERIFICATION
+node src/schedule/lib/assignmentIdentity.test.mjs passed (linked write,
+unlinked null, two people keep distinct UUIDs, rename does not change
+UUID, copy/move preserve UUID, existing rows unchanged on payload build,
+no page-load writes).
+node src/schedule/lib/scheduleCrew.test.mjs still passed.
+eslint on new helper + Schedule.jsx insert site + ScheduleLayout rename
+helper is clean.
+npm run build passed.
+No production assignment writes.
+
+NOT TOUCHED
+Historical assignment backfill. Team UI / crewEligibility. Field Command.
+PowerSync. Invites. TF2. Schema. Chris Berger / Chris Winn.
+
+NEXT SESSION
+Do not start from Field, PowerSync, or a Chris/backfill.
+Merge IDENT-4 only after Chris accepts.
+Next identity slice after merge: historical assignments.team_member_id
+backfill for already-linked crew (still no Chris auto-link, still no
+Field/PowerSync).
+
+FILES TO KNOW
+src/schedule/lib/assignmentIdentity.js
+src/schedule/lib/assignmentIdentity.test.mjs
+src/schedule/views/Schedule.jsx (changeRowAssignments insert)
+src/schedule/ScheduleLayout.jsx (rename update uses crew_name only)
+
+GIT STATE
+Branch feat/assignment-team-member-id-writes. PR opened, not merged.

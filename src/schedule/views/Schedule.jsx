@@ -9,6 +9,7 @@ import { jobRanges, inRange, staffingSummary } from '../lib/allocations'
 import { tripRange } from '../lib/trips'
 import { crewWeekRows, crewCardRows, crewRowInRange, crewRowStaffing, crewRowNames } from '../lib/crewScheduleRows'
 import { activeScheduleCrew } from '../lib/scheduleCrew'
+import { newAssignmentRows } from '../lib/assignmentIdentity'
 import { crewStatusShortLabel, crewStatusUiLabel, isCrewStatusOut, CREW_STATUS_SCHEDULED_OFF, compactStatusDot, crewStatusDateKey, eachInclusiveDay, planScheduledOff, groupContiguousDays, formatScheduledOffRange } from '../lib/crewStatus'
 import ScheduleTripDetails from '../components/ScheduleTripDetails'
 import CrewWeekCapacity from '../components/CrewWeekCapacity'
@@ -106,6 +107,7 @@ export default function Schedule({ embedded = false } = {}) {
   const changedBy = user?.name || 'unknown'
   const [jobs, setJobs] = useState([])
   const [crew, setCrew] = useState([])
+  const crewByNameRef = useRef({})
   const leadNames = crewLeadNames(crew)
   const [assignments, setAssignments] = useState([])
   const [crewStatus, setCrewStatus] = useState({})
@@ -219,6 +221,7 @@ export default function Schedule({ embedded = false } = {}) {
         if (stale) return
         setJobs(jobRes.data)
         setCrew(activeScheduleCrew(crewRes.data))
+        crewByNameRef.current = Object.fromEntries((crewRes.data || []).map(c => [c.name, c]))
         setWorkTypes(wtRes.data.map(w => w.name))
         setAllocsByJobId(allocs || {})
         setStaticReady(true)
@@ -476,9 +479,16 @@ export default function Schedule({ embedded = false } = {}) {
       if (toAdd.some(d => !crewRowInRange(row, d)) || (row.trip.legacy && toAdd.length)) throw new Error('Choose a saved trip to add crew.')
       if (!row.trip.id && toAdd.length) throw new Error('Open the job and add a trip for these dates before assigning crew.')
       if (toAdd.length) {
-        const { error } = await supabase.from('assignments').insert(toAdd.map(date => ({
-          job_id: row.job.job_id, mobilization_id: row.trip.id, crew_name: name, date,
-        })))
+        const person = crewByNameRef.current[name] || crew.find(c => c.name === name)
+        const sourceAssignment = row.assignments.find(a => a.crew_name === name && a.team_member_id)
+          || row.assignments.find(a => a.crew_name === name)
+        const { error } = await supabase.from('assignments').insert(newAssignmentRows(toAdd, {
+          job_id: row.job.job_id,
+          mobilization_id: row.trip.id,
+          crew_name: name,
+          person,
+          sourceAssignment,
+        }))
         if (error) throw error
       }
       if (removed.length) {
