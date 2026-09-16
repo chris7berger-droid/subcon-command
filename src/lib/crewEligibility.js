@@ -16,6 +16,24 @@ export function inviteNeedsEmail(sendInvite, email) {
   return Boolean(sendInvite) && !String(email || "").trim();
 }
 
+export const EMAIL_FORMAT_ERROR = "Requires a valid email address.";
+
+export function isValidEmailFormat(email) {
+  const value = String(email || "").trim();
+  if (!value) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+export function teamEmailBlockReason(sendInvite, email, { fieldApp = false } = {}) {
+  if (inviteNeedsEmail(sendInvite, email)) {
+    return fieldApp
+      ? "Email is required before inviting someone with Field app access."
+      : "Email is required to send an invite.";
+  }
+  if (!isValidEmailFormat(email)) return EMAIL_FORMAT_ERROR;
+  return null;
+}
+
 export function normalizePersonName(name) {
   return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
 }

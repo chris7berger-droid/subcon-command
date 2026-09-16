@@ -6,8 +6,8 @@ import { ROLE_C } from "../lib/mockData";
 import {
   applyCrewEligibility,
   defaultCrewScheduleEligibility,
-  inviteNeedsEmail,
   planCrewEligibility,
+  teamEmailBlockReason,
 } from "../lib/crewEligibility";
 import SectionHeader from "../components/SectionHeader";
 import DataTable from "../components/DataTable";
@@ -60,12 +60,8 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
   const handleSave = async (sendInvite = false) => {
     if (!crewHydrated) { setError("Still loading crew eligibility."); return; }
     if (!form.name.trim()) { setError("Name is required."); return; }
-    if (inviteNeedsEmail(sendInvite, form.email)) {
-      setError(form.apps?.includes("field")
-        ? "Email is required before inviting someone with Field app access."
-        : "Email is required to send an invite.");
-      return;
-    }
+    const emailBlock = teamEmailBlockReason(sendInvite, form.email, { fieldApp: form.apps?.includes("field") });
+    if (emailBlock) { setError(emailBlock); return; }
     setSaving(true);
     setError("");
     setSuccess("");
@@ -145,8 +141,9 @@ function MemberModal({ member, onClose, onSaved, onDeactivated, senderEmail, sen
   };
 
   const sendInviteEmail = async (email, name, teamMemberId, isNew = false, { keepMemberOnFail = false } = {}) => {
-    if (inviteNeedsEmail(true, email)) {
-      setError("Email is required to send an invite.");
+    const emailBlock = teamEmailBlockReason(true, email);
+    if (emailBlock) {
+      setError(emailBlock);
       setSaving(false);
       return;
     }

@@ -2,10 +2,13 @@ import {
   applyCrewEligibility,
   crewPatchFromPlan,
   defaultCrewScheduleEligibility,
+  EMAIL_FORMAT_ERROR,
   findSafeUnlinkedMatches,
   inviteNeedsEmail,
+  isValidEmailFormat,
   namesMatchSafely,
   planCrewEligibility,
+  teamEmailBlockReason,
 } from "./crewEligibility.js";
 
 function assert(cond, msg) {
@@ -21,6 +24,18 @@ assert(inviteNeedsEmail(true, "") === true, "invite without email is blocked");
 assert(inviteNeedsEmail(true, "   ") === true, "invite with blank email is blocked");
 assert(inviteNeedsEmail(true, "pat@example.com") === false, "invite with email is allowed");
 assert(inviteNeedsEmail(false, "") === false, "save without invite does not require email");
+
+assert(isValidEmailFormat("") === true, "blank email is valid when not inviting");
+assert(isValidEmailFormat("   ") === true, "whitespace-only email is treated as blank");
+assert(isValidEmailFormat("pat@example.com") === true, "plain email is valid");
+assert(isValidEmailFormat("not-an-email") === false, "missing @ is invalid");
+assert(isValidEmailFormat("pat@hdsp") === false, "missing domain dot is invalid");
+assert(teamEmailBlockReason(false, "") === null, "Add Without Invite may omit email");
+assert(teamEmailBlockReason(false, "not-an-email") === EMAIL_FORMAT_ERROR, "entered invalid email is blocked");
+assert(teamEmailBlockReason(true, "") === "Email is required to send an invite.", "Add & Send Invite requires nonblank email");
+assert(teamEmailBlockReason(true, "not-an-email") === EMAIL_FORMAT_ERROR, "Add & Send Invite rejects invalid format");
+assert(teamEmailBlockReason(true, "pat@example.com") === null, "Add & Send Invite accepts a valid email");
+assert(teamEmailBlockReason(true, "", { fieldApp: true }) === "Email is required before inviting someone with Field app access.", "Field invite still requires email");
 
 assert(namesMatchSafely("Chris Berger", "Berger, Chris") === true, "flip match is safe");
 assert(namesMatchSafely("Chris Berger", "Chris Berger") === true, "exact match is safe");
