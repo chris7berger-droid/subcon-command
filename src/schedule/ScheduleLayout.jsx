@@ -15,6 +15,7 @@ import { ToolbarContext } from './lib/toolbar'
 import { searchExistingJobs, getNextMobSeq, addJobMobilization } from './lib/queries'
 import { crewLeadNames } from './lib/crewLeads'
 import { activeScheduleCrew, canUnarchiveFromScheduler, isActiveScheduleCrew } from './lib/scheduleCrew'
+import { assignmentRenameUpdate } from './lib/assignmentIdentity'
 import { crewRequirement } from './lib/allocations'
 import { printWeekSchedule, printJobList, printMaterialsList, printDailyStatus } from './lib/exports'
 import Home from './views/Home'
@@ -291,7 +292,7 @@ function ScheduleShell() {
     const { error } = await supabase.from('crew').update(updates).eq('name', editingCrew.originalName)
     if (error) { console.error(error); toast('Error saving', 'err'); return }
     if (editingCrew.name !== editingCrew.originalName) {
-      await supabase.from('assignments').update({ crew_name: editingCrew.name }).eq('crew_name', editingCrew.originalName)
+      await supabase.from('assignments').update(assignmentRenameUpdate(editingCrew.name)).eq('crew_name', editingCrew.originalName)
       await supabase.from('crew_status').update({ crew_name: editingCrew.name }).eq('crew_name', editingCrew.originalName)
     }
     toast('Crew updated', 'ok')
