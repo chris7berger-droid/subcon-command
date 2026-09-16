@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { loadJobs, loadMobilizationsByJobId } from '../lib/queries'
 import { jobRanges, overlapsWeek, staffingForDay, staffingSummary } from '../lib/allocations'
 import { CREW_STATUS_SCHEDULED_OFF } from '../lib/crewStatus'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 
 /* ── Daily view — faithful port of the Apps Script rDaily() (Schedule Commander v2).
    Job cards with a crew × day check grid, gap row, status sections, and legend.
@@ -108,7 +109,7 @@ export default function Daily() {
       ['Ongoing', 'Scheduled', 'In Progress', 'On Hold'].includes(j.status)
     )
     if (jRes.data) setJobs(activeJobs)
-    if (cRes.data) setCrew(cRes.data.filter(c => !c.archived))
+    if (cRes.data) setCrew(activeScheduleCrew(cRes.data))
     if (aRes.data) setAssignments(aRes.data)
     if (sRes.data) setCrewStatus(sRes.data)
     // Live allocations so a job also shows in a week a go-back block falls in (B87).

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { crewStatusUiLabel } from '../lib/crewStatus'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 
 const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -53,7 +54,7 @@ export default function StatsBar() {
       supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
       supabase.from('jobs').select('*').or('deleted.is.null,deleted.eq.No'),
     ])
-    if (crewRes.data) setCrew(crewRes.data.filter(c => c.archived !== 'Yes'))
+    if (crewRes.data) setCrew(activeScheduleCrew(crewRes.data))
     if (asgnRes.data) setAssignments(asgnRes.data)
     if (jobRes.data) setJobs(jobRes.data)
     if (csRes.data) {

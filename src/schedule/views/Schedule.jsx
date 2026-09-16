@@ -8,6 +8,7 @@ import { useToast } from '../lib/toast'
 import { jobRanges, inRange, staffingSummary } from '../lib/allocations'
 import { tripRange } from '../lib/trips'
 import { crewWeekRows, crewCardRows, crewRowInRange, crewRowStaffing, crewRowNames } from '../lib/crewScheduleRows'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 import { crewStatusShortLabel, crewStatusUiLabel, isCrewStatusOut, CREW_STATUS_SCHEDULED_OFF, compactStatusDot, crewStatusDateKey, eachInclusiveDay, planScheduledOff, groupContiguousDays, formatScheduledOffRange } from '../lib/crewStatus'
 import ScheduleTripDetails from '../components/ScheduleTripDetails'
 import CrewWeekCapacity from '../components/CrewWeekCapacity'
@@ -217,7 +218,7 @@ export default function Schedule({ embedded = false } = {}) {
         const allocs = await loadMobilizationsByJobId(jobRes.data, { liveOnly: true, throwOnError: true })
         if (stale) return
         setJobs(jobRes.data)
-        setCrew(crewRes.data.filter(c => !c.archived))
+        setCrew(activeScheduleCrew(crewRes.data))
         setWorkTypes(wtRes.data.map(w => w.name))
         setAllocsByJobId(allocs || {})
         setStaticReady(true)

@@ -14,6 +14,7 @@ import { UserProvider, useUser } from './lib/user'
 import { ToolbarContext } from './lib/toolbar'
 import { searchExistingJobs, getNextMobSeq, addJobMobilization } from './lib/queries'
 import { crewLeadNames } from './lib/crewLeads'
+import { activeScheduleCrew, canUnarchiveFromScheduler, isActiveScheduleCrew } from './lib/scheduleCrew'
 import { crewRequirement } from './lib/allocations'
 import { printWeekSchedule, printJobList, printMaterialsList, printDailyStatus } from './lib/exports'
 import Home from './views/Home'
@@ -266,6 +267,11 @@ function ScheduleShell() {
   }
 
   async function clUnarchive(name) {
+    const row = crewList.find(c => c.name === name)
+    if (!canUnarchiveFromScheduler(row)) {
+      toast('This person is managed in Team. Turn on Available on Crew Schedule there.', 'err')
+      return
+    }
     const { error } = await supabase.from('crew').update({ archived: false }).eq('name', name)
     if (error) { console.error(error); return }
     toast(flipName(name) + ' restored', 'ok')
@@ -316,8 +322,8 @@ function ScheduleShell() {
     toast('Refreshed', 'ok')
   }
 
-  const activeCrew = crewList.filter(c => !c.archived)
-  const archivedCrew = crewList.filter(c => c.archived)
+  const activeCrew = activeScheduleCrew(crewList)
+  const archivedCrew = crewList.filter(c => !isActiveScheduleCrew(c))
 
   // Built once here (owns actionsRef + all handlers), then either dropped into the
   // capacity band's header via context, or rendered in its own strip on screens

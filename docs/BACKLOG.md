@@ -1,6 +1,8 @@
 # Sales Command — Backlog
 
-**IDENT-2 — T2 · In Progress (PR, not merged):** Team → Crew identity Slice 2 — Team-controlled Crew Schedule eligibility. Team modal adds **Available on Crew Schedule**. Field role defaults ON for new members; other roles default OFF. ON creates or reuses a linked `crew` row (`crew.team_member_id`); exactly one safe unlinked name match is linked; ambiguous matches fail clearly; OFF archives and does not delete. Email required only for invite/login; Crew Schedule-only people may exist without email. No bulk backfill, no Chris link, no Schedule/Field/PowerSync/assignment writes, no invites during tests. IDENT-1 schema is already live. Handoff v279.
+**IDENT-3 — T2 · In Progress (PR, not merged):** Team → Crew identity Slice 3 — Crew Scheduler consumption only. Active person list uses `src/schedule/lib/scheduleCrew.js`: linked crew (`team_member_id` set) are active iff `archived !== true`; legacy unlinked rows keep existing `!archived` behavior. Existing assignments are not rewritten. No `assignments.team_member_id` writes, no Team/crew backfill, no Chris link, no Field/PowerSync/TF2. IDENT-2 is merged. Handoff v280.
+
+**IDENT-2 — T2 · Closed 2026-09-16 (PR #62 merged `922b520`):** Team-controlled Crew Schedule eligibility. Team modal **Available on Crew Schedule**. ON creates/links/unarchives; OFF archives, does not delete. Handoff v279.
 
 **PR61 — merged 2026-09-16 (`31caa32`):** /crew Midweek Update — today through Friday compact text (JOB #, coworkers, canonical `scheduled-off` as `(OFF — MAY CHANGE)`). Weekly/Sunday send unchanged. Desktop Schedules.jsx unchanged. No assignment or `crew_status` writes. Chris accepted the actual iPhone Vercel preview. Handoff v278.
 
@@ -374,6 +376,7 @@ older entries to a per-version handoff and trim here.
 
 | Date       | ID  | Item                                                                                                                          | Where done         |
 |------------|-----|-------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| 2026-09-16 | IDENT-2 | Team modal **Available on Crew Schedule** creates/links/unarchives or archives the linked `crew` row. No bulk backfill, no Chris link, no assignment identity writes. | [PR #62](https://github.com/chris7berger-droid/sales-command/pull/62), merge `922b520`; handoff v279 |
 | 2026-09-13 | B123 | Crew Schedule weekday/date label restyle (capacity pills + stacked Job/Mo–Sa headings) and ~25% larger free/off badges. Chris accepted preview. | [PR #56](https://github.com/chris7berger-droid/sales-command/pull/56), merge `d12cfef`; handoff v276 |
 | 2026-09-13 | B122 | Scrapped: weekly-text crew grid / drop With: line. Chris rejected. Do not rebuild. | [PR #55](https://github.com/chris7berger-droid/sales-command/pull/55) closed unmerged; handoff v275 |
 | 2026-09-13 | B121 | Weekly crew texts omit empty days (no date, no “No work assigned”). Chris accepted preview. | [PR #54](https://github.com/chris7berger-droid/sales-command/pull/54), merge `ac0b74b`; handoff v274 |

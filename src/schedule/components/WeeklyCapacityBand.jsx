@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { loadJobs, computeHomeDashboard, wkDates, getMonday, fmtD } from '../lib/queries'
 import HomeCapacityStrip from './HomeCapacityStrip'
+import { activeScheduleCrew } from '../lib/scheduleCrew'
 
 // Self-contained Weekly Crew Capacity band. Loads its own week-scoped data and
 // renders the same HomeCapacityStrip the Home/Jobs dashboards use — so the header
@@ -28,7 +29,7 @@ export default function WeeklyCapacityBand() {
       supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
     ])
     setJobs(jobsRes.data || [])
-    setCrew((crewRes.data || []).filter(c => !c.archived))
+    setCrew(activeScheduleCrew(crewRes.data || []))
     setWeekAssignments(asgnRes.data || [])
     const csMap = {}
     for (const c of (csRes.data || [])) csMap[c.crew_name + '|' + c.date] = c.status

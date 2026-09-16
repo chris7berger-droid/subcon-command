@@ -1,6 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { STATUS_OPTIONS_PICKER, getJobStatus } from './jobStatus'
 import { rollupSowMaterials, coverageStatusFor } from './sowMaterials'
+import { activeScheduleCrew } from './scheduleCrew.js'
 
 // ── Paginating loader ──────────────────────────────────────────────────────
 // PostgREST caps at 1000 rows. This helper pages through with .range().
@@ -1810,10 +1811,9 @@ export function computeHomeDashboard({
   prtMap = new Map(), mobsByJobId = {},
 }) {
   // Roster counts (Crew Available, per-day capacity denominators) must reflect
-  // ACTIVE crew only. crew.archived is a BOOLEAN column — compare as boolean,
-  // not the string 'Yes' (that no-op comparison let archived crew inflate the
-  // count). Defensive: callers also filter, but this is the single choke point.
-  crew = crew.filter(c => !c.archived)
+  // ACTIVE scheduling choices only. Linked crew follow Team archived; legacy
+  // unlinked crew keep the existing boolean archived filter.
+  crew = activeScheduleCrew(crew)
 
   const crewByWeek = buildCrewByCallLog(jobs, weekAssignments)
   const crewByAll = buildCrewByCallLog(jobs, allAssignments)
