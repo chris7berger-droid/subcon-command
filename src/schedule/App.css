@@ -6719,13 +6719,19 @@
 .schedule-root .hcs-title { font-family: var(--font-heading); font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
 .schedule-root .hcs-week { font-family: var(--font-heading); font-weight: 800; font-size: 22px; letter-spacing: 0.02em; margin-top: 2px; }
 
-/* Crew Schedule surface test: inset edging preserves the bar's geometry. */
+/* Crew Schedule only: keep the full approved image and existing bar geometry. */
 .schedule-root .sch-capacity-wrap > .hcs {
-  background: linear-gradient(135deg, rgba(40,35,29,0.97), rgba(28,24,20,0.98));
+  background-color: #28231d;
+  background-image:
+    linear-gradient(100deg, rgba(28,24,20,0.96) 0%, rgba(28,24,20,0.88) 38%, rgba(28,24,20,0.52) 68%, rgba(28,24,20,0.62) 100%),
+    url('./assets/crew-capacity-command-bg.png');
+  background-size: 100% 100%, contain;
+  background-position: center, right center;
+  background-repeat: no-repeat;
   box-shadow:
-    inset 0 0 0 1px rgba(121,205,224,0.20),
-    inset 0 2px 0 rgba(255,255,255,0.04),
-    0 2px 4px rgba(28,24,20,0.16);
+    inset 0 0 0 1px rgba(121,205,224,0.40),
+    inset 0 2px 0 rgba(121,205,224,0.18),
+    0 2px 4px rgba(28,24,20,0.24);
 }
 .schedule-root .sch-capacity-wrap > .hcs > .hcs-head .hcs-title {
   color: #79CDE0;
