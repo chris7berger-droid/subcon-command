@@ -1,10 +1,22 @@
-SC Handoff v288 — Calendar canonical material propagation, awaiting preview review — 2026-09-17
+SC Handoff v288 — Calendar canonical reskin VISUALLY ACCEPTED / LOCKED — 2026-09-17
 
 SESSION SUMMARY
 Chris authorized a Calendar-only material/surface propagation using the accepted
 REAL Crew Schedule (87e99ad) as the visual reference. Existing Calendar remains
 the structural and functional source of truth. Implemented on the dedicated
 preview branch created from ui/crew-capacity-surface-test at 6483984.
+Chris subsequently reviewed the real Vercel Calendar preview and explicitly
+confirmed VISUAL ACCEPTANCE: PASS. The accepted Calendar launch-UI visual
+baseline is now LOCKED; no additional UI changes or polish unless explicitly
+reopened. This acceptance closeout changes only BACKLOG.md and this handoff.
+
+Accepted implementation commit:
+69ab28cf69b0631369461013b0b95c8ef7559588
+Retained accepted preview branch: ui/calendar-canonical-reskin
+Exact accepted preview:
+https://sales-command-3hil1ghj7-chris7berger-droids-projects.vercel.app/schedule/calendar
+Accepted preview deployment: dpl_Gg2Fq6kGm67JwjdQtYJUYqt6vZ9S (Ready).
+Calendar has not been merged to main or released to production.
 
 CHANGES SHIPPED
 Calendar-only data-calendar-launch marker on the existing schedule-root, also
@@ -16,6 +28,9 @@ the calendar and detail rails. Espresso framing and cyan instrumentation use the
 accepted implementation's material language. No new DOM layout or controls.
 
 DECISIONS
+Calendar is visually accepted and LOCKED at the exact implementation/preview
+above. Its existing structure and functionality were preserved. Retain the
+accepted preview branch; acceptance does not authorize merge or cleanup.
 Crew Schedule remains LOCKED. Its implementation and accepted App.css are
 untouched. No shared theme extraction, shared-token overrides or broadening of
 Crew selectors. The Calendar scope is separate; no sch-capacity-wrap reuse.
@@ -27,10 +42,11 @@ colors retain their existing meanings. No new overflow, transform, filter,
 positioning or stacking context rules. Existing placeholders remain unchanged.
 
 NEW/CLOSED BACKLOG ITEMS
-Touches F63 only for this authorized Calendar preview. No backlog item closed.
-Visual acceptance pending. Global search, notifications, new user/business
-account card, additional shell controls, Geometry A production identity work
-and other F63 follow-ups remain deferred. B92/B100/B101 are not addressed.
+Calendar visual acceptance is complete; F63 overall remains In Progress for
+separately authorized follow-ups. Global search, notifications, new
+user/business account card, additional shell controls, Geometry A production
+identity work and other deferred F63 items were not implemented and remain
+deferred. B92/B100/B101 are not addressed.
 
 VERIFICATION
 - npm run build passed; existing bundle-size advisory remains.
@@ -51,8 +67,15 @@ VERIFICATION
 - scheduleCrew and crewStatus test files pass (2/2).
 - Git comparison confirms accepted Crew CSS, shared styles/tokens, capacity
   components, host shell and main unchanged.
-Preview deployment status and exact URL are to be reported after this commit's
-push. Browser fixtures do not constitute live-data or user visual acceptance.
+- Accepted implementation deployment dpl_Gg2Fq6kGm67JwjdQtYJUYqt6vZ9S is Ready
+  at the exact preview above. Deployed browser checks passed for Calendar
+  scope/surfaces, environment asset, 300px/320px rails, month/week selection
+  reset and navigation back to locked Crew. App-data requests were intercepted;
+  zero app-data writes/runtime errors. These checks do not verify live data.
+- Chris subsequently reviewed the real Calendar preview and explicitly accepted
+  it. User visual acceptance is complete and distinct from fixture verification.
+The verification above belongs to the accepted implementation; this closeout
+is documentation only and does not rerun application builds or browser tests.
 Temporary checks: /private/tmp/check-calendar-source.mjs,
 /private/tmp/check-calendar-canonical.mjs and check-calendar-deployed.mjs.
 
@@ -62,9 +85,10 @@ queries/calculations/data, schema, assets, dependencies, main and production.
 No shared-theme extraction, merge or production promotion.
 
 NEXT SESSION POINTERS
-STOP after publishing this implementation preview. Await Chris's review of the
-real Calendar before further visual changes. Crew stays locked. No automatic
-continuation of deferred work.
+STOP. Calendar and Crew Schedule remain LOCKED. Retain the accepted Calendar
+preview branch and exact implementation/preview as its launch-UI visual baseline.
+No additional UI changes or polish unless explicitly reopened. No merge,
+production release or branch cleanup authorized. No automatic deferred work.
 
 FILES TO KNOW
 src/schedule/Calendar.css — isolated material/surface styles.
@@ -76,7 +100,12 @@ src/schedule/components/CalendarJobPane.jsx — job-rail paint hooks.
 docs/BACKLOG.md — F63 progress and deferred boundaries.
 
 GIT STATE
-Branch ui/calendar-canonical-reskin, based on 6483984d360e37d68a3e01be21977181be00531b.
-Commit containing this handoff publishes the implementation for preview review.
-ui/crew-capacity-surface-test remains at 6483984.
+Retained accepted preview branch: ui/calendar-canonical-reskin, originally based
+on 6483984d360e37d68a3e01be21977181be00531b.
+Accepted implementation: 69ab28cf69b0631369461013b0b95c8ef7559588.
+The subsequent documentation-only acceptance commit updates only BACKLOG.md and
+this handoff; application code, CSS, assets and functionality remain identical
+to that accepted implementation.
+ui/crew-capacity-surface-test remains at 6483984d360e37d68a3e01be21977181be00531b.
 main remains b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c.
+Calendar has not been merged to main or released to production. No cleanup.
