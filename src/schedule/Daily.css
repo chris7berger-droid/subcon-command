@@ -1,0 +1,162 @@
+/* Daily-only materials. DailyStyle retains geometry, typography and operational
+   signals; these overrides change paint without redefining its semantic tokens. */
+.schedule-root[data-daily-launch] {
+  --daily-paper: #f2eada;
+  --daily-sand: #e5dac5;
+  --daily-control: #eae0cd;
+  --daily-ink: #30281f;
+  --daily-muted: #534532;
+  --daily-accent: #79cde0;
+  --daily-focus: #367d8d;
+  --daily-dark: #302a23;
+  --daily-border: #b5a183;
+  --daily-line: #d0c0a5;
+  --daily-shadow: inset 0 1px rgba(255,248,229,0.55), 0 2px 6px rgba(61,47,31,0.14);
+  background: transparent;
+}
+
+/* Existing host environment only. Important declarations beat inline shell paint,
+   including sidebar hover handlers; dimensions and containing blocks stay put. */
+[data-app-shell]:has(.schedule-root[data-daily-launch]) > div:has(> [data-app-header]) {
+  background: linear-gradient(180deg, rgba(28,24,20,0.18), rgba(28,24,20,0.04) 40%),
+    url('./assets/crew-capacity-command-bg.png') left top / 100% auto no-repeat,
+    #746049;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-header] {
+  background: rgba(33,28,23,0.74) !important;
+  border-bottom-color: rgba(219,200,169,0.24) !important;
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+  text-shadow: 0 1px 2px #1c1814;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-header] > div:first-child > span {
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-header] > div:first-child > span:last-child {
+  color: #79cde0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-sidebar] {
+  background: linear-gradient(160deg, rgba(53,44,35,0.94), rgba(30,27,24,0.97)) !important;
+  border-right-color: rgba(219,200,169,0.22) !important;
+  box-shadow: inset -1px 0 rgba(221,201,168,0.20), inset 0 2px rgba(121,205,224,0.26);
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-sidebar] button {
+  color: #bfb3a1 !important;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-sidebar] button:hover {
+  background: rgba(231,222,203,0.07) !important;
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-daily-launch]) [data-app-sidebar] button[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06)) !important;
+  color: #79cde0 !important;
+  border-left-color: #79cde0 !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.24), inset 3px 0 rgba(121,205,224,0.14);
+}
+
+/* Current-week capacity keeps every badge, threshold and status color. */
+.schedule-root[data-daily-launch] > .hcs {
+  background: linear-gradient(180deg, rgba(64,55,44,0.80), rgba(50,43,35,0.74) 45%, rgba(33,28,23,0.92));
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.38),
+    inset 0 2px rgba(243,237,224,0.10), 0 2px 5px rgba(28,24,20,0.28);
+}
+.schedule-root[data-daily-launch] :is(.hcs-title, .hcs-day-today-tag) {
+  color: var(--daily-accent);
+}
+.schedule-root[data-daily-launch] .hcs-view-btn {
+  color: var(--daily-accent);
+  border-color: var(--daily-accent);
+}
+.schedule-root[data-daily-launch] .hcs-day-today {
+  background: rgba(121,205,224,0.12);
+}
+
+/* Opaque working surfaces; keep PW gradient and all colored rails/chips intact. */
+.schedule-root[data-daily-launch] .dly-v {
+  background: var(--daily-sand);
+  color: var(--daily-ink);
+}
+.schedule-root[data-daily-launch] .dly-v::before {
+  background: none;
+}
+.schedule-root[data-daily-launch]:has(.dly-loading),
+.schedule-root[data-daily-launch]:has(.dly-loading) .dly-v {
+  background: var(--daily-paper);
+}
+.schedule-root[data-daily-launch] .dly-loading {
+  color: var(--daily-ink);
+}
+.schedule-root[data-daily-launch] .dly-wknav {
+  background: linear-gradient(105deg, #f0e7d6, #e0d3bc);
+  border-color: var(--daily-border);
+  box-shadow: inset 0 1px rgba(255,248,229,0.65);
+}
+.schedule-root[data-daily-launch] .dly-btn {
+  background: var(--daily-control);
+  border-color: var(--daily-border);
+  color: var(--daily-ink);
+}
+.schedule-root[data-daily-launch] .dly-btn:hover {
+  background: #d9e5df;
+  border-color: var(--daily-focus);
+}
+.schedule-root[data-daily-launch] .dly-card {
+  border-top-color: var(--daily-border);
+  border-right-color: var(--daily-border);
+  border-bottom-color: var(--daily-border);
+  box-shadow: var(--daily-shadow);
+}
+.schedule-root[data-daily-launch] .dly-card:not(.dly-card-pw),
+.schedule-root[data-daily-launch] :is(.dly-status, .dly-legend) {
+  background: var(--daily-paper);
+}
+.schedule-root[data-daily-launch] :is(.dly-status, .dly-legend) {
+  border-color: var(--daily-border);
+  box-shadow: var(--daily-shadow);
+}
+.schedule-root[data-daily-launch] .dly-row {
+  border-bottom-color: var(--daily-line);
+}
+.schedule-root[data-daily-launch] .dly-card-badge {
+  background: var(--daily-control);
+  border-color: var(--daily-border);
+}
+.schedule-root[data-daily-launch] :is(.dly-hdr-day:not(.dly-today), .dly-leg) {
+  color: var(--daily-muted);
+}
+
+/* In-tree controls and dialogs, with their existing scrolling/stacking untouched. */
+.schedule-root[data-daily-launch] .app-act-primary {
+  background: var(--daily-accent);
+  border-color: var(--daily-accent);
+  color: #1c1814;
+}
+.schedule-root[data-daily-launch] .app-act-primary:hover:not(:disabled) {
+  background: #a0dfec;
+  border-color: #a0dfec;
+}
+.schedule-root[data-daily-launch] .app-act-btn:hover {
+  border-color: var(--daily-focus);
+}
+.schedule-root[data-daily-launch] .app-actions-dropdown {
+  background: var(--daily-dark);
+  border-color: var(--daily-border);
+}
+.schedule-root[data-daily-launch] .app-actions-dropdown button:hover {
+  background: rgba(121,205,224,0.12);
+  color: var(--daily-accent);
+}
+.schedule-root[data-daily-launch] :is(.mdl, .sch-modal) {
+  background: var(--daily-paper);
+  border-color: var(--daily-border);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
+}
+.schedule-root[data-daily-launch] :is(.mbg, .sch-modal-overlay) {
+  background: rgba(28,24,20,0.60);
+}
+.schedule-root[data-daily-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: var(--daily-control);
+}
+.schedule-root[data-daily-launch] :is(.dly-btn, .app-act-btn, .hcs-view-btn):focus-visible {
+  outline: 2px solid var(--daily-focus);
+  outline-offset: -2px;
+}
