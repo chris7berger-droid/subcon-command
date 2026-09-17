@@ -12,6 +12,7 @@ import JobsToPrepare from '../components/JobsToPrepare'
 import CombineDuplicatesModal from '../components/CombineDuplicatesModal'
 import { getJobStatus } from '../lib/jobStatus'
 import { activeScheduleCrew } from '../lib/scheduleCrew'
+import '../Jobs.css'
 
 // New Jobs (reskin chunk 1) — the old Home working surface, repainted. The plan:
 // old Home (capacity strip + panels + the "Jobs to Prepare" list) MOVES here and
@@ -331,7 +332,7 @@ export default function Jobs() {
 
   const chip = {
     display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px',
-    borderRadius: 6, background: 'var(--panel-dark)', color: 'var(--teal)',
+    borderRadius: 6, background: 'var(--jobs-dark, var(--panel-dark))', color: 'var(--jobs-accent, var(--teal))',
     fontFamily: 'var(--font-heading)', fontSize: 11, fontWeight: 700,
     letterSpacing: '0.05em', textTransform: 'uppercase',
   }
@@ -370,7 +371,7 @@ export default function Jobs() {
               padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
               fontFamily: 'var(--font-heading)', fontSize: 12, fontWeight: 700,
               letterSpacing: '0.04em', textTransform: 'uppercase',
-              border: '1.5px solid var(--teal)', background: 'var(--panel-dark)', color: 'var(--teal)',
+              border: '1.5px solid var(--jobs-accent, var(--teal))', background: 'var(--jobs-dark, var(--panel-dark))', color: 'var(--jobs-accent, var(--teal))',
             }}
           >
             Go to ▾
@@ -378,7 +379,7 @@ export default function Jobs() {
           {actionsOpen && (
             <div style={{
               position: 'absolute', top: '100%', right: 0, marginTop: 6, zIndex: 20,
-              background: 'var(--bg-card)', border: '1px solid var(--brd)', borderRadius: 10,
+              background: 'var(--jobs-paper, var(--bg-card))', border: '1px solid var(--jobs-border, var(--brd))', borderRadius: 10,
               boxShadow: '0 6px 20px rgba(28,24,20,0.18)', minWidth: 180, overflow: 'hidden',
             }}>
               {ACTIONS.map(a => (

@@ -1,0 +1,194 @@
+/* Jobs-only materials from the accepted Crew Schedule and Calendar.
+   Paint only: preserve Jobs' geometry, type metrics, scroll owners and breakpoints.
+   Shared semantic tokens and the printed SOW document keep their existing colors. */
+.schedule-root[data-jobs-launch],
+body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.schedule-delete-overlay {
+  --jobs-paper: #f2eada;
+  --jobs-sand: #e5dac5;
+  --jobs-control: #eae0cd;
+  --jobs-dark: #302a23;
+  --jobs-ink: #30281f;
+  --jobs-accent: #79cde0;
+  --jobs-focus: #367d8d;
+  --jobs-border: #b5a183;
+  --jobs-line: #d0c0a5;
+  --jobs-shadow: inset 0 1px rgba(255,248,229,0.55), 0 2px 6px rgba(61,47,31,0.14);
+}
+
+/* The existing host content column supplies the environment; no new layer,
+   sizing, clipping or containing block. !important only beats host inline paint. */
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) > div:has(> [data-app-header]) {
+  background: linear-gradient(180deg, rgba(28,24,20,0.18), rgba(28,24,20,0.04) 40%),
+    url('./assets/crew-capacity-command-bg.png') left top / 100% auto no-repeat,
+    #746049;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-header] {
+  background: rgba(33,28,23,0.74) !important;
+  border-bottom-color: rgba(219,200,169,0.24) !important;
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+  text-shadow: 0 1px 2px #1c1814;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-header] > div:first-child > span {
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-header] > div:first-child > span:last-child {
+  color: #79cde0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-sidebar] {
+  background: linear-gradient(160deg, rgba(53,44,35,0.94), rgba(30,27,24,0.97)) !important;
+  border-right-color: rgba(219,200,169,0.22) !important;
+  box-shadow: inset -1px 0 rgba(221,201,168,0.20), inset 0 2px rgba(121,205,224,0.26);
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-sidebar] button {
+  color: #bfb3a1 !important;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-sidebar] button:hover {
+  background: rgba(231,222,203,0.07) !important;
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-jobs-launch]) [data-app-sidebar] button[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06)) !important;
+  color: #79cde0 !important;
+  border-left-color: #79cde0 !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.24), inset 3px 0 rgba(121,205,224,0.14);
+}
+.schedule-root[data-jobs-launch],
+.schedule-root[data-jobs-launch] .jh-wrap {
+  background: transparent;
+}
+
+/* Current-week dashboard: command framing around the unchanged instruments.
+   Capacity, readiness, status, PW and budget signals are deliberately excluded. */
+.schedule-root[data-jobs-launch] .hcs,
+.schedule-root[data-jobs-launch] .hp-nextup {
+  background: linear-gradient(180deg, rgba(64,55,44,0.80), rgba(50,43,35,0.74) 45%, rgba(33,28,23,0.92));
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.38),
+    inset 0 2px rgba(243,237,224,0.10), 0 2px 5px rgba(28,24,20,0.28);
+}
+.schedule-root[data-jobs-launch] :is(.hcs-title, .hcs-day-today-tag, .hp-label-teal, .hp-star) {
+  color: var(--jobs-accent);
+}
+.schedule-root[data-jobs-launch] :is(.hcs-view-btn, .hp-btn-outline) {
+  color: var(--jobs-accent);
+  border-color: var(--jobs-accent);
+}
+.schedule-root[data-jobs-launch] .hcs-day-today {
+  background: rgba(121,205,224,0.12);
+}
+.schedule-root[data-jobs-launch] :is(.hp-needs, .hp-glance, .jtp-row, .sjc-card) {
+  background: var(--jobs-paper);
+  border-color: var(--jobs-border);
+  box-shadow: var(--jobs-shadow);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-row, .sjc-card):hover {
+  border-color: var(--jobs-focus);
+  box-shadow: inset 0 1px rgba(255,248,229,0.65), 0 3px 8px rgba(61,47,31,0.18);
+}
+
+/* Continuous working paper under the list heading, filters and dense rows.
+   No added padding/border width: preserve all existing wrapping and row sizes. */
+.schedule-root[data-jobs-launch] .jtp {
+  background: var(--jobs-sand);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55);
+}
+.schedule-root[data-jobs-launch] .jh-empty {
+  background: var(--jobs-paper);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-search, .jtp-stage-select, .jtp-chip, .sjc-id-bubble, .sjc-score-neutral) {
+  background: var(--jobs-control);
+  border-color: var(--jobs-border);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-chip.active, .sjc-toggle.open) {
+  background: var(--jobs-dark);
+  color: var(--jobs-accent);
+  border-color: var(--jobs-accent);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-viewall, .hp-footer-link, .jtp-btn-outline) {
+  color: var(--jobs-focus);
+}
+.schedule-root[data-jobs-launch] .jtp-btn-outline {
+  border-color: var(--jobs-focus);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-btn-outline, .hp-btn-outline):hover {
+  background: rgba(121,205,224,0.12);
+}
+.schedule-root[data-jobs-launch] .jh-bin-btn {
+  background: var(--jobs-control);
+  color: var(--jobs-ink);
+  border-color: var(--jobs-border);
+}
+.schedule-root[data-jobs-launch] .app-actions-dropdown {
+  background: var(--jobs-dark);
+  border-color: var(--jobs-border);
+}
+.schedule-root[data-jobs-launch] .app-actions-dropdown button:hover {
+  background: rgba(121,205,224,0.12);
+  color: var(--jobs-accent);
+}
+.schedule-root[data-jobs-launch] :is(.app-act-primary, .hp-btn-fill) {
+  background: var(--jobs-accent);
+  border-color: var(--jobs-accent);
+  color: #1c1814;
+}
+.schedule-root[data-jobs-launch] :is(.app-act-primary, .hp-btn-fill):hover:not(:disabled) {
+  background: #a0dfec;
+  border-color: #a0dfec;
+}
+.schedule-root[data-jobs-launch] .app-act-btn:hover {
+  border-color: var(--jobs-focus);
+}
+
+/* Existing card panels, trips and in-tree dialogs. Keep signal-bearing score
+   backgrounds, trip left borders, destructive controls and print paper intact. */
+.schedule-root[data-jobs-launch] :is(.sjc-panel, .sjc-action, .sjc-toggles) {
+  border-top-color: var(--jobs-line);
+}
+.schedule-root[data-jobs-launch] :is(.job-trip, .job-trip-summary) {
+  background: var(--jobs-paper);
+}
+.schedule-root[data-jobs-launch] .job-trip {
+  border-top-color: var(--jobs-border);
+  border-right-color: var(--jobs-border);
+  border-bottom-color: var(--jobs-border);
+  box-shadow: var(--jobs-shadow);
+}
+.schedule-root[data-jobs-launch] :is(.mdl, .sch-modal) {
+  background: var(--jobs-paper);
+  border-color: var(--jobs-border);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
+}
+.schedule-root[data-jobs-launch] :is(.mbg, .sch-modal-overlay) {
+  background: rgba(28,24,20,0.60);
+}
+.schedule-root[data-jobs-launch] :is(.fsb-day, .fsb-mat-card, .fsb-mat-picker) {
+  background: var(--jobs-paper);
+  border-color: var(--jobs-border);
+}
+.schedule-root[data-jobs-launch] :is(.fsb-day-hdr, .fsb-mat-picker-hdr) {
+  background: var(--jobs-control);
+  border-bottom-color: var(--jobs-line);
+}
+.schedule-root[data-jobs-launch] .fsb-input,
+.schedule-root[data-jobs-launch] .fsb-mat-picker-search,
+.schedule-root[data-jobs-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: var(--jobs-control);
+}
+.schedule-root[data-jobs-launch] :is(.jtp-search, .jtp-stage-select, .jtp-chip, .jtp-btn, .app-act-btn, .sjc-toggle, .job-trip-summary):focus-visible {
+  outline: 2px solid var(--jobs-focus);
+  outline-offset: -2px;
+}
+
+/* The shared deletion dialog portals to body. Its route gate and variables
+   live here too; no portal behavior, focus handling or shared CSS changes. */
+body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.schedule-delete-overlay {
+  background: rgba(28,24,20,0.65);
+}
+body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.schedule-delete-overlay .schedule-delete-dialog {
+  background: var(--jobs-paper);
+  color: var(--jobs-ink);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 12px 48px rgba(28,24,20,0.33);
+}
+body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.schedule-delete-overlay input {
+  background: var(--jobs-control);
+  border-color: var(--jobs-border);
+}

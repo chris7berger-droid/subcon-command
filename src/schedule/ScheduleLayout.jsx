@@ -45,7 +45,7 @@ export default function ScheduleLayout({ teamMember }) {
   // covers DOM they emit as siblings of the shell — notably ToastProvider's toast
   // node — which would otherwise render outside the scope and lose all its CSS.
   return (
-    <div className="schedule-root" data-calendar-launch={pathname.replace(/\/+$/, '') === '/schedule/calendar' ? '' : undefined}>
+    <div className="schedule-root" data-calendar-launch={pathname.replace(/\/+$/, '') === '/schedule/calendar' ? '' : undefined} data-jobs-launch={pathname.replace(/\/+$/, '') === '/schedule/jobs' ? '' : undefined}>
       <ToastProvider>
         <UserProvider teamMember={teamMember}>
           <ScheduleShell />

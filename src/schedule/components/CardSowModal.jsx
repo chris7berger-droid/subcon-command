@@ -88,9 +88,9 @@ export default function CardSowModal({
   return (
     <div className="mbg" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="mdl mdl-lg">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1c1814', padding: '14px 20px', borderRadius: '8px 8px 0 0', borderBottom: '3px solid #30cfac' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--jobs-dark, #1c1814)', padding: '14px 20px', borderRadius: '8px 8px 0 0', borderBottom: '3px solid var(--jobs-accent, #30cfac)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
-            FIELD SOW <span style={{ color: '#30cfac' }}>{job.job_num || job.job_name || ''}</span>
+            FIELD SOW <span style={{ color: 'var(--jobs-accent, #30cfac)' }}>{job.job_num || job.job_name || ''}</span>
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             {onPrint && <button className="app-act-btn" onClick={onPrint}>Print PDF</button>}
@@ -99,7 +99,7 @@ export default function CardSowModal({
         </div>
 
         {toast && (
-          <div style={{ background: '#1c1814', color: '#30cfac', fontSize: 12.5, fontWeight: 600, padding: '8px 20px', letterSpacing: '0.02em' }}>
+          <div style={{ background: 'var(--jobs-dark, #1c1814)', color: 'var(--jobs-accent, #30cfac)', fontSize: 12.5, fontWeight: 600, padding: '8px 20px', letterSpacing: '0.02em' }}>
             {toast}
           </div>
         )}
@@ -118,9 +118,9 @@ export default function CardSowModal({
                         style={{
                           fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em',
                           padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
-                          border: active ? '1px solid #30cfac' : '1px solid var(--border)',
-                          background: active ? '#1c1814' : 'var(--bg-card)',
-                          color: active ? '#30cfac' : 'var(--text-secondary)',
+                          border: active ? '1px solid var(--jobs-accent, #30cfac)' : '1px solid var(--jobs-border, var(--border))',
+                          background: active ? 'var(--jobs-dark, #1c1814)' : 'var(--jobs-control, var(--bg-card))',
+                          color: active ? 'var(--jobs-accent, #30cfac)' : 'var(--text-secondary)',
                         }}
                       >
                         {w.work_type_name || 'Work Type'}

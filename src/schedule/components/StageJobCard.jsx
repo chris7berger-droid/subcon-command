@@ -550,7 +550,7 @@ function NotesPanel({ job, changedBy, onSaved }) {
         placeholder="Add a note…"
         rows={3}
         style={{
-          width: '100%', boxSizing: 'border-box', background: '#a89b88',
+          width: '100%', boxSizing: 'border-box', background: 'var(--jobs-control, #a89b88)',
           border: '1px solid rgba(28,24,20,0.25)', borderRadius: 4, padding: '6px 8px',
           fontSize: 13, color: '#1c1814', fontFamily: "'Barlow', sans-serif", outline: 'none', resize: 'vertical',
         }}
@@ -731,7 +731,7 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
     <div
       ref={cardRef}
       className={`sjc-card${compactMode ? ' sjc-card-home-expanded' : ''}`}
-      style={autoOpen ? { boxShadow: '0 0 0 3px #30cfac', borderRadius: 8 } : undefined}
+      style={autoOpen ? { boxShadow: '0 0 0 3px var(--jobs-focus, #30cfac)', borderRadius: 8 } : undefined}
     >
       <StageBanner job={job} stage={stage} crewRows={crewRows} matRows={matRows} prtMap={prtMap} today={today} />
 
