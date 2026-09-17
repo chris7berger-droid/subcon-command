@@ -1,0 +1,54 @@
+SC Handoff v282 — WTC desktop width — 2026-09-17
+
+SESSION SUMMARY
+Targeted WTC layout adjustment. Chris requested wider aligned warning,
+Materials, and Summary panels, readable QTY/TAX inputs, and clear navigation.
+Local implementation reviewed; Chris authorized push. Not merged.
+
+CHANGES
+Shared content grows to 1400px (previous visible panel maximum 900px).
+Desktop arrows remain 44px with 16px clearance outside panel edges.
+Arrow positioning follows actual WTC width, including collapsed sidebar.
+At WTC container widths <=900px, arrows occupy a separate row above content.
+Materials columns redistribute added width; QTY/TAX inputs have an 80px
+minimum and preferred 90px cells. Table minimum 1000px with local scrolling.
+
+DECISIONS
+Layout only. Preserve colors, typography, row heights, calculations,
+controls and read-only behavior. Do not merge without preview acceptance.
+
+NEW/CLOSED BACKLOG ITEMS
+WTC desktop layout tracked In Progress at top of BACKLOG.md.
+IDENT-4 documentation remains stale: local main already contains PR64
+(f3e2a65). No identity work was resumed.
+
+VERIFICATION
+npm run build passed. git diff --check passed.
+Local Chrome fixture: 390, 768, 1024, 1280, 1440, 1920px viewports;
+expanded/collapsed sidebar; aligned panels; visible arrows with clearance;
+previous/next navigation; read-only overlay. All requests intercepted.
+Original vs changed source: 38px material rows, values and summary totals
+identical in all seven viewport/sidebar combinations. No API writes.
+Lint unchanged against HEAD: 23 existing errors, 2 warnings.
+Deployed preview Ready, implementation deaf801:
+https://sales-command-hld2ykqvh-chris7berger-droids-projects.vercel.app
+Deployed Chrome fixture checks passed at 1920/1440/1024px: alignment,
+arrow clearance/navigation, QTY/TAX values, read-only overlay; zero writes.
+Screenshot: /private/tmp/wtc-deployed-preview.png
+
+NOT TOUCHED
+Data, pricing, schema, edge functions, production, other backlog work.
+
+NEXT SESSION POINTERS
+Obtain preview acceptance before merge. Do not resume old work.
+
+FILES TO KNOW
+src/pages/WTCCalculator.jsx — sole implementation file.
+docs/BACKLOG.md — local change status.
+Temporary browser fixture: /private/tmp/check-wtc-layout.mjs
+Screenshots/metrics: /private/tmp/wtc-{before,after}-*
+
+GIT STATE
+Branch fix/wtc-desktop-width, based on main f3e2a65.
+Implementation deaf801 pushed. Draft PR #65, no production release.
+https://github.com/chris7berger-droid/subcon-command/pull/65
