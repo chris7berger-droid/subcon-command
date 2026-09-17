@@ -1,0 +1,246 @@
+SC Handoff v284 — Launch UI decisions / Crew Schedule preview — 2026-09-17
+
+SESSION SUMMARY
+Documentation only. Chris paused UI implementation to preserve the launch
+direction, preview evidence and follow-up backlog. No application/asset edits,
+commit, push, deployment or merge in this documentation session. Await review.
+Crew Schedule is the most complex screen and current canonical implementation
+test; it is NOT a released app-wide theme or final visual acceptance.
+
+CHANGES SHIPPED
+No new application changes shipped in this session. Existing PREVIEW work:
+Branch: ui/crew-capacity-surface-test
+Implementation HEAD: 3197639826b99213478f2fe1e104e41e2a846fab
+Preview: https://sales-command-nsi5tfq5g-chris7berger-droids-projects.vercel.app/schedule/schedule
+Deployment: dpl_6duejUQJQ9CUQvr9JWLv4mCQYtQx (Ready at prior verification;
+saved deployment metadata ties this URL to the branch and exact SHA above).
+Base: b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c. Not merged to main.
+
+Actual branch history, oldest first:
+- 49ea6d8: isolated Weekly Crew Capacity surface CSS test.
+- 645fd59: approved bundled photograph introduced for capacity treatment.
+- f41a30f: scoped full Crew Schedule material/surface reskin.
+- be8ab6d: module separation and existing sidebar brand polish.
+- c9d8f06: photography moved into upper page/command environment.
+- 3197639: compact breadcrumb; recover operational vertical space.
+Combined diff from main at inspection: ONLY src/schedule/App.css (+295 lines)
+and src/schedule/assets/crew-capacity-command-bg.png (2,132,524 bytes).
+No JSX, data, calculations, API, routing or functional code changes.
+
+Implemented direction confirmed by that CSS/history:
+- Existing photograph beneath espresso/graphite Weekly Crew Capacity glass;
+  cyan command accents, existing semantic status/category meanings retained.
+- Brown/espresso crew module with opaque readable roster cards; high-opacity
+  warm sand/ivory scheduler and dark header framing protect dense data.
+- Coordinated sidebar, capacity, crew and scheduler surface edges/depth;
+  six-pixel mounting gaps and controlled eight-pixel module radii.
+- Existing sidebar identity retained; brand plate/wordmark styling improved.
+  No dimensional Geometry A production identity was installed in this work.
+- Compact 24px breadcrumb over upper photograph replaces the separate tan
+  strip; capacity and operational modules begin 26px higher than the preceding
+  preview. Crew/scheduler gain 26px height; capacity dimensions unchanged.
+- Upper photo layer follows actual capacity height plus breadcrumb/gaps and
+  stops before crew/grid. No extra height reserved to display the photograph.
+- Existing functionality and operational information preserved; no new shell
+  controls. Locked tagline was not inserted: no suitable existing sidebar
+  mission/tagline region was identified; no new region was created.
+
+Implementation boundary / limitation:
+Crew-specific marker .schedule-root:has(.sch-capacity-wrap) scopes overrides,
+including ancestor shell selectors via :has(); shared .hcs is not reskinned.
+Upper-environment placement and compact header are inside
+@supports (height: anchor-size(--crew-command-band height)). Browsers without
+that support retain the earlier component-photo/tan-header fallback. The
+canonical direction below is the target, not a claim of cross-browser parity.
+Review this fallback before declaring launch-ready; do not change it now.
+
+DECISIONS
+
+SUBCON COMMAND — LOCKED BRAND DIRECTION
+COMMAND is the organizing product, systems, operating-approach and brand
+differentiator, not merely a menu naming convention. Sales Command, Schedule
+Command, Field Command, AR Command and appropriate future Command modules
+express that philosophy.
+
+Locked primary tagline:
+COMMAND THE WORK.
+COMMAND THE MARGIN.
+
+Obsolete; do not restore as primary taglines:
+- Helping Craftsmen Become Businessmen.
+- You build the project. We'll build your margin.
+
+CANONICAL VISUAL PRINCIPLE
+Photography creates environment. Functionality determines layout.
+Warm construction/material environment + espresso/graphite translucent command
+surfaces + warm high-opacity operational surfaces + cyan command instrumentation
++ disciplined industrial typography + semantic operational colors.
+Professional equipment, not decoration. Cyan is the command accent, not teal.
+Preserve green healthy/available/completed, amber/orange attention/risk, red
+intervention/missing/blocked, purple/blue assignment/category, gray neutral/
+unavailable meanings. Use existing fonts: Barlow Condensed for command/heading
+and KPI emphasis, Inter for UI/data, existing appropriate JetBrains Mono usage;
+readability and stable layout take priority over forcing font changes.
+
+PHOTOGRAPHY / SURFACE RULE
+Construction photography belongs to PAGE / ENVIRONMENT, not inside individual
+operational components. Full-bleed construction environment may sit behind app
+content; command/cinematic modules and small mounting gaps reveal it through
+controlled dark translucency. Dense surfaces suppress recognizable imagery.
+Schedules, tables, job rows, forms, editors, filters and text-heavy operational
+data use high-opacity warm sand/ivory technical paper. Subtle linen/material
+character is allowed; recognizable photographic bleed-through is not.
+Worker/hard hat may be partly or heavily obscured. No decorative photo height
+at the expense of real controls, density or operational screen space.
+
+STRUCTURE / FUNCTION SOURCE OF TRUTH
+The existing REAL application is always authoritative: component structure,
+information architecture, controls, labels, ordering, values, calculations,
+data bindings, permissions, routes, navigation, interactions, responsive,
+scrolling/sticky behavior and dialogs/dropdowns. Mockups are visual/material
+references only; do not infer new functionality or changed information,
+controls, calculations, data or interactions from an AI-generated mockup.
+Do not recreate mockups as replacement JSX. Reskin the existing functioning
+application. Prefer scoped CSS, reuse DOM, avoid unintended shared-screen
+changes. If structural/functional changes are required, stop on that item and
+seek separate approval. No global theme rollout implied by this preview.
+
+LATEST APPROVED VISUAL REFERENCE — DIRECTION, NOT IMPLEMENTATION CLAIM
+Full-bleed warm/desaturated cinematic construction-site environment; worker /
+foreman toward the right with branded hard hat. Hard-hat branding uses the
+SAME dimensional cyan-and-black Geometry A identity treatment as the primary
+Subcon Command mark. Stronger dimensional identity presence upper-left/sidebar;
+major UI modules over the environment, dark translucent command modules,
+high-opacity light scheduler. Photograph remains subordinate atmosphere:
+worker/hard hat need not remain fully visible. Operational function and density
+win. This reference is not permission to add mockup-only controls.
+
+LOCKED IDENTITY RULE
+Geometry A — Bold & Open is the locked identity geometry. Dimensional
+cyan-and-black treatment is approved for larger desktop identity use.
+Use approved production assets. Do not redraw, CSS-approximate, generate a
+replacement in code, alter Geometry A, or use a different hard-hat silhouette.
+Keep the current approved sidebar mark until approved replacement assets exist.
+
+PRECEDENCE
+These September 17 launch decisions supersede conflicting visual direction in
+docs/plans/schedule_reskin.md (September 4 near-black/teal plan) and older
+styling/tagline guidance for this launch work. Historical plans remain history;
+their workflow/route restructuring is NOT authorized by this visual handoff.
+Global/shared tokens and other screens remain unchanged pending scoped work.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 added: launch UI canonical preview / assets / propagation / brand package.
+Implementation paused; final visual acceptance and launch release remain open.
+
+ASSET TODOS — NOT ADDED IN THIS SESSION
+Verified existing test asset: src/schedule/assets/crew-capacity-command-bg.png,
+2171x724, unchanged SHA-256:
+df5a6bef5f0dce810b78879a45ad0a47e147c5b1564393b888b6e630b2ed186c
+This is the earlier approved bundled photo, not proof that the latest approved
+reference mockup, standalone branded environment, or dimensional mark is stored.
+Existing src/components/Logo.jsx renders a circular SC mark/wordmark;
+src/schedule/components/Logo.jsx contains the related SCH mark. Do not identify
+these as the requested dimensional Geometry A production assets.
+Repository asset/doc inventory did not identify the latest approved reference
+mockup, standalone branded environment, dimensional Geometry A asset, or launch
+UI standard/DOCX/brand PDF package. Older hero/mockup assets are not substitutes.
+
+TODO, when separately authorized:
+- Preserve/add the final approved reference mockup as a durable repo asset.
+- Preserve/add the final standalone environmental image, including the approved
+  matching dimensional hard-hat identity; obtain exact approved source assets.
+- Obtain/preserve approved dimensional cyan-and-black Geometry A production
+  assets for desktop identity use; verify exact geometry and approved variants.
+- Record actual paths and provenance/approval when supplied. No invented paths,
+  random substitute images, reconstructed logos or inferred asset approval.
+Use existing docs/plans/assets or application asset conventions as appropriate
+at that time; this handoff does not preselect nonexistent filenames.
+
+DESKTOP SHELL FEATURES — FUNCTIONAL FOLLOW-UP
+Intentionally NOT implemented by the Crew Schedule reskin; separate design,
+functional scope and authorization required for each:
+1. GLOBAL SEARCH: traditional desktop-software search in upper shell; future
+   concept searches jobs, customers, people, etc. No fake search box in reskins.
+2. USER / BUSINESS ACCOUNT CARD: compact business-card-like upper-right identity
+   area similar to reference; requires intentional functional design.
+3. NOTIFICATIONS: bell/system deferred until real notification behavior exists.
+4. TOP-SHELL CONTROLS: any additional mockup-only controls require separate work.
+No nonfunctional placeholders or shell redesign under visual-only authority.
+
+OTHER SCREENS / PROPAGATION BACKLOG
+Only after Crew Schedule is visually approved and stable does its REAL
+implementation become the canonical propagation reference. Candidate screens
+already visually reviewed per Chris (not reskinned by this branch):
+- Schedule Command: Calendar, Jobs, Crews / related dense operational views.
+- Sales Command: Proposals, Call Log.
+- Subcon Command: Home.
+- Field Command: dense Crews/data screen while Field development continues.
+
+Instruction for future agents:
+"Apply the established material/surface system from the implemented canonical
+Crew Schedule while preserving this screen's existing functionality."
+Do not instruct agents to recreate an AI mockup on every screen.
+
+COMMAND / CINEMATIC: Home, landing/dashboard surfaces and major command
+summaries may use more photography, dark glass, large KPIs and atmosphere.
+DENSE OPERATIONAL: Crew Schedule, Calendar, jobs, proposals/lists, AR/billing
+lists, production logs and Field data screens use quiet high-opacity warm
+operational canvases with dark command framing. This is strategy, not release
+authorization or permission to alter KPI definitions/structure.
+
+LAUNCH DOCUMENTATION TODO
+After real-app reskin visual QA and approval, update/regenerate the launch brand
+package together: SUBCON_COMMAND_UI_STANDARD.md, companion DOCX, polished visual
+brand PDF. These are required deliverables, not verified existing repo paths.
+All must agree on COMMAND philosophy; COMMAND THE WORK. COMMAND THE MARGIN.;
+photography-as-environment; functionality-determines-layout; cinematic versus
+operational surfaces; AI mockup structural guardrail; final identity usage.
+Do not generate polished documents while implementation is being validated.
+
+VERIFICATION
+Documentation session: inspected branch/status, history/diff, latest v283,
+BACKLOG, older reskin plan, current scoped CSS and asset/identity inventory.
+Only BACKLOG and this new handoff changed. No browser or database work needed.
+No new application tests run for documentation-only changes.
+
+Prior implementation evidence (not rerun or claimed as final user acceptance):
+Build, model and sticky-header checks passed; lint had existing 176 errors /
+43 warnings. Local/deployed Chrome synthetic-fixture checks covered five widths
+(390/1024/1100/1440/1920), KPI/day clicks, + Job, Actions, dialogs/dropdowns,
+crew details/off picker, search, week navigation, sidebar navigation/collapse,
+scroll/sticky/current-day behavior, and shared Calendar/Materials/Jobs/Daily
+surfaces. View Crew Schedule button absent on this route. All API calls were
+intercepted; zero database writes. This verifies UI behavior with fixtures,
+not live authenticated data access. Photo boundary ended before operational
+panels; image-toggle comparison differed only in two isolated text-edge pixels,
+not a photographic pattern. Capacity dimensions preserved; 26px operational
+height recovered. No broad cross-browser launch QA claimed.
+
+NOT TOUCHED
+Application code, CSS, JSX, assets, dependencies, database/data, main,
+production, Vercel settings/deployments. No new UI implementation or propagation.
+No polished brand package generated. Other backlog work not resumed.
+
+NEXT SESSION POINTERS
+STOP for Chris's documentation review. No automatic continuation of visual
+work, asset acquisition, functional shell features, merge or deployment.
+Preserve reference assets deliberately when authorized, then use real-app visual
+QA/approval to gate propagation and final brand-package alignment.
+
+FILES TO KNOW
+docs/BACKLOG.md — F63 status and durable entry point.
+docs/handoffs/SC_Handoff_v284.txt — locked launch decisions / open follow-ups.
+docs/plans/schedule_reskin.md — historical September 4 plan, not this new scope.
+src/schedule/App.css — existing Crew Schedule scoped preview overrides.
+src/schedule/views/Schedule.jsx — existing functioning screen, unchanged.
+src/schedule/assets/crew-capacity-command-bg.png — existing bundled test photo.
+src/components/Logo.jsx — current sidebar identity, unchanged.
+
+GIT STATE
+Branch ui/crew-capacity-surface-test, initially clean and tracking origin.
+HEAD remains 3197639826b99213478f2fe1e104e41e2a846fab.
+Documentation left uncommitted for review per this task. CLAUDE.md has routine
+commit/push guidance; its handoff structure does not independently require a
+commit before review. This explicit review pause takes precedence. Do not push
+these docs or trigger a deployment. No merge / main / production changes.
