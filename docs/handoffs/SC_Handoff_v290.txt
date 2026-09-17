@@ -1,0 +1,155 @@
+SC Handoff v290 — Home LOCKED; navigation performance audit deferred — 2026-09-17
+
+SESSION SUMMARY
+Chris's final visual acceptance for Schedule Command Home is PASS. Home's
+canonical reskin is visually accepted and LOCKED; no additional visual polish.
+Crew Schedule, Calendar and Jobs remain accepted, LOCKED and unchanged.
+Chris reported somewhat glitchy/slow cross-screen navigation during real preview
+review. A dedicated navigation/data-loading performance audit is recorded as
+F63-PERF, explicitly deferred and separate from visual propagation.
+This closeout changes only docs/BACKLOG.md and this handoff. It supersedes
+Home's pending-visual-review status; it does not authorize further implementation.
+
+Accepted Home implementation:
+d23020e38188b9ea34c03ab672fde55607bf39ca
+Retained accepted preview branch: ui/home-canonical-reskin
+Exact accepted Home preview:
+https://sales-command-r7l4tcxli-chris7berger-droids-projects.vercel.app/schedule/home
+Deployment: dpl_GiterzfqZMdJcwjk3oGta2YZQsQX (Ready).
+Branch base: accepted Jobs closeout
+6d3535d5dbcbde8b6a7af7dff487908163ada5f0, not main.
+
+CHANGES SHIPPED
+Preview only; no production release:
+- Home implementation added data-home-launch on the existing Schedule root,
+  including loading/error states, a dedicated Home.css, and narrow Home-only
+  inline-paint properties/classes in views/Home.jsx.
+- Accepted real Crew Schedule, Calendar and Jobs supply the material system:
+  construction photography in the existing host environment, espresso command
+  framing, opaque ivory operational cards, cyan instrumentation and inset depth.
+  Existing Home remains the structural/functional source of truth.
+- Home's real loading/error text sits on opaque operational paper across the
+  content viewport. No skeletons, fake content, delay or data-timing changes.
+- Shared AtAGlance is styled only through the Home route; its source is unchanged.
+- This documentation-only closeout records acceptance and the deferred audit.
+
+DECISIONS
+Home, Jobs, Calendar and Crew Schedule are visually accepted and LOCKED.
+No further Home visual polish. No changes to any locked screen without explicit
+reopening by Chris. Keep accepted real implementations as the material references;
+earlier AI mockups are not the structural source for future propagation.
+Preserve Home's information architecture, KPI data/calculations, workload chart
+and meaning, management/activity/milestone panels, controls/navigation, dimensions,
+layout, responsive behavior and scrolling. Semantic chart/status colors retain
+their meaning. No shared-theme extraction or shared-token/base-style broadening.
+Retain all four accepted preview branches. Acceptance is not merge authority.
+
+F63-PERF is a future dedicated Schedule Command navigation/data-loading performance
+audit, not part of visual propagation. Investigate:
+- Unnecessary data refetching during Schedule route changes.
+- Unnecessary component teardown/remount behavior.
+- Whether already-loaded Schedule data can persist across navigation.
+- Existing caching, memory and query-state mechanisms in the codebase.
+- Safe prefetching where appropriate.
+- Loading-state transitions across Home, Jobs, Crew Schedule, Calendar, Daily
+  and the remaining Schedule screens.
+Desired future behavior: once relevant Schedule data has loaded, navigation
+between Schedule Command screens should feel essentially immediate when that
+data is already available. No root cause or caching design has been established
+by this documentation closeout. Audit and performance implementation are deferred;
+the report is not authorization to change functionality now or reopen visuals.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 records Home visual acceptance/lock and now has four accepted primary screens.
+F63 overall remains In Progress for separately scoped and authorized follow-ups.
+F63-PERF is a clearly identified deferred follow-up under F63; no performance
+audit or performance changes were implemented in this session.
+All existing F63 deferred items remain deferred; no automatic continuation:
+- Global search, notifications, user/business account card and additional
+  functional top-shell controls. No new placeholders were added.
+- Dimensional cyan-and-black Geometry A — Bold & Open production identity
+  assets. The hard-hat photo mark is not a standalone reusable identity asset;
+  retain existing sidebar identity and do not redraw it in CSS/code.
+- Final reference preservation, remaining separately authorized primary-screen
+  propagation and launch UI standard/DOCX/brand PDF alignment; other asset work.
+Secondary click-through/work surfaces such as Week Schedule remain a separate
+later pass after the primary surfaces. No secondary inventory was commissioned.
+No unrelated backlog items were closed by this presentation work.
+
+VERIFICATION
+Completed during Home implementation, before this documentation closeout:
+- Build passed; the existing bundle-size advisory remains.
+- Source/AST comparison verified only Home's CSS import/paint hooks and the root
+  route marker changed; all new CSS selectors require the Home route marker.
+  Paint-only declarations and Home-specific variables; no geometry/breakpoint
+  changes or shared-style leakage. No new focused lint findings.
+- 48 browser state comparisons passed against accepted Jobs closeout source.
+  Home geometry covered seven widths (1920, 1440, 1100, 1099, 1024, 768, 390),
+  host scrolling, collapsed sidebar, management/milestone/analytics navigation,
+  shell actions/add-job dialog and empty-data presentation.
+- Home loading held pending for three seconds when navigating from Jobs, Crew,
+  Calendar and Daily at 1440/390px; errors checked at both widths. Opaque ivory
+  covers the content viewport with readable real text; loaded styling resumes.
+- Full appearance/geometry comparisons after navigation covered locked Jobs
+  (including shared AtAGlance and expanded cards), Crew Schedule, Calendar
+  (including week mode) and Daily. Semantic chart/status colors were unchanged.
+- Exact Vercel preview inspected: loaded KPI values, paper/photo asset, toolbar
+  contrast, analytics/add-job interactions, desktop/phone delayed loading and
+  navigation to locked screens; Home selectors deactivate off-route.
+- Browser app-data requests used intercepted fixtures; zero app-data writes or
+  runtime errors. These checks do not certify live data contents or real network
+  performance. Chris separately reviewed the real preview and accepted Home.
+This documentation-only closeout does not rerun application builds/browser tests.
+Closeout checks cover the documentation diff, unchanged application tree,
+branch/upstream synchronization, clean working tree, retained branches, the exact
+accepted Ready preview and unchanged local/tracking/live main.
+
+NOT TOUCHED
+This closeout: application code/CSS/JSX, assets, dependencies, queries, data/DB.
+Across Home implementation: AtAGlance/shared components, shared tokens/base
+styles and locked Crew Schedule/Calendar/Jobs implementations remained unchanged.
+No navigation, refetch, remount, caching, persistence or prefetch changes.
+Main and production remain unchanged. No merge, promotion or production release.
+No retained preview branch deleted or merged. Unrelated historical branches and
+worktrees remain untouched; hygiene verification is not cleanup authority.
+
+NEXT SESSION POINTERS
+STOP. Await Chris's next explicit task. Orient from this handoff, BACKLOG.md and
+actual repository/branch state. No automatic polish, propagation, performance
+audit/implementation, deferred functionality, identity work, merge or production
+release. All four accepted primary screens remain LOCKED.
+The remaining primary menu order is Daily, Logistics, Finance / Billing,
+Production Rate, Schedules, Import; this pointer does not authorize work.
+Use v287/v288/v289 for the original Crew/Calendar/Jobs accepted references.
+Home's accepted implementation/preview above remain the visual baseline after
+this documentation commit; a later branch preview must not obscure that reference.
+
+FILES TO KNOW
+docs/BACKLOG.md — F63 acceptance/locks, F63-PERF and existing deferred boundaries.
+docs/handoffs/SC_Handoff_v287.txt — accepted Crew baseline/brand boundaries.
+docs/handoffs/SC_Handoff_v288.txt — accepted loaded Calendar baseline.
+docs/handoffs/SC_Handoff_v289.txt — Jobs acceptance and Calendar loading fix.
+src/schedule/Home.css — isolated Home materials and loading/error surfaces.
+src/schedule/views/Home.jsx — unchanged Home behavior; import/paint hooks only.
+src/schedule/ScheduleLayout.jsx — route markers on the existing root.
+src/schedule/components/HomePanels.jsx — shared AtAGlance, unchanged.
+Temporary verification: /private/tmp/check-home-source.mjs,
+/private/tmp/check-home-canonical.mjs and /private/tmp/check-home-deployed.mjs;
+not committed test assets.
+
+GIT STATE
+Documentation-only closeout on retained ui/home-canonical-reskin, starting clean
+at accepted implementation d23020e38188b9ea34c03ab672fde55607bf39ca, tracking origin
+of the same name. Home was branched from accepted Jobs closeout
+6d3535d5dbcbde8b6a7af7dff487908163ada5f0, not main.
+Retained ui/jobs-canonical-reskin local/origin:
+6d3535d5dbcbde8b6a7af7dff487908163ada5f0
+Retained ui/calendar-canonical-reskin local/origin:
+e28565c3b2b8a9bfee2988da85b580446fcf3206
+Retained ui/crew-capacity-surface-test local/origin:
+6483984d360e37d68a3e01be21977181be00531b
+Main local/origin/live remote remains:
+b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c
+No Crew/Calendar/Jobs/Home launch-UI work has been merged to main or released to
+production. The closeout records acceptance and deferred work; it grants no new
+implementation authority.
