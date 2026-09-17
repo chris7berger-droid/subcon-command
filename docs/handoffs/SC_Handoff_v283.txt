@@ -1,0 +1,51 @@
+SC Handoff v283 — WTC desktop width released — 2026-09-17
+
+SESSION SUMMARY
+Chris accepted the deployed preview ("perfect, merge"). PR #65 merged
+with squash commit 8a1bace. Production deployment is Ready and verified.
+Supersedes v282's pending-acceptance/merge status.
+
+CHANGES SHIPPED
+Warning banner, main WTC panel and Summary share a 1400px maximum.
+Desktop arrows retain 16px clearance and follow actual container width.
+At container widths <=900px, navigation occupies a separate row above content.
+Materials columns use the extra width; QTY/TAX inputs have an 80px minimum.
+Table minimum is 1000px, scrolling locally when needed.
+Implementation: src/pages/WTCCalculator.jsx only.
+
+DECISIONS
+User accepted the preview. Desktop layout only; calculations, controls,
+colors, typography, read-only behavior and data preserved.
+
+NEW/CLOSED BACKLOG ITEMS
+WTC desktop layout closed with PR #65 / 8a1bace.
+No other backlog work resumed.
+
+VERIFICATION
+Build and diff checks passed before push. Local before/after Chrome checks
+at 390–1920px with expanded/collapsed sidebars preserved 38px material rows,
+values and summary totals. No added lint findings (23 errors/2 warnings
+already present in original file).
+Preview and actual https://www.scmybiz.com browser checks passed at
+1920/1440/1024px: aligned panels, arrow clearance/navigation, readable
+125 quantity and 8.375 tax, read-only overlay. Synthetic fixtures; all
+Supabase requests intercepted; zero API writes. These checks prove the
+live UI behavior, not live database access (unchanged by this task).
+Production dpl_Pq4J9TzweRyW9F8KocCLdhHUy7jr is Ready and aliased to
+www.scmybiz.com/scmybiz.com. Screenshot /private/tmp/wtc-production.png.
+
+NOT TOUCHED
+Database, pricing, migrations, edge functions, identity work, other backlog.
+
+NEXT SESSION POINTERS
+Await Chris's next task. No remaining WTC release action.
+
+FILES TO KNOW
+src/pages/WTCCalculator.jsx
+docs/BACKLOG.md
+docs/handoffs/SC_Handoff_v282.txt — implementation and original checks
+
+GIT STATE
+PR #65 merged: 8a1bace6461ac0b468fcd6f66b58f7c67cdc5a72.
+Local checkout main. Completed fix/wtc-desktop-width branch removed.
+This handoff and backlog closure accompany a documentation-only commit.
