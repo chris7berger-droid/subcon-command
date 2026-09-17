@@ -9,6 +9,7 @@ import { buildBillingSurface, num } from '../lib/billingForecast'
 import { getJobStatus } from '../lib/jobStatus'
 import { AtAGlance } from '../components/HomePanels'
 import { activeScheduleCrew } from '../lib/scheduleCrew'
+import '../Home.css'
 
 // New Home (reskin chunk 1) — a pure operations dashboard. NO working job rows
 // (those live on Jobs now). Answers "how are operations doing": KPI hero cards,
@@ -216,13 +217,13 @@ export default function Home() {
   ]
 
   const heroStyle = {
-    background: 'var(--panel-dark)', color: '#fff', borderRadius: 14, padding: '16px 18px',
+    background: 'var(--home-command, var(--panel-dark))', color: 'var(--home-command-ink, #fff)', borderRadius: 14, padding: '16px 18px',
     display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0,
   }
-  const heroNum = { fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: 26, color: 'var(--teal)', lineHeight: 1.1 }
-  const heroLbl = { fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)' }
-  const heroSub = { fontSize: 11, color: 'rgba(255,255,255,0.55)' }
-  const lightCard = { background: 'var(--bg-card)', border: '1px solid rgba(28,24,20,0.10)', borderRadius: 14, padding: '16px 18px' }
+  const heroNum = { fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: 26, color: 'var(--home-accent, var(--teal))', lineHeight: 1.1 }
+  const heroLbl = { fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--home-command-ink, rgba(255,255,255,0.7))' }
+  const heroSub = { fontSize: 11, color: 'var(--home-command-muted, rgba(255,255,255,0.55))' }
+  const lightCard = { background: 'var(--home-paper, var(--bg-card))', border: '1px solid var(--home-border, rgba(28,24,20,0.10))', borderRadius: 14, padding: '16px 18px' }
   const cardLbl = { fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-light)', marginBottom: 12 }
 
   return (
@@ -230,7 +231,7 @@ export default function Home() {
       {/* KPI hero cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
         {heroCards.map(c => (
-          <div key={c.label} style={heroStyle}>
+          <div key={c.label} className="home-kpi" style={heroStyle}>
             <span style={heroLbl}>{c.label}</span>
             <span style={heroNum}>{c.value}</span>
             <span style={heroSub}>{c.sub}</span>
@@ -240,7 +241,7 @@ export default function Home() {
 
       {/* Scheduled Workload chart + At a Glance */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 20, alignItems: 'stretch' }}>
-        <div style={lightCard}>
+        <div className="home-panel" style={lightCard}>
           <div style={cardLbl}>Scheduled Workload · Scheduled vs Completed $</div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, height: 150 }}>
             {workload.weeks.map(w => {
@@ -274,7 +275,7 @@ export default function Home() {
 
       {/* Where management needs to look + Recent Activity + Upcoming Milestones */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
-        <div style={lightCard}>
+        <div className="home-panel" style={lightCard}>
           <div style={cardLbl}>Where Management Needs to Look</div>
           {[
             { label: 'Jobs short on crew this week', n: dash.needCrews },
@@ -290,7 +291,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div style={lightCard}>
+        <div className="home-panel" style={lightCard}>
           <div style={cardLbl}>Recent Activity</div>
           {activity.length === 0 ? (
             <div style={{ fontSize: 13, color: 'var(--text-light)' }}>No recent changes logged.</div>
@@ -308,7 +309,7 @@ export default function Home() {
           )}
         </div>
 
-        <div style={lightCard}>
+        <div className="home-panel" style={lightCard}>
           <div style={cardLbl}>Upcoming Milestones · 14 days</div>
           {milestones.length === 0 ? (
             <div style={{ fontSize: 13, color: 'var(--text-light)' }}>Nothing starting or completing in the next 14 days.</div>
@@ -329,7 +330,7 @@ export default function Home() {
       </div>
 
       {/* Margin overview — chunk-2 placeholder slot */}
-      <div style={{ ...lightCard, opacity: 0.75 }}>
+      <div className="home-panel" style={{ ...lightCard, opacity: 0.75 }}>
         <div style={cardLbl}>Margin Overview</div>
         <div style={{ fontSize: 13, color: 'var(--text-light)' }}>
           Live per-job margin (contract vs. crew-logged cost) + highest / lowest margin jobs

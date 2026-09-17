@@ -1,0 +1,130 @@
+/* Home-only materials from the accepted Crew Schedule, Calendar and Jobs.
+   Preserve Home's structure, dimensions, typography, scroll owner and signals.
+   Inline paint hooks use Home-specific properties; shared tokens stay intact. */
+.schedule-root[data-home-launch] {
+  --home-paper: #f2eada;
+  --home-control: #eae0cd;
+  --home-ink: #30281f;
+  --home-accent: #79cde0;
+  --home-focus: #367d8d;
+  --home-dark: #302a23;
+  --home-border: #b5a183;
+  --home-command: linear-gradient(180deg, rgba(64,55,44,0.94), rgba(50,43,35,0.94) 45%, rgba(33,28,23,0.97));
+  --home-command-ink: #f3ede0;
+  --home-command-muted: #d9cbb3;
+  --home-shadow: inset 0 1px rgba(255,248,229,0.55), 0 2px 6px rgba(61,47,31,0.14);
+  background: transparent;
+}
+
+/* Use the existing host environment; no photo panel or new layout layer.
+   !important only overrides the host shell's existing inline paint. */
+[data-app-shell]:has(.schedule-root[data-home-launch]) > div:has(> [data-app-header]) {
+  background: linear-gradient(180deg, rgba(28,24,20,0.18), rgba(28,24,20,0.04) 40%),
+    url('./assets/crew-capacity-command-bg.png') left top / 100% auto no-repeat,
+    #746049;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-header] {
+  background: rgba(33,28,23,0.74) !important;
+  border-bottom-color: rgba(219,200,169,0.24) !important;
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+  text-shadow: 0 1px 2px #1c1814;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-header] > div:first-child > span {
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-header] > div:first-child > span:last-child {
+  color: #79cde0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-sidebar] {
+  background: linear-gradient(160deg, rgba(53,44,35,0.94), rgba(30,27,24,0.97)) !important;
+  border-right-color: rgba(219,200,169,0.22) !important;
+  box-shadow: inset -1px 0 rgba(221,201,168,0.20), inset 0 2px rgba(121,205,224,0.26);
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-sidebar] button {
+  color: #bfb3a1 !important;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-sidebar] button:hover {
+  background: rgba(231,222,203,0.07) !important;
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-home-launch]) [data-app-sidebar] button[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06)) !important;
+  color: #79cde0 !important;
+  border-left-color: #79cde0 !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.24), inset 3px 0 rgba(121,205,224,0.14);
+}
+
+.schedule-root[data-home-launch] .home-screen {
+  background: transparent;
+}
+
+/* Loading and errors retain real text on a full operational paper surface.
+   The route marker exists before Home data resolves; no timing changes. */
+.schedule-root[data-home-launch]:has(.home-screen > .jh-empty),
+.schedule-root[data-home-launch] .home-screen:has(> .jh-empty) {
+  background: var(--home-paper);
+}
+.schedule-root[data-home-launch] .jh-empty {
+  color: var(--home-ink);
+}
+
+.schedule-root[data-home-launch] .home-kpi {
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.38),
+    inset 0 2px rgba(243,237,224,0.10), 0 2px 5px rgba(28,24,20,0.28);
+}
+.schedule-root[data-home-launch] :is(.home-panel, .hp-glance) {
+  box-shadow: var(--home-shadow);
+}
+/* AtAGlance is shared with locked Jobs. Only Home supplies this paint. */
+.schedule-root[data-home-launch] .hp-glance {
+  background: var(--home-paper);
+  border-color: var(--home-border);
+}
+.schedule-root[data-home-launch] .hp-footer-link {
+  color: var(--home-focus);
+}
+
+/* The existing shell toolbar and in-tree dialogs belong to this route too. */
+.schedule-root[data-home-launch] .app-schedule-toolbar {
+  background: var(--home-command);
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+}
+.schedule-root[data-home-launch] .app-schedule-toolbar .app-act-btn:not(.app-act-primary) {
+  color: var(--home-command-ink);
+  border-color: rgba(219,200,169,0.35);
+}
+.schedule-root[data-home-launch] .app-actions-dropdown {
+  background: var(--home-dark);
+  border-color: var(--home-border);
+}
+.schedule-root[data-home-launch] .app-actions-dropdown button:hover {
+  background: rgba(121,205,224,0.12);
+  color: var(--home-accent);
+}
+.schedule-root[data-home-launch] .app-act-primary {
+  background: var(--home-accent);
+  border-color: var(--home-accent);
+  color: #1c1814;
+}
+.schedule-root[data-home-launch] .app-act-primary:hover:not(:disabled) {
+  background: #a0dfec;
+  border-color: #a0dfec;
+}
+.schedule-root[data-home-launch] .app-act-btn:hover {
+  border-color: var(--home-focus);
+}
+.schedule-root[data-home-launch] .mdl {
+  background: var(--home-paper);
+  border-color: var(--home-border);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
+}
+.schedule-root[data-home-launch] .mbg {
+  background: rgba(28,24,20,0.60);
+}
+.schedule-root[data-home-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: var(--home-control);
+}
+.schedule-root[data-home-launch] :is(.home-screen button, .app-act-btn):focus-visible {
+  outline: 2px solid var(--home-focus);
+  outline-offset: -2px;
+}
