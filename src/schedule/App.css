@@ -7313,13 +7313,13 @@
 }
 
 /* Upper Crew Schedule environment only. Size the decorative layer from the
-   responsive band plus the unchanged header/gaps; stop at the work region.
+   responsive band plus the compact breadcrumb/gaps; stop at the work region.
    Keep the existing treatment as a fallback in browsers without CSS anchors. */
 @supports (height: anchor-size(--crew-command-band height)) {
   [data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header]) {
     position: relative;
     background: linear-gradient(135deg, #c3b49b, #9c876a)
-      left 50px / 100% calc(100% - 50px) no-repeat #c3b49b;
+      left 24px / 100% calc(100% - 24px) no-repeat #3b3025;
   }
   .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap {
     anchor-name: --crew-command-band;
@@ -7327,22 +7327,27 @@
   [data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header])::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 50%;
-    /* Existing 50px header plus the two 6px mounting gaps. */
-    height: calc(anchor-size(--crew-command-band height) + 62px);
-    aspect-ratio: 2171 / 724;
-    max-width: 100%;
-    transform: translateX(-50%);
-    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-    background: linear-gradient(110deg, rgba(92,72,49,0.22), rgba(28,24,20,0.12)),
-      url('./assets/crew-capacity-command-bg.png') center / contain no-repeat,
+    inset: 0 0 auto;
+    /* 24px breadcrumb plus the two existing 6px mounting gaps. */
+    height: calc(anchor-size(--crew-command-band height) + 36px);
+    background: linear-gradient(180deg, rgba(28,24,20,0.68), rgba(28,24,20,0.20) 40%),
+      url('./assets/crew-capacity-command-bg.png') center / cover no-repeat,
       #746049;
     pointer-events: none;
   }
   [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] {
     position: relative;
-    background: linear-gradient(100deg, rgba(219,207,186,0.82), rgba(191,176,154,0.78)) !important;
+    height: 24px !important;
+    background: transparent !important;
+    border-bottom-color: transparent !important;
+    box-shadow: none;
+    text-shadow: 0 1px 2px #1c1814;
+  }
+  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span {
+    color: #f3ede0 !important;
+  }
+  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span:last-child {
+    color: #79cde0 !important;
   }
   [data-app-content]:has(.schedule-root .sch-capacity-wrap) {
     position: relative;
