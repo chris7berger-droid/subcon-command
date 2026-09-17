@@ -56,6 +56,9 @@ body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.sch
 .schedule-root[data-jobs-launch] .jh-wrap {
   background: transparent;
 }
+.schedule-root[data-jobs-launch]:has(> .app-main > .jh-empty) {
+  background: var(--jobs-paper);
+}
 
 /* Current-week dashboard: command framing around the unchanged instruments.
    Capacity, readiness, status, PW and budget signals are deliberately excluded. */
@@ -89,6 +92,7 @@ body:has([data-app-shell] .schedule-root[data-jobs-launch]) > .schedule-root.sch
    No added padding/border width: preserve all existing wrapping and row sizes. */
 .schedule-root[data-jobs-launch] .jtp {
   background: var(--jobs-sand);
+  border-radius: 14px;
   box-shadow: inset 0 1px rgba(255,248,229,0.55);
 }
 .schedule-root[data-jobs-launch] .jh-empty {
