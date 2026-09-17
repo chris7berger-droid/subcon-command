@@ -18,6 +18,12 @@
   background: transparent;
 }
 
+/* Cover the environment until the real calendar canvas replaces its loading text. */
+.schedule-root[data-calendar-launch]:not(:has(.cal-wrapper)) {
+  background: var(--cal-paper);
+  --cal-header-ink: var(--cal-ink);
+}
+
 /* The photograph occupies the existing content environment, never a new panel.
    Host inline paint needs !important; host dimensions and positioning stay put. */
 [data-app-shell]:has(.schedule-root[data-calendar-launch]) > div:has(> [data-app-header]) {
