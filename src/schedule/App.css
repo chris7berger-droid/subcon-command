@@ -7302,8 +7302,8 @@
  No CSS-anchor dependency, decorative height, or component photograph. */
 [data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header]) {
   position: relative;
-  background: linear-gradient(180deg, rgba(28,24,20,0.68), rgba(28,24,20,0.20) 40%),
-    url('./assets/crew-capacity-command-bg.png') center / cover no-repeat,
+  background: linear-gradient(180deg, rgba(28,24,20,0.18), rgba(28,24,20,0.04) 40%),
+    url('./assets/crew-capacity-command-bg.png') left top / 100% auto no-repeat,
     #746049;
 }
 [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] {

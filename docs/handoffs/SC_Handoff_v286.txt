@@ -1,0 +1,65 @@
+SC Handoff v286 — F63 brighter / wider environment — 2026-09-17
+
+SESSION SUMMARY
+Preview-only background presentation correction. Current deployed real UI at
+24c294ad4ddf4297809f7739b2b94d54361267f8 is the geometry source of truth.
+No module, control, typography, JSX, data, asset or functional changes.
+
+CHANGES SHIPPED
+Two application CSS lines only, src/schedule/App.css, selector:
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header])
+Environment overlay alpha 0.68 -> 0.18 at top; 0.20 -> 0.04 at 40%.
+Photo sizing/position: center / cover -> left top / 100% auto.
+Fits the full scene to content width at its natural aspect ratio; no stretch,
+repeat, new image, or layout space. On tall/narrow content, the existing warm
+base color continues below the width-fit photograph. No module styling changed.
+Unchanged asset hash: 05b2aa0aa3ffb6b60614e97b5afa74742aaf818a48cd87fdc59ae99c089d35b4.
+
+DECISIONS
+Photography creates environment; functionality determines layout. Keep real UI
+geometry exactly. Do not reduce capacity/crew/scheduler opacity or alter sidebar.
+This width-fit framing supersedes v285's cover sizing, not its brand guardrails.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 remains In Progress / preview visual review. Deferred features/assets and
+launch propagation remain as recorded in v284/v285. No additional work authorized.
+
+VERIFICATION
+Before editing, recorded deployed preview dimensions at 1920/1440/1100/1024/390
+widths, height 1050, with intercepted synthetic data. Baseline URL:
+https://sales-command-f5mrsxocs-chris7berger-droids-projects.vercel.app/schedule/schedule
+At 1440x1050, before/after (x,y,width,height), CSS pixels:
+Sidebar:   (0,0,228,1050)       -> identical
+Capacity:  (234,30,1200,212)    -> identical
+Crew:      (234,248,280,796)    -> identical
+Scheduler: (520,248,914,796)    -> identical
+Exact matches also checked at all other recorded widths; entire DOM geometry,
+typography, semantic colors and non-environment styles compared. Sidebar pixels
+identical. Fixture checks cover KPI/day details, + Job, Actions, crew detail/off
+picker, search, weeks/current day, navigation/collapse, scrolling/sticky headers,
+dialogs and shared Calendar/Materials/Jobs/Daily screens. No View Crew Schedule
+button on this route. Scheduler photography exclusion allows only the known
+two isolated text-edge rasterization pixels; rounded perimeter is environmental.
+All API requests intercepted; zero database writes. Not live-data access proof.
+Build passed. Lint retains 176 errors / 43 warnings. No dependencies installed.
+Deployed correction verification follows push through the existing preview flow.
+
+NOT TOUCHED
+Module/layout CSS, JSX, functionality, data/database, approved photo, sidebar
+identity, other screens, global tokens, main and production.
+
+NEXT SESSION POINTERS
+Complete preview verification, report URL/SHA, STOP for visual review.
+
+FILES TO KNOW
+src/schedule/App.css — two environment background lines only.
+docs/BACKLOG.md — F63 pointer.
+docs/handoffs/SC_Handoff_v284.txt and SC_Handoff_v285.txt — prior decisions.
+
+GIT STATE
+Branch ui/crew-capacity-surface-test; started clean at 24c294a.
+This handoff accompanies the background correction commit; use git log for SHA.
+Main baseline b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c remains untouched.
+Preview branch alias:
+https://sales-command-git-ui-crew-c-98425b-chris7berger-droids-projects.vercel.app/schedule/schedule
+No merge or production deployment/promotion.
