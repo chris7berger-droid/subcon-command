@@ -1,0 +1,150 @@
+SC Handoff v289 — Jobs LOCKED; Calendar loading correction accepted — 2026-09-17
+
+SESSION SUMMARY
+Chris visually accepted Schedule Builder → Jobs canonical reskin and its two
+Jobs-only corrections. Jobs is now LOCKED; no further polish unless explicitly
+reopened. Chris then authorized and accepted one Calendar loading-state defect
+correction. Calendar's accepted loaded design remains LOCKED and unchanged.
+Crew Schedule remains visually accepted, LOCKED and untouched by this work.
+This closeout changes only docs/BACKLOG.md and this handoff. It supersedes
+pending-review instructions for Jobs and the Calendar loading correction.
+
+Accepted Jobs implementation:
+09f303ee32485d43f1244001039344090cfc48f5
+Accepted Jobs loading/error surface and outer-corner correction:
+5404efbdfc48327b868230900bef017f4e5e45be
+Retained accepted preview branch: ui/jobs-canonical-reskin
+Exact accepted Jobs preview:
+https://sales-command-jfgf36ez5-chris7berger-droids-projects.vercel.app/schedule/jobs
+Deployment: dpl_9JafraWhekBT1THXEdpjxUpC8U2M (Ready).
+
+Accepted Calendar loading-state correction:
+47738a78888048344b7677e68ac068803098f6d5
+Exact accepted Calendar correction preview:
+https://sales-command-oloxz0tap-chris7berger-droids-projects.vercel.app/schedule/calendar
+Deployment: dpl_8rqiGN3NaWovENYGem7pnEQ4gKdV (Ready).
+This correction is on ui/jobs-canonical-reskin. The retained original Calendar
+preview branch remains at its v288 closeout; it has not received this correction.
+
+CHANGES SHIPPED
+Preview only; no production release:
+- Jobs implementation: isolated data-jobs-launch marker on the existing
+  Schedule root, including loading/error states; dedicated Jobs.css; narrow
+  inline-paint fallbacks in Jobs.jsx, StageJobCard.jsx and CardSowModal.jsx.
+  Accepted real Crew Schedule and Calendar supply the material/surface system.
+  Jobs supplies its own structure and functionality. Existing host scroller and
+  .jh-wrap geometry remain intact. The shared deletion body portal is styled
+  through a Jobs-gated body:has selector; printed SOW styling stays independent.
+- Jobs correction, Jobs.css only: opaque --jobs-paper across the existing root
+  while its direct .app-main child contains .jh-empty; 14px radius on the
+  existing Jobs-only .jtp surface. No clipping or layout changes.
+- Calendar correction, Calendar.css only: while .cal-wrapper is absent, the
+  Calendar root paints opaque --cal-paper and its existing loading-text color
+  variable resolves to --cal-ink. Both overrides deactivate when the real canvas
+  renders. No JSX, data timing, navigation, geometry or loaded-state changes.
+
+DECISIONS
+Jobs, Calendar and Crew Schedule are visually accepted and LOCKED. No additional
+UI changes or polish without explicit reopening by Chris. Calendar's loading
+correction was a narrowly authorized defect fix, not a redesign or reopening.
+The loading issue was reproduced during client navigation with data held pending:
+route environment activated before the operational canvas existed. Network
+latency lengthened the state; it was an application loading-state issue, not a
+Vercel-specific artifact. Crew retained its operational loading frame and needed
+no correction. Jobs and Calendar now use real loading text on opaque paper;
+no skeleton/fake data, animation, artificial delay or navigation change was added.
+
+Accepted REAL Crew Schedule and Calendar remain canonical material references;
+Jobs is now an accepted propagation preserving its own structure. Earlier AI
+mockups are not the structural or visual source of truth for future propagation.
+Preserve Jobs' dashboard/current-week model, data/realtime, calculations, search,
+filters, 25-row cap/deep links, expanded sections, dialogs, trip editing,
+navigation, host scrolling/sticky behavior, geometry and responsive breakpoints.
+No shared-theme extraction, shared-token changes or broadening of shared styles.
+No reuse/broadening of Crew selectors. Semantic status colors retain meaning.
+Retain all three accepted preview branches; acceptance is not merge authority.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 records Jobs visual acceptance/lock and the accepted Calendar loading fix.
+F63 overall remains In Progress for separately scoped and authorized follow-ups.
+All deferred F63 items remain deferred; no automatic continuation:
+- Global search, notifications, user/business account card and additional
+  functional top-shell controls. No fake placeholders were added.
+- Dimensional cyan-and-black Geometry A — Bold & Open production identity
+  assets. The hard-hat photo mark is not a standalone reusable identity asset;
+  retain existing sidebar identity and do not redraw it in CSS/code.
+- Final reference preservation, remaining authorized screen propagation and
+  launch UI standard/DOCX/brand PDF alignment; other asset/brand-package work.
+No unrelated backlog items were closed by these presentation changes.
+
+VERIFICATION
+Completed during implementation/correction, before this documentation closeout:
+- Builds passed; existing bundle-size advisory remains.
+- Jobs source/AST checks found only the route marker, import and paint hooks;
+  CSS remained Jobs-gated and paint-only. No new focused lint findings.
+- Jobs: 52 browser comparisons passed across desktop/mobile widths, filters,
+  cap/deep links, expanded panels, dialogs, trip editing/SOW scroll, material
+  picker, printed SOW, body portal, host scroll and sidebar states. Full shared
+  screen appearance/geometry comparisons passed after client navigation.
+- Jobs correction: delayed loading and route-level errors at 1440px and 390px
+  covered the content viewport in ivory; loaded .jtp radius was 14px with no
+  clipping. All 52 existing geometry/interaction comparisons passed again.
+- Calendar correction: seven checks held data pending for three seconds,
+  covering navigation from Jobs, Crew and Daily at 1440px/390px plus a Calendar
+  period refetch. Opaque ivory covered the viewport with readable loading text.
+- Calendar: 26 full computed appearance/geometry comparisons against the
+  pre-correction accepted baseline passed, including six widths, month/week,
+  both rails/tabs, filters, period controls, Show all/scrolling, dialogs and
+  sidebar. Locked Jobs and Crew were also unchanged after navigation.
+- All browser app-data requests were intercepted fixtures; zero app-data writes
+  or runtime errors. Fixture verification does not verify live data contents.
+- Chris separately reviewed the real previews and explicitly accepted Jobs
+  and the Calendar loading correction. Both exact previews above were Ready.
+This documentation-only closeout does not rerun application builds/browser tests.
+Closeout checks cover the documentation diff, branch/upstream synchronization,
+clean working tree, retained previews and unchanged local/tracking/live main.
+
+NOT TOUCHED
+This closeout: application code/CSS/JSX, assets, dependencies, data/database.
+Across the UI work: Crew implementation/accepted CSS, shared styles/tokens,
+shared components, queries/calculations, schema and assets remained unchanged.
+After Jobs acceptance, Jobs remained untouched by the Calendar correction.
+Main and production remain unchanged. No merge, promotion or production release.
+No retained accepted preview branch was deleted or merged. Unrelated historical
+branches/worktrees remain untouched; hygiene verification is not cleanup authority.
+
+NEXT SESSION POINTERS
+STOP. Await Chris's next explicit task. Orient from this handoff, BACKLOG.md and
+actual repository/branch state before any next launch-UI work. Do not resume old
+polish, deferred features, identity work or propagation automatically. All three
+accepted screens remain LOCKED. No merge, production release or branch deletion
+is authorized by this closeout. Use exact accepted commits/previews above and
+v287/v288 for the original Crew and Calendar baselines.
+
+FILES TO KNOW
+docs/BACKLOG.md — F63 acceptance/locks and deferred boundaries.
+docs/handoffs/SC_Handoff_v287.txt — accepted Crew baseline/brand boundaries.
+docs/handoffs/SC_Handoff_v288.txt — accepted loaded Calendar baseline.
+src/schedule/Jobs.css — isolated Jobs materials and loading/corner correction.
+src/schedule/Calendar.css — accepted Calendar materials and loading correction.
+src/schedule/ScheduleLayout.jsx — route markers on the existing root.
+src/schedule/views/Jobs.jsx — Jobs structure/functionality and paint fallbacks.
+src/schedule/components/StageJobCard.jsx — narrow Jobs paint fallbacks.
+src/schedule/components/CardSowModal.jsx — paint fallbacks; print independent.
+Temporary fixture checks reside under /private/tmp/check-jobs-*.mjs and
+/private/tmp/check-calendar-loading*.mjs; they are not committed test assets.
+
+GIT STATE
+Documentation-only closeout on retained ui/jobs-canonical-reskin, starting clean
+at 47738a78888048344b7677e68ac068803098f6d5, tracking origin of the same name.
+Jobs branch was created from accepted Calendar closeout
+e28565c3b2b8a9bfee2988da85b580446fcf3206, not from main.
+Accepted UI commit SHAs above remain the references after the documentation commit.
+Retained ui/calendar-canonical-reskin local/origin:
+e28565c3b2b8a9bfee2988da85b580446fcf3206
+Retained ui/crew-capacity-surface-test local/origin:
+6483984d360e37d68a3e01be21977181be00531b
+Main local/origin/live remote remains:
+b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c
+No Crew/Calendar/Jobs launch-UI work has been merged to main or released to
+production. The closeout commit only records acceptance; it grants no new work.
