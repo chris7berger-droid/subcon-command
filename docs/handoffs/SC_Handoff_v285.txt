@@ -1,0 +1,86 @@
+SC Handoff v285 — F63 full-page approved environment — 2026-09-17
+
+SESSION SUMMARY
+Chris supplied the approved standalone hard-hat construction photograph and
+authorized this preview-only F63 environmental-image iteration. No redesign.
+Supersedes v284's upper-only photo boundary and missing standalone-image status.
+All other locked decisions and deferred functional features in v284 remain.
+
+CHANGES SHIPPED
+Preview branch only: ui/crew-capacity-surface-test.
+Replaced src/schedule/assets/crew-capacity-command-bg.png with an exact copy of
+~/Downloads/ChatGPT Image Sep 17, 2026, 01_16_11 PM.png.
+1672x941 PNG, 2,236,759 bytes; SHA-256:
+05b2aa0aa3ffb6b60614e97b5afa74742aaf818a48cd87fdc59ae99c089d35b4
+Visually verified: standalone photograph with no UI/graphic overlays; golden-hour
+construction site; worker right; unbranded vest; white hard hat with dimensional
+cyan-and-black hexagonal mark and adjacent SUBCON COMMAND wordmark. Earlier
+01_13_43 image is a UI mockup; 01_13_13 has added branding graphics. Neither used.
+No re-encoding, crop, logo modification, regeneration or additional photography.
+
+src/schedule/App.css now places the photo on the existing full-height content
+column, under its compact breadcrumb, capacity glass, gaps, crew and scheduler.
+Background cover scales it to the existing box; portions may fall outside the
+box. The source image is unchanged and no space is reserved to display it.
+Removed obsolete component-photo pseudo-element and upper-only decorative layer.
+The CSS-anchor height dependency/fallback is no longer needed or present.
+Retained 24px transparent header, capacity glass, module geometry/separation,
+brown crew treatment, opaque technical-paper scheduler, semantic colors and
+existing sidebar identity. No new overflow, clipping or stacking context.
+Scoped by the Crew Schedule .sch-capacity-wrap marker; no shared-token changes.
+
+DECISIONS
+Photography creates environment. Functionality determines layout.
+Full-bleed environment may exist UNDER dense panels; recognizable photography
+must not compete WITH their data. Modules control opacity. The old rule ending
+the image before the operational region is superseded by this explicit approval.
+Preserve real application structure/functions. No JSX changes, new controls,
+global search, notifications or business/account card. Sidebar identity remains
+unchanged until a separate approved production identity asset is supplied.
+Locked tagline remains COMMAND THE WORK. / COMMAND THE MARGIN.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 remains In Progress, pending visual review; not launch-approved or merged.
+Standalone environment asset TODO completed. Final reference mockup preservation,
+separate dimensional Geometry A identity assets, deferred functional desktop
+shell work, controlled propagation and post-QA brand package remain open.
+BACKLOG updated to point here; v284 remains the locked brand-decision record.
+
+VERIFICATION
+Exact source/bundled bytes and hash verified. Build, model check and existing
+sticky-header check pass. Lint retains 176 errors / 43 warnings (pre-existing).
+Local synthetic-fixture Chrome comparison covers five widths (390, 1024, 1100,
+1440, 1920), exact module geometry, typography, semantic paints, KPI/day details,
++ Job, Actions, crew detail/off picker, search, week navigation, current-day
+state, sidebar navigation/collapse and scrolling/sticky behavior. No View Crew
+Schedule button exists on this route. Operational height remains unchanged.
+Hiding the environmental photo leaves the scheduler interior pixel-identical;
+only its existing rounded perimeter reveals the background. Readable capacity
+and crew treatments inspected in screenshots. Shared Calendar/Materials/Jobs/
+Daily checked against previous CSS. Requests intercepted; zero database writes.
+These are fixture UI checks, not claims of live authenticated data access or
+comprehensive cross-browser QA. Deployed preview verification follows the push.
+
+NOT TOUCHED
+JSX, functions, calculations/data/API/database, permissions, routing, controls,
+responsive breakpoints, sidebar identity, global theme tokens, dependencies,
+other screens, main or production. No merge or production promotion authorized.
+
+NEXT SESSION POINTERS
+Finish this iteration's preview verification, provide deployment URL/SHA, STOP
+for Chris's visual review. No propagation, extra features or further reskin.
+
+FILES TO KNOW
+src/schedule/App.css
+src/schedule/assets/crew-capacity-command-bg.png
+docs/BACKLOG.md — F63
+docs/handoffs/SC_Handoff_v284.txt — locked launch direction / remaining TODOs
+
+GIT STATE
+Starting clean HEAD c7cbf160b859ffe4a4bf636a26ca019f1d9bc96d.
+This handoff accompanies the scoped F63 environment commit on
+ui/crew-capacity-surface-test; identify its SHA with git log for this file.
+Existing preview branch alias (updates through the established Git workflow):
+https://sales-command-git-ui-crew-c-98425b-chris7berger-droids-projects.vercel.app/schedule/schedule
+Prior immutable preview and implementation SHA are recorded in v284.
+Main at start: b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c; do not modify.

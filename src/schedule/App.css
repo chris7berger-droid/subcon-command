@@ -7123,28 +7123,13 @@
   background: linear-gradient(130deg, rgba(90,73,54,0.88), rgba(55,46,37,0.94));
 }
 
-/* The decorative layer fades the full uncropped photograph into espresso.
-   Only the image is masked; no clipping, transform, or stacking context is
-   added to the bar or its controls, so fixed dialogs remain viewport-bound. */
+/* Command glass reveals the page environment without fading its contents.
+   No clipping, transform, or stacking context: fixed dialogs stay viewport-bound. */
 .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs {
   position: relative;
-  background: linear-gradient(180deg, #40372c, #322b23 45%, #211c17);
+  background: linear-gradient(180deg, rgba(64,55,44,0.80), rgba(50,43,35,0.74) 45%, rgba(33,28,23,0.92));
   box-shadow: inset 0 0 0 1px rgba(121,205,224,0.38),
     inset 0 2px rgba(243,237,224,0.10), 0 2px 5px rgba(28,24,20,0.28);
-}
-.schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 100%;
-  aspect-ratio: 2171 / 724;
-  max-width: 100%;
-  transform: translateX(-50%);
-  background: linear-gradient(rgba(40,33,26,0.48), rgba(28,24,20,0.60) 40%, rgba(28,24,20,0.90)),
-    url('./assets/crew-capacity-command-bg.png') center / contain no-repeat;
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-  pointer-events: none;
 }
 .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs > :is(.hcs-head, .hcs-body) {
   position: relative;
@@ -7312,54 +7297,33 @@
     inset 3px 0 rgba(121,205,224,0.14);
 }
 
-/* Upper Crew Schedule environment only. Size the decorative layer from the
-   responsive band plus the compact breadcrumb/gaps; stop at the work region.
-   Keep the existing treatment as a fallback in browsers without CSS anchors. */
-@supports (height: anchor-size(--crew-command-band height)) {
-  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header]) {
-    position: relative;
-    background: linear-gradient(135deg, #c3b49b, #9c876a)
-      left 24px / 100% calc(100% - 24px) no-repeat #3b3025;
-  }
-  .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap {
-    anchor-name: --crew-command-band;
-  }
-  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header])::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    /* 24px breadcrumb plus the two existing 6px mounting gaps. */
-    height: calc(anchor-size(--crew-command-band height) + 36px);
-    background: linear-gradient(180deg, rgba(28,24,20,0.68), rgba(28,24,20,0.20) 40%),
-      url('./assets/crew-capacity-command-bg.png') center / cover no-repeat,
-      #746049;
-    pointer-events: none;
-  }
-  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] {
-    position: relative;
-    height: 24px !important;
-    background: transparent !important;
-    border-bottom-color: transparent !important;
-    box-shadow: none;
-    text-shadow: 0 1px 2px #1c1814;
-  }
-  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span {
-    color: #f3ede0 !important;
-  }
-  [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span:last-child {
-    color: #79cde0 !important;
-  }
-  [data-app-content]:has(.schedule-root .sch-capacity-wrap) {
-    position: relative;
-  }
-  .schedule-root:has(.sch-capacity-wrap),
-  .schedule-root:has(.sch-capacity-wrap) .app-main {
-    background: none;
-  }
-  .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs {
-    background: linear-gradient(180deg, rgba(64,55,44,0.80), rgba(50,43,35,0.74) 45%, rgba(33,28,23,0.92));
-  }
-  .schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs::before {
-    content: none;
-  }
+/* Crew Schedule page environment. Existing content determines its dimensions;
+ opaque operational modules protect data while mounting gaps reveal the photo.
+ No CSS-anchor dependency, decorative height, or component photograph. */
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) > div:has(> [data-app-header]) {
+  position: relative;
+  background: linear-gradient(180deg, rgba(28,24,20,0.68), rgba(28,24,20,0.20) 40%),
+    url('./assets/crew-capacity-command-bg.png') center / cover no-repeat,
+    #746049;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] {
+  position: relative;
+  height: 24px !important;
+  background: transparent !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none;
+  text-shadow: 0 1px 2px #1c1814;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span {
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] > div:first-child > span:last-child {
+  color: #79cde0 !important;
+}
+[data-app-content]:has(.schedule-root .sch-capacity-wrap) {
+  position: relative;
+}
+.schedule-root:has(.sch-capacity-wrap),
+.schedule-root:has(.sch-capacity-wrap) .app-main {
+  background: none;
 }
