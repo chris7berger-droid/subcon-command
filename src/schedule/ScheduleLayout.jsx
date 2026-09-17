@@ -40,11 +40,12 @@ function flipName(n) {
 // Providers wrap the shell because the toolbar + modal handlers below consume
 // useToast, and the routed views consume useUser (host teamMember).
 export default function ScheduleLayout({ teamMember }) {
+  const { pathname } = useLocation()
   // `.schedule-root` wraps the PROVIDERS (not just the shell) so the fence also
   // covers DOM they emit as siblings of the shell — notably ToastProvider's toast
   // node — which would otherwise render outside the scope and lose all its CSS.
   return (
-    <div className="schedule-root">
+    <div className="schedule-root" data-calendar-launch={pathname.replace(/\/+$/, '') === '/schedule/calendar' ? '' : undefined}>
       <ToastProvider>
         <UserProvider teamMember={teamMember}>
           <ScheduleShell />

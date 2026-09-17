@@ -26,24 +26,25 @@ function ymdToday() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-const TEAL = '#30cfac'
-const DARK = '#1c1814'
+const TEAL = 'var(--cal-accent, #30cfac)'
+const DARK = 'var(--cal-dark, #1c1814)'
 
 const s = {
   pane: {
     width: 320, flexShrink: 0, alignSelf: 'stretch',
-    background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8,
+    background: 'var(--cal-paper, var(--bg-card))', border: '1px solid var(--cal-border, var(--border))', borderRadius: 8,
     display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    boxShadow: 'var(--cal-pane-shadow, 0 1px 3px rgba(0,0,0,0.08))',
   },
   header: {
     display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-    padding: '12px 14px', borderBottom: '1px solid var(--border)',
+    background: 'var(--cal-dark, transparent)',
+    padding: '12px 14px', borderBottom: '1px solid var(--cal-border, var(--border))',
   },
-  hTitle: { fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' },
-  hSub: { fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 },
-  close: { background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 0 },
-  tabs: { display: 'flex', gap: 4, padding: '8px 10px 0', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' },
+  hTitle: { fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, color: 'var(--cal-header-ink, var(--text-primary))' },
+  hSub: { fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--cal-header-ink, var(--text-secondary))', marginTop: 2 },
+  close: { background: 'none', border: 'none', color: 'var(--cal-accent, var(--text-light))', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 0 },
+  tabs: { display: 'flex', gap: 4, padding: '8px 10px 0', borderBottom: '1px solid var(--cal-border, var(--border))', flexWrap: 'wrap' },
   tab: (active) => ({
     padding: '5px 9px', border: 'none', cursor: 'pointer', borderRadius: '6px 6px 0 0',
     fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 11, marginBottom: -1,
@@ -53,7 +54,7 @@ const s = {
   body: { padding: 14, overflowY: 'auto', flex: 1 },
   photo: {
     height: 120, borderRadius: 8, marginBottom: 12, overflow: 'hidden',
-    border: '1px solid var(--border)',
+    border: '1px solid var(--cal-border, var(--border))',
   },
   photoImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
   field: { display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 },
@@ -67,17 +68,17 @@ const s = {
   sectionTitle: {
     fontFamily: 'var(--font-heading)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
     letterSpacing: 0.5, color: 'var(--text-secondary)', margin: '14px 0 8px',
-    borderTop: '1px solid var(--border)', paddingTop: 10,
+    borderTop: '1px solid var(--cal-border, var(--border))', paddingTop: 10,
   },
   mobRow: {
     display: 'flex', justifyContent: 'space-between', fontSize: 12,
     fontFamily: 'var(--font-body)', padding: '3px 0', color: 'var(--text-primary)',
   },
-  actions: { display: 'flex', gap: 8, padding: 12, borderTop: '1px solid var(--border)' },
+  actions: { display: 'flex', gap: 8, padding: 12, borderTop: '1px solid var(--cal-border, var(--border))' },
   actBtn: {
     flex: 1, padding: '9px 8px', cursor: 'pointer', borderRadius: 6,
     fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 12,
-    border: `1px solid ${TEAL}`, background: 'var(--bg-card)', color: 'var(--text-primary)',
+    border: `1px solid ${TEAL}`, background: 'var(--cal-paper, var(--bg-card))', color: 'var(--text-primary)',
   },
   actPrimary: { background: TEAL, color: DARK, borderColor: TEAL },
   muted: { fontFamily: 'var(--font-body)', fontSize: 12, fontStyle: 'italic', color: 'var(--text-light)' },

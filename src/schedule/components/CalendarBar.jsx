@@ -33,7 +33,7 @@ export default function CalendarBar({
         background: hexA(color, 0.55),
         border: `1px solid ${hexA(color, 0.85)}`,
         boxSizing: 'border-box',
-        color: '#fff',
+        color: 'var(--cal-ink, #fff)',
         fontSize,
         fontFamily: 'var(--font-heading)',
         fontWeight: 600,
@@ -49,7 +49,7 @@ export default function CalendarBar({
         whiteSpace: 'nowrap',
         cursor: 'pointer',
         pointerEvents: 'auto',
-        boxShadow: selected ? '0 0 0 2px var(--text-primary)' : 'none',
+        boxShadow: selected ? '0 0 0 2px var(--cal-focus, var(--text-primary))' : 'none',
       }}
     >
       {/* Job identifier as a single dark pill with teal text — the same treatment
@@ -59,7 +59,7 @@ export default function CalendarBar({
       {jobNum && (
         <span style={{
           fontFamily: 'var(--font-heading)', fontWeight: 700, letterSpacing: '0.04em',
-          color: '#30cfac', background: '#1c1814', borderRadius: 4,
+          color: 'var(--cal-accent, #30cfac)', background: 'var(--cal-dark, #1c1814)', borderRadius: 4,
           padding: '0 6px', lineHeight: `${height - 4}px`,
           flex: '0 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis',
           maxWidth: tripTitle ? '45%' : undefined,
@@ -69,7 +69,7 @@ export default function CalendarBar({
       {isPW && (
         <span style={{
           fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: Math.max(9, fontSize - 2),
-          letterSpacing: '0.04em', background: '#1c1814', color: '#30cfac',
+          letterSpacing: '0.04em', background: 'var(--cal-dark, #1c1814)', color: 'var(--cal-accent, #30cfac)',
           borderRadius: 4, padding: '0 5px', flexShrink: 0, lineHeight: `${height - 6}px`,
         }}>PW</span>
       )}

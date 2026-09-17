@@ -8,6 +8,7 @@ import { jobBlocks, buildCalendarBars } from '../lib/calendarBars'
 import CalendarBar from '../components/CalendarBar'
 import CalendarDayPane from '../components/CalendarDayPane'
 import CalendarJobPane from '../components/CalendarJobPane'
+import '../Calendar.css'
 
 /* ---------- helpers ---------- */
 
@@ -89,8 +90,8 @@ const WEEK_MAX_LANES = 10
 // Light grid lines — the token --border is near-black (#1c1814), intentionally
 // heavy for buttons/filters, but too heavy as calendar gridlines. Scope a soft
 // line color to this grid only.
-const LINE = 'rgba(28,24,20,0.12)'
-const LINE_OUTER = 'rgba(28,24,20,0.18)'
+const LINE = 'var(--cal-line, rgba(28,24,20,0.12))'
+const LINE_OUTER = 'var(--cal-border, rgba(28,24,20,0.18))'
 
 /* ---------- styles (schedule module CSS-variable convention) ---------- */
 
@@ -111,7 +112,7 @@ const styles = {
     fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 12,
     textTransform: 'uppercase', letterSpacing: 0.5, padding: '6px 13px',
     border: `1px solid ${LINE_OUTER}`, borderRadius: 4,
-    background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
+    background: 'var(--cal-control, var(--bg-card))', color: 'var(--text-secondary)', cursor: 'pointer',
   },
   monthLabel: {
     fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 22,
@@ -125,19 +126,19 @@ const styles = {
     fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 12,
     textTransform: 'uppercase', letterSpacing: 0.5, padding: '6px 15px',
     border: 'none', cursor: 'pointer',
-    background: active ? 'var(--header-dark)' : 'var(--bg-card)',
-    color: active ? 'var(--white)' : 'var(--text-secondary)',
+    background: active ? 'var(--cal-dark, var(--header-dark))' : 'var(--cal-control, var(--bg-card))',
+    color: active ? 'var(--cal-accent, var(--white))' : 'var(--text-secondary)',
   }),
   spacer: { flex: 1 },
   filter: {
     fontFamily: 'var(--font-body)', fontSize: 12, padding: '6px 9px',
     border: `1px solid ${LINE_OUTER}`, borderRadius: 4,
-    background: 'var(--bg-card)', color: 'var(--text-secondary)', cursor: 'pointer',
+    background: 'var(--cal-control, var(--bg-card))', color: 'var(--text-secondary)', cursor: 'pointer',
   },
   filterDisabled: {
     fontFamily: 'var(--font-body)', fontSize: 12, padding: '6px 9px',
     border: `1px solid ${LINE_OUTER}`, borderRadius: 4,
-    background: 'var(--bg-muted, var(--bg-card))', color: 'var(--text-light)', cursor: 'not-allowed',
+    background: 'var(--cal-muted-control, var(--bg-muted, var(--bg-card)))', color: 'var(--text-light)', cursor: 'not-allowed',
   },
   grid: {
     display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
@@ -145,18 +146,18 @@ const styles = {
     background: LINE, gap: 1,
   },
   dayHeader: {
-    background: 'var(--bg)', color: 'var(--text-light)',
+    background: 'var(--cal-dark, var(--bg))', color: 'var(--cal-header-ink, var(--text-light))',
     fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 11,
     textTransform: 'uppercase', letterSpacing: 1, textAlign: 'center', padding: '7px 0',
   },
   weekRow: { position: 'relative', display: 'grid', gap: 1, background: LINE },
   cell: {
-    background: 'var(--bg-card)', padding: 4, position: 'relative',
+    background: 'var(--cal-paper, var(--bg-card))', padding: 4, position: 'relative',
     display: 'flex', flexDirection: 'column',
   },
   cellOutside: { opacity: 0.4 },
-  cellToday: { background: 'rgba(48,207,172,0.10)' },
-  cellSelected: { boxShadow: 'inset 0 0 0 2px #30cfac' },
+  cellToday: { background: 'var(--cal-today, rgba(48,207,172,0.10))' },
+  cellSelected: { boxShadow: 'inset 0 0 0 2px var(--cal-focus, #30cfac)' },
   // Top strip of each cell: the "+N more" overflow chip (left) + day number
   // (right). Keeping the chip up here means it never gets clipped and frees a
   // full bar lane below.
@@ -167,7 +168,7 @@ const styles = {
   },
   moreChip: {
     fontFamily: 'var(--font-heading)', fontSize: 10, fontWeight: 800, letterSpacing: 0.3,
-    color: '#30cfac', background: 'var(--header-dark)', borderRadius: 4,
+    color: 'var(--cal-accent, #30cfac)', background: 'var(--cal-dark, var(--header-dark))', borderRadius: 4,
     padding: '1px 6px', cursor: 'pointer', whiteSpace: 'nowrap', pointerEvents: 'auto',
   },
   barsLayer: {
@@ -181,7 +182,7 @@ const styles = {
   },
   loading: {
     textAlign: 'center', padding: 40, fontFamily: 'var(--font-heading)', fontSize: 14,
-    color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: 1,
+    color: 'var(--cal-header-ink, var(--text-light))', textTransform: 'uppercase', letterSpacing: 1,
   },
 }
 
@@ -506,7 +507,7 @@ export default function Calendar() {
         </div>
 
         <button
-          style={{ ...styles.navBtn, ...(showAll ? { background: 'var(--header-dark)', color: 'var(--white)', borderColor: 'var(--header-dark)' } : {}) }}
+          style={{ ...styles.navBtn, ...(showAll ? { background: 'var(--cal-dark, var(--header-dark))', color: 'var(--cal-accent, var(--white))', borderColor: 'var(--cal-dark, var(--header-dark))' } : {}) }}
           onClick={() => setShowAll(s => !s)}
           title={showAll ? 'Cap busy days and fit to screen' : 'Show every job; the calendar scrolls'}
         >
@@ -548,7 +549,7 @@ export default function Calendar() {
         <div style={styles.calendarColumn}>
       {/* Day-name header — pinned while scrolling in Show-all mode so the columns
           stay labeled as tall weeks scroll past. */}
-      <div style={{ ...styles.grid, gridTemplateColumns: gridTemplate, marginBottom: 1, ...(showAll ? { position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)' } : {}) }}>
+      <div style={{ ...styles.grid, gridTemplateColumns: gridTemplate, marginBottom: 1, ...(showAll ? { position: 'sticky', top: 0, zIndex: 5, background: 'var(--cal-dark, var(--bg))' } : {}) }}>
         {(view === 'month' ? DAY_NAMES : weekCols.map(d => `${DAY_NAMES[d.getDay()]} ${d.getDate()}`)).map((dn, i) => (
           <div key={i} style={styles.dayHeader}>{dn}</div>
         ))}

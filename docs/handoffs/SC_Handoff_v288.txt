@@ -1,0 +1,82 @@
+SC Handoff v288 — Calendar canonical material propagation, awaiting preview review — 2026-09-17
+
+SESSION SUMMARY
+Chris authorized a Calendar-only material/surface propagation using the accepted
+REAL Crew Schedule (87e99ad) as the visual reference. Existing Calendar remains
+the structural and functional source of truth. Implemented on the dedicated
+preview branch created from ui/crew-capacity-surface-test at 6483984.
+
+CHANGES SHIPPED
+Calendar-only data-calendar-launch marker on the existing schedule-root, also
+present while Calendar loads. Dedicated Calendar.css scopes all selectors to
+that marker and defines only --cal-* variables. Existing Calendar inline paint
+values use these variables, with original-value fallbacks. Warm construction
+photography stays in the existing environment; opaque operational paper protects
+the calendar and detail rails. Espresso framing and cyan instrumentation use the
+accepted implementation's material language. No new DOM layout or controls.
+
+DECISIONS
+Crew Schedule remains LOCKED. Its implementation and accepted App.css are
+untouched. No shared theme extraction, shared-token overrides or broadening of
+Crew selectors. The Calendar scope is separate; no sch-capacity-wrap reuse.
+Retain Calendar's 50px host header, 300px/320px rails, existing typography,
+spacing, bar geometry, toolbar wrapping and 1100px capacity breakpoint.
+Retain current-week WeeklyCapacityBand calculations; do not substitute the
+Crew Schedule selected-week capacity model. Job/PW/status/capacity signal
+colors retain their existing meanings. No new overflow, transform, filter,
+positioning or stacking context rules. Existing placeholders remain unchanged.
+
+NEW/CLOSED BACKLOG ITEMS
+Touches F63 only for this authorized Calendar preview. No backlog item closed.
+Visual acceptance pending. Global search, notifications, new user/business
+account card, additional shell controls, Geometry A production identity work
+and other F63 follow-ups remain deferred. B92/B100/B101 are not addressed.
+
+VERIFICATION
+- npm run build passed; existing bundle-size advisory remains.
+- Calendar JSX AST comparison against 6483984: only paint declarations/constants
+  and the stylesheet import changed. Handlers, calculations and markup intact.
+- CSS parser check: every selector requires the Calendar marker; declarations
+  are paint-only and --cal-* variables. No new media queries or layout rules.
+- Focused lint comparison: four Calendar files have zero diagnostics;
+  ScheduleLayout retains its one pre-existing diagnostic, with no additions.
+- Browser baseline from actual 6483984 source: 26 state comparisons pass,
+  including 1920/1440/1100/1099/1024/390px, month/week, filters, both rails,
+  tabs, next/previous/today, Show all/scrolled state, dialogs, Actions,
+  capacity detail and collapsed sidebar. Loading marker verified separately.
+- Full computed-style/geometry comparisons pass on locked Crew after client
+  navigation and on Logistics, Daily and Jobs. Existing animations synchronized
+  for deterministic comparisons; no application animation changes.
+- All browser app-data requests intercepted; zero app-data writes/runtime errors.
+- scheduleCrew and crewStatus test files pass (2/2).
+- Git comparison confirms accepted Crew CSS, shared styles/tokens, capacity
+  components, host shell and main unchanged.
+Preview deployment status and exact URL are to be reported after this commit's
+push. Browser fixtures do not constitute live-data or user visual acceptance.
+Temporary checks: /private/tmp/check-calendar-source.mjs,
+/private/tmp/check-calendar-canonical.mjs and check-calendar-deployed.mjs.
+
+NOT TOUCHED
+Crew code/accepted CSS, shared tokens, HomeCapacityStrip/WeeklyCapacityBand,
+queries/calculations/data, schema, assets, dependencies, main and production.
+No shared-theme extraction, merge or production promotion.
+
+NEXT SESSION POINTERS
+STOP after publishing this implementation preview. Await Chris's review of the
+real Calendar before further visual changes. Crew stays locked. No automatic
+continuation of deferred work.
+
+FILES TO KNOW
+src/schedule/Calendar.css — isolated material/surface styles.
+src/schedule/ScheduleLayout.jsx — Calendar-only route marker.
+src/schedule/views/Calendar.jsx — paint hooks and stylesheet import.
+src/schedule/components/CalendarBar.jsx — bar label/selection paint hooks.
+src/schedule/components/CalendarDayPane.jsx — day-rail paint hooks.
+src/schedule/components/CalendarJobPane.jsx — job-rail paint hooks.
+docs/BACKLOG.md — F63 progress and deferred boundaries.
+
+GIT STATE
+Branch ui/calendar-canonical-reskin, based on 6483984d360e37d68a3e01be21977181be00531b.
+Commit containing this handoff publishes the implementation for preview review.
+ui/crew-capacity-surface-test remains at 6483984.
+main remains b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c.
