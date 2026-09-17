@@ -30,13 +30,17 @@ previous/next navigation; read-only overlay. All requests intercepted.
 Original vs changed source: 38px material rows, values and summary totals
 identical in all seven viewport/sidebar combinations. No API writes.
 Lint unchanged against HEAD: 23 existing errors, 2 warnings.
-Deployed preview check pending branch push.
+Deployed preview Ready, implementation deaf801:
+https://sales-command-hld2ykqvh-chris7berger-droids-projects.vercel.app
+Deployed Chrome fixture checks passed at 1920/1440/1024px: alignment,
+arrow clearance/navigation, QTY/TAX values, read-only overlay; zero writes.
+Screenshot: /private/tmp/wtc-deployed-preview.png
 
 NOT TOUCHED
 Data, pricing, schema, edge functions, production, other backlog work.
 
 NEXT SESSION POINTERS
-Check preview, obtain acceptance before merge. Do not resume old work.
+Obtain preview acceptance before merge. Do not resume old work.
 
 FILES TO KNOW
 src/pages/WTCCalculator.jsx — sole implementation file.
@@ -46,4 +50,5 @@ Screenshots/metrics: /private/tmp/wtc-{before,after}-*
 
 GIT STATE
 Branch fix/wtc-desktop-width, based on main f3e2a65.
-Chris authorized commit/push; review branch, no production release.
+Implementation deaf801 pushed. Draft PR #65, no production release.
+https://github.com/chris7berger-droid/subcon-command/pull/65
