@@ -604,7 +604,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
     <td style={{ ...td, width: w }}>
       <input type={type} value={item[key] ?? ""} placeholder={type === "number" ? "0" : ""}
         onChange={e => updateItem(item.id, key, e.target.value)}
-        style={{ width: "100%", border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "5px 6px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: "#bfb3a1" }}
+        style={{ width: "100%", minWidth: key === "qty" || key === "tax" ? 80 : undefined, border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "5px 6px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: "#bfb3a1" }}
         onFocus={e => e.target.style.borderColor = T.green}
         onBlur={e => e.target.style.borderColor = T.gray200} />
     </td>
@@ -625,7 +625,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
       {items.length > 0 && (
         <>
           <div style={{ overflowX: "auto", marginBottom: 16 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1000 }}>
               <thead>
                 <tr style={{ background: T.gray50 }}>
                   {["Product", "Kit Size", "Coverage Rate", "Supplier", "$/Unit", "Qty", "Tax %", "Freight", "Markup %", "Total", ""].map(h => (
@@ -641,15 +641,15 @@ function MaterialsTab({ items, taxRate, onChange }) {
                   return (
                   <Fragment key={item.id}>
                   <tr style={{ borderBottom: specsOpen ? "none" : `1px solid ${T.gray100}`, background: rowBg }}>
-                    {cellInput(item, "product", "text", 130)}
+                    {cellInput(item, "product", "text", 160)}
                     {cellInput(item, "kit_size", "text", 80)}
-                    {cellInput(item, "coverage_rate", "text", 90)}
-                    {cellInput(item, "supplier", "text", 80)}
+                    {cellInput(item, "coverage_rate", "text", 100)}
+                    {cellInput(item, "supplier", "text", 100)}
                     {cellInput(item, "price_per_unit", "number", 90)}
-                    {cellInput(item, "qty", "number", 65)}
-                    {cellInput(item, "tax", "number", 65)}
-                    {cellInput(item, "freight", "number", 65)}
-                    {cellInput(item, "markup_pct", "number", 65)}
+                    {cellInput(item, "qty", "number", 90)}
+                    {cellInput(item, "tax", "number", 90)}
+                    {cellInput(item, "freight", "number", 75)}
+                    {cellInput(item, "markup_pct", "number", 80)}
                     <td style={{ ...td, fontWeight: 700, color: T.greenDark, width: 90, fontSize: 13 }}>{fmt(totals[idx])}</td>
                     <td style={{ ...td, width: 32, whiteSpace: "nowrap" }}>
                       <button
@@ -2479,20 +2479,22 @@ export default function WTCCalculator({ proposalId, wtcId: wtcIdProp, workTypeId
   const printSqftPrice = (sow.size || 0) > 0 ? printProposalPrice / sow.size : 0;
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: T.gray50, display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Fixed nav arrows — pinned just outside the content card */}
+    <div style={{ fontFamily: "'Inter', sans-serif", background: T.gray50, display: "flex", flexDirection: "column", height: "100%", position: "relative", containerType: "inline-size" }}>
+      {/* Side gutters track the shared content width; compact layouts get a nav row. */}
+      <div data-wtc-no-print className="wtc-nav">
       {idx > 0 && (
         <button data-wtc-no-print onClick={() => setTab(tabs[idx - 1])}
-          style={{ position: "fixed", top: "50%", left: "calc(50% + 90px - 520px)", transform: "translateY(-50%)", zIndex: 50, width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.green}`, background: T.dark, color: T.green, fontSize: 18, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0, lineHeight: 1, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}>
+          style={{ position: "absolute", top: "50%", left: "max(12px, calc(50% - 760px))", transform: "translateY(-50%)", pointerEvents: "auto", zIndex: 50, width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.green}`, background: T.dark, color: T.green, fontSize: 18, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0, lineHeight: 1, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}>
           ←
         </button>
       )}
       {idx < tabs.length - 1 && (
         <button data-wtc-no-print onClick={() => setTab(tabs[idx + 1])}
-          style={{ position: "fixed", top: "50%", left: "calc(50% + 90px + 490px)", transform: "translateY(-50%)", zIndex: 50, width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.green}`, background: T.green, color: T.dark, fontSize: 18, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0, lineHeight: 1, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}>
+          style={{ position: "absolute", top: "50%", right: "max(12px, calc(50% - 760px))", transform: "translateY(-50%)", pointerEvents: "auto", zIndex: 50, width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.green}`, background: T.green, color: T.dark, fontSize: 18, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0, lineHeight: 1, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}>
           →
         </button>
       )}
+      </div>
       {/* Print stylesheet */}
       <style>{`
         @media print {
@@ -2509,6 +2511,13 @@ export default function WTCCalculator({ proposalId, wtcId: wtcIdProp, workTypeId
         }
         @media screen {
           [data-wtc-print-only] { display: none !important; }
+          .wtc-nav { position: absolute; inset: 0; pointer-events: none; z-index: 50; }
+          .wtc-content { width: calc(100% - 144px); max-width: 1400px; margin: 0 auto; padding: 28px 0; }
+          @container (max-width: 900px) {
+            .wtc-nav { position: relative; inset: auto; order: 1; height: 60px; flex-shrink: 0; }
+            .wtc-scroll { order: 2; }
+            .wtc-content { width: calc(100% - 40px); }
+          }
         }
       `}</style>
 
@@ -2545,8 +2554,8 @@ export default function WTCCalculator({ proposalId, wtcId: wtcIdProp, workTypeId
       </div>
 
       {/* Content area */}
-      <div data-wtc-no-print style={{ flex: 1, overflowY: "auto", paddingBottom: 60 }}>
-      <div style={{ maxWidth: 940, margin: "0 auto", padding: "28px 20px" }}>
+      <div data-wtc-no-print className="wtc-scroll" style={{ flex: 1, overflowY: "auto", paddingBottom: 60 }}>
+      <div className="wtc-content">
         {(locked || isCommitted) && tab !== "summary" && !(isCommitted && tab === "sow") && (
           <div style={{ background: "#FFF8E1", border: "1px solid #F59E0B", borderRadius: 10, padding: "14px 20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 20 }}>🔒</span>
