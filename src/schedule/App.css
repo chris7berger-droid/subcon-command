@@ -7087,3 +7087,181 @@
 /* Week navigation retains the complete previous snapshot while fetching. */
 .sch-wknav-steady { position: relative; margin-bottom: 28px; }
 .sch-week-progress { position: absolute; left: 0; bottom: -21px; color: var(--text-primary); font-size: 12px; }
+
+/* Crew Schedule preview reskin. The existing desktop marker also scopes the
+   host shell; no shared tokens, geometry, fonts, or scroll containers change.
+   !important is limited to overriding the host shell's inline paint styles. */
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) {
+  background: linear-gradient(120deg, rgba(59,47,36,0.74), rgba(113,92,67,0.60)),
+    url('./assets/crew-capacity-command-bg.png') center top / contain no-repeat,
+    #6b5944 !important;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] {
+  background: linear-gradient(160deg, rgba(53,44,35,0.94), rgba(30,27,24,0.97)) !important;
+  border-right-color: rgba(219,200,169,0.22) !important;
+  box-shadow: inset -1px 0 rgba(28,24,20,0.40);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] button {
+  color: #bfb3a1 !important;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] button:hover {
+  background: rgba(231,222,203,0.07) !important;
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] button[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06)) !important;
+  color: #79cde0 !important;
+  border-left-color: #79cde0 !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.12);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-header] {
+  background: linear-gradient(100deg, #dbcfba, #bfb09a) !important;
+  border-bottom-color: rgba(53,44,35,0.32) !important;
+  box-shadow: inset 0 -1px rgba(243,237,224,0.24);
+}
+.schedule-root:has(.sch-capacity-wrap) {
+  background: linear-gradient(130deg, rgba(90,73,54,0.88), rgba(55,46,37,0.94));
+}
+
+/* The decorative layer fades the full uncropped photograph into espresso.
+   Only the image is masked; no clipping, transform, or stacking context is
+   added to the bar or its controls, so fixed dialogs remain viewport-bound. */
+.schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs {
+  position: relative;
+  background: linear-gradient(180deg, #40372c, #322b23 45%, #211c17);
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.38),
+    inset 0 2px rgba(243,237,224,0.10), 0 2px 5px rgba(28,24,20,0.28);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  aspect-ratio: 2171 / 724;
+  max-width: 100%;
+  transform: translateX(-50%);
+  background: linear-gradient(rgba(40,33,26,0.48), rgba(28,24,20,0.60) 40%, rgba(28,24,20,0.90)),
+    url('./assets/crew-capacity-command-bg.png') center / contain no-repeat;
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  pointer-events: none;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs > :is(.hcs-head, .hcs-body) {
+  position: relative;
+}
+.schedule-root:has(.sch-capacity-wrap) .hcs-head-actions .app-act-primary {
+  background: #79cde0;
+  border-color: #79cde0;
+  color: #1c1814;
+}
+.schedule-root:has(.sch-capacity-wrap) .hcs-head-actions .app-act-primary:hover {
+  background: #a0dfec;
+}
+.schedule-root:has(.sch-capacity-wrap) .hcs-view-btn {
+  color: #79cde0;
+  border-color: #79cde0;
+}
+.schedule-root:has(.sch-capacity-wrap) .hcs-day-today {
+  background: rgba(121,205,224,0.12);
+}
+.schedule-root:has(.sch-capacity-wrap) .hcs-day-today-tag {
+  color: #79cde0;
+}
+
+/* Material frame around opaque roster rows: no photograph behind names/data. */
+.schedule-root:has(.sch-capacity-wrap) .sch-pool {
+  background: linear-gradient(150deg, rgba(76,61,46,0.96), rgba(44,37,30,0.98));
+  border-right-color: rgba(221,201,168,0.28);
+  box-shadow: inset -1px 0 rgba(28,24,20,0.30);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-ptitle {
+  color: #f3ede0;
+  border-bottom-color: rgba(221,201,168,0.24);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-legend {
+  color: #dbcfba;
+  border-bottom-color: rgba(221,201,168,0.18);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-tlbl {
+  color: #cbbba2;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-chip:not(.sch-chip-db) {
+  background: #3a322a;
+  border-color: #675845;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-chip:hover:not(.sch-chip-db) {
+  background: #4b4034;
+  border-color: #79cde0;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-chip-db {
+  background: linear-gradient(90deg, #39402a, #3a322a 40%);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-chip-name {
+  color: #f3ede0;
+}
+.schedule-root:has(.sch-capacity-wrap) :is(.sch-crew-days-lbl, .sch-crew-day-letter, .sch-chip-status) {
+  color: #d0c1aa;
+}
+
+/* Opaque technical paper. Grid/category/status paints keep their meanings. */
+.schedule-root:has(.sch-capacity-wrap) .sch-main {
+  background: #e5dac5;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-wknav {
+  background: linear-gradient(105deg, #f0e7d6, #e0d3bc);
+  border-color: #b9a78b;
+  box-shadow: inset 0 1px rgba(255,248,229,0.65);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-wknav .sch-btn {
+  background: #eae0cd;
+  border-color: #baaa90;
+  color: #30281f;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-wknav .sch-btn:hover {
+  background: #d9e5df;
+  border-color: #367d8d;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-wknav .sch-btn:focus-visible {
+  outline: 2px solid #367d8d;
+  outline-offset: 2px;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-job-count {
+  color: #534532;
+  border-bottom-color: #bdad92;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-brd {
+  background: #f2eada;
+  border-color: #b5a183;
+  box-shadow: 0 2px 6px rgba(61,47,31,0.14);
+}
+.schedule-root:has(.sch-capacity-wrap) :is(.sch-brd-hdr-row, .sch-brd-hdr-job, .sch-brd-hdr) {
+  background: #302a23;
+  border-bottom-color: #655744;
+}
+.schedule-root:has(.sch-capacity-wrap) :is(.sch-brd-hdr-job, .sch-brd-hdr-day, .sch-brd-hdr-date) {
+  color: #d9cbb3;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-brd-hdr-today,
+.schedule-root:has(.sch-capacity-wrap) .sch-brd-hdr-today :is(.sch-brd-hdr-day, .sch-brd-hdr-date) {
+  color: #79cde0;
+  background: #283b3b;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-brd-cell.sch-brd-today {
+  background: #e1e9df;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-brd-cell.sch-brd-drop {
+  background: rgba(91,189,63,0.15);
+  border-color: var(--command-green);
+}
+.schedule-root:has(.sch-capacity-wrap) :is(.sch-brd-job-label, .sch-brd-cell):not(.sch-brd-drop) {
+  border-color: rgba(100,78,48,0.18);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-brd-job-label:hover {
+  background: #e8ddc6;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:first-child svg [stroke] {
+  stroke: #79cde0;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:first-child span {
+  color: #79cde0 !important;
+}
