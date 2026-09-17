@@ -7265,3 +7265,49 @@
 [data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:first-child span {
   color: #79cde0 !important;
 }
+
+/* Crew Schedule module separation: six-pixel mounting gaps, existing scrollers.
+   Keep the approved mark; polish only its existing brand plate and wordmark. */
+.schedule-root:has(.sch-capacity-wrap) .app-main {
+  padding: 6px;
+  gap: 6px;
+  background: linear-gradient(135deg, #c3b49b, #9c876a);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-wrap {
+  gap: 6px;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-capacity-wrap > .hcs {
+  border-radius: 8px;
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-pool {
+  border-radius: 8px;
+  border-right-color: transparent;
+  box-shadow: inset 0 0 0 1px rgba(221,201,168,0.30),
+    inset 0 2px rgba(243,237,224,0.06), 0 2px 3px rgba(28,24,20,0.18);
+}
+.schedule-root:has(.sch-capacity-wrap) .sch-main {
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px #b5a183,
+    inset 0 2px rgba(255,248,229,0.55), 0 2px 3px rgba(28,24,20,0.16);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] {
+  box-shadow: inset -1px 0 rgba(221,201,168,0.20),
+    inset 0 2px rgba(121,205,224,0.26);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:first-child {
+  background: linear-gradient(120deg, rgba(121,205,224,0.10), rgba(28,24,20,0.24));
+  border-bottom-color: rgba(219,200,169,0.28) !important;
+  box-shadow: inset 0 2px rgba(121,205,224,0.32);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:first-child > div:nth-child(2) > div {
+  font-size: 16px !important;
+  text-shadow: 0 1px 1px rgba(28,24,20,0.60);
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] > div:last-child {
+  border-top-color: rgba(219,200,169,0.24) !important;
+}
+[data-app-shell]:has(.schedule-root .sch-capacity-wrap) [data-app-sidebar] button[aria-current="page"] {
+  border-radius: 5px !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.24),
+    inset 3px 0 rgba(121,205,224,0.14);
+}
