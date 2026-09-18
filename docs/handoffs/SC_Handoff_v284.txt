@@ -1,0 +1,56 @@
+SC Handoff v284 — Archive-history Crew Schedule roster — 2026-09-18
+
+SESSION SUMMARY
+Archiving a crew member was shrinking prior-day Weekly Crew Capacity because
+the board used today's active roster. Chris accepted the preview
+(Thu 9/17 = 21/21, Fri 9/18 = 19/19). PR #66 squash-merged to main.
+Production deployment Ready. Bugbot skipped by Chris.
+
+CHANGES SHIPPED
+Crew Schedule reconstructs each day's roster from crew.archived_on:
+before archived_on included; on archived_on only with assignment or
+crew_status that day; after archived_on excluded. Current/future roster
+still excludes archived crew. New archives stamp archived_on = today;
+unarchive clears it.
+
+Locked backfill (applied live, command-suite-db 20260918120000):
+Little, Adam 2026-09-17; Jose 2026-09-17; Ary, Jesse 2026-09-18.
+
+App merge: 28b22fa5376dd2db161d6f7dc10dfff0fb91e1b0 (#66).
+
+DECISIONS
+Historical assignments/jobs were not deleted. Thursday 9/17 assignments
+intact. Job 10088 / time-clock discrepancy is operational data, out of
+scope. Do not hard-code capacity counts.
+
+NEW/CLOSED BACKLOG ITEMS
+Archive-history (crew.archived_on) closed with PR #66 / 28b22fa.
+No other backlog work resumed. IDENT-4 remains In Progress.
+
+VERIFICATION
+scheduleCrew + crewEligibility tests passed before commit, after DB apply,
+and on main after merge. Chris visual acceptance on Sep 14–19 Crew
+Schedule: Thu 9/17 21/21, Fri 9/18 19/19; historical job/assignment cells
+intact. Production dpl_BMB9PkHusmyud746ZTBvumESGgbQ Ready; aliased to
+www.scmybiz.com / scmybiz.com.
+
+NOT TOUCHED
+Jobs, assignments, 10088, other Schedule counters, IDENT-4, Bugbot.
+
+NEXT SESSION POINTERS
+command-suite-db migration is live. File is on origin/feat/crew-archived-on
+(f4d32f5) and not yet merged to command-suite-db main — land that PR so
+the next db:push ledger check matches prod. Do not re-apply the backfill.
+
+FILES TO KNOW
+src/schedule/lib/scheduleCrew.js
+src/schedule/lib/crewScheduleRows.js
+src/schedule/views/Schedule.jsx
+src/lib/crewEligibility.js
+command-suite-db supabase/migrations/20260918120000_crew_archived_on.sql
+
+GIT STATE
+PR #66 merged: 28b22fa5376dd2db161d6f7dc10dfff0fb91e1b0.
+Local checkout sales-command main. Feature branch
+fix/crew-archive-effective-date removed.
+This handoff and backlog closure accompany a documentation-only commit.
