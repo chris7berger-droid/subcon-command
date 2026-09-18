@@ -1,0 +1,102 @@
+SC Handoff v294 — Daily modal attempt rejected; documentation closeout — 2026-09-18
+
+SESSION SUMMARY
+
+This is a documentation-only session closeout. Chris rejected the Daily
+modal-material revision after visual review. The accepted Daily dark-module page
+treatment remains LOCKED at `8e50f1c7205fcc4418814e6a3d7baf1d582af8be`.
+The rejected attempt is retained at `87ad02ca1c244f472df2fb197222a86011fec6db`
+on `ui/daily-dark-modules-revision` for the next session to inspect. It is not a
+new Daily baseline. No application files were changed in this closeout; only
+BACKLOG.md and this handoff are updated.
+
+CHANGES SHIPPED
+
+- Added an explicit BACKLOG entry recording the rejected Daily modal-material
+  attempt, its exact commit, the accepted baseline, and the requirement for a
+  future explicit correction authorization.
+- Recorded the Schedules implementation and preview state. Commit
+  `6275fe2a53e49be698e07f98b85e95693507f690` on
+  `ui/schedules-canonical-reskin` built and previewed successfully and Chris
+  likes the screen as a distinct Schedule Command workflow, but no final
+  acceptance/LOCK is recorded here.
+- Created this handoff. No merge, revert, branch deletion, production action or
+  application-code change occurred.
+
+DECISIONS
+
+- Daily's accepted canonical baseline is exactly
+  `8e50f1c7205fcc4418814e6a3d7baf1d582af8be`; preserve it as the LOCKED
+  reference. Do not describe rejected commit `87ad02c` as accepted and do not
+  automatically revert it.
+- Home, Jobs, Crew Schedule, Calendar, Daily and Production Rate remain accepted
+  and LOCKED. Logistics remains sidebar-hidden while its route/code is retained.
+- Schedules remains a distinct Schedule Command communication/preparation
+  workflow. Its implementation is previewed and liked, but not formally locked
+  by this handoff. Import remains future propagation work.
+- Finance / Billing remains reserved for a dedicated redesign. F63-PERF,
+  F63-PRT-AUDIT, secondary surfaces and all other existing deferrals remain
+  deferred.
+- The next Daily session must inspect the rejected modal state before proposing
+  any correction. No further UI work is authorized by this closeout.
+
+NEW/CLOSED BACKLOG ITEMS
+
+- Added the rejected Daily modal-material attempt and pending-correction note to
+  the top of `docs/BACKLOG.md`.
+- Added the Schedules preview/status note without inventing acceptance or a lock.
+- No existing deferred item was closed or reopened.
+
+VERIFICATION
+
+- Documentation diff reviewed; application source remains unchanged by this
+  closeout.
+- Current Daily branch was clean and synchronized before the documentation
+  commit. Final clean/synchronization checks are required after push.
+- Main remains unchanged at the SHA recorded in the final closeout report.
+- Retained Daily, Schedules and other accepted/reference branches were not
+  deleted, merged, reverted or rewritten.
+
+NOT TOUCHED
+
+No application code, CSS, JSX, assets, dependencies, queries, database, shared
+styles, production deployment or branch history was changed. No Daily modal
+fix, Schedules follow-up, Import propagation, Finance/Billing redesign,
+F63-PERF audit, Production Rate calculation audit or unrelated polish was done.
+
+NEXT SESSION POINTERS
+
+Start from the actual repository and read this handoff plus `docs/BACKLOG.md`.
+The current branch intentionally retains rejected Daily attempt `87ad02c`; the
+accepted Daily visual baseline is `8e50f1c`. Inspect before acting and obtain
+explicit authorization before changing Daily. Do not infer Schedules final
+acceptance from the preview; it remains a distinct workflow and is not recorded
+as LOCKED here. Import is the next future propagation target. Preserve the
+sidebar-hidden Logistics decision and all deferrals. No automatic continuation.
+
+FILES TO KNOW
+
+- `docs/BACKLOG.md` — accepted/rejected Daily state, Schedules status and
+  deferred work.
+- `docs/handoffs/SC_Handoff_v293.txt` — prior accepted Daily dark-module
+  closeout and canonical baseline context.
+- `src/schedule/Daily.css` — contains the rejected modal-material attempt on the
+  current branch; inspect against accepted commit `8e50f1c` before any future
+  correction.
+- `src/schedule/views/Daily.jsx` — Daily structure and functionality source of
+  truth; unchanged by this closeout.
+- `src/schedule/ScheduleLayout.jsx` — shared Schedule shell and route markers;
+  unchanged by this closeout.
+
+GIT STATE
+
+Documentation-only closeout branch: `ui/daily-dark-modules-revision`.
+Before this closeout it was at rejected attempt
+`87ad02ca1c244f472df2fb197222a86011fec6db`, tracking
+`origin/ui/daily-dark-modules-revision` with zero divergence. The closeout
+commit is the only newer commit and contains only BACKLOG/handoff updates.
+Main remains unchanged and no branch was created, merged, reverted or deleted.
+Schedules implementation/reference branch remains retained at
+`6275fe2a53e49be698e07f98b85e95693507f690`.
+
+SAFE TO CLOSE after the final commit/push and hygiene report.
