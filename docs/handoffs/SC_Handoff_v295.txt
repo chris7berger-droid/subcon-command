@@ -1,0 +1,118 @@
+SC Handoff v295 — Daily + Schedules F63 checkpoint; consolidated accepted branch — 2026-09-18
+
+SESSION SUMMARY
+
+Documentation-only F63 checkpoint. Chris visually accepted the Daily
+canonical correction and the Schedules implementation. This closeout records
+those locks and the consolidated accepted branch. No application files are
+changed here; only BACKLOG.md and this handoff are updated.
+
+Daily canonical is `28b500a49034e79e371a80e5f1f4be097ac5807a` on retained
+`ui/daily-dark-modules-revision`. Ordinary Daily job cards use accepted Jobs
+sand `#e5dac5` with `var(--daily-ink)`. PW cards retain the existing
+dark/purple treatment. Rejected Daily modal-material attempt
+`87ad02ca1c244f472df2fb197222a86011fec6db` remains non-canonical.
+
+Schedules canonical is `6275fe2a53e49be698e07f98b85e95693507f690` on retained
+`ui/schedules-canonical-reskin`. Exact accepted preview:
+https://sales-command-nga627wqg-chris7berger-droids-projects.vercel.app/schedule/schedules
+Deployment `dpl_6jKKDzsCFBBgbwGMnLSpCEBwJeNi` (Ready).
+
+Consolidated accepted branch is `ui/f63-accepted-daily-schedules` at merge
+`32749bb6eea74f52c3f7d389af2c76560d59e171` (first parent Daily `28b500a`,
+second parent Schedules `6275fe2`). Both source lock branches remain retained
+and unchanged. Nothing is merged to main or production.
+
+CHANGES SHIPPED
+
+- Recorded Daily `28b500a` as the current Daily canonical lock: ordinary
+  cards = Jobs sand; PW remains dark/purple; dialogs remain Jobs-aligned
+  paper / 0.60 overlay.
+- Recorded rejected Daily attempt `87ad02c` as non-canonical.
+- Recorded Schedules `6275fe2` as visually accepted / LOCKED with its Ready
+  preview and deployment id.
+- Recorded consolidated branch `ui/f63-accepted-daily-schedules` at merge
+  `32749bb`.
+- Created this handoff. No merge to main, production release, source-branch
+  rewrite or application-code change occurred in this closeout.
+
+DECISIONS
+
+- Daily canonical is exactly `28b500a`. Ordinary `.dly-card:not(.dly-card-pw)`
+  is Jobs sand `#e5dac5` with `--daily-ink`. `.dly-card-pw` keeps the existing
+  dark/purple PW treatment. Do not reopen Daily or Schedules for design review.
+- Rejected attempt `87ad02c` remains non-canonical. Do not describe it as
+  accepted.
+- Schedules canonical is exactly `6275fe2`. Preserve its communication /
+  preparation purpose. No additional Schedules visual polish.
+- Consolidated F63 accepted state is `ui/f63-accepted-daily-schedules` at
+  `32749bb`. Retain `ui/daily-dark-modules-revision` at `28b500a` and
+  `ui/schedules-canonical-reskin` at `6275fe2`.
+- Home, Jobs, Crew Schedule, Calendar and Production Rate remain accepted and
+  LOCKED. Logistics remains sidebar-hidden while its route/code is retained.
+- Import remains the next future propagation target. Finance / Billing remains
+  reserved for a dedicated redesign. F63-PERF, F63-PRT-AUDIT, secondary
+  surfaces and all other existing deferrals remain deferred.
+- Acceptance is not merge or production-release authority. Main is unchanged.
+
+NEW/CLOSED BACKLOG ITEMS
+
+- Added the 2026-09-18 Daily + Schedules checkpoint lock to the top of
+  `docs/BACKLOG.md`.
+- Updated the rejected Daily modal note so `87ad02c` remains non-canonical
+  and points at Daily canonical `28b500a`.
+- Replaced the Schedules previewed/not-locked note with visual acceptance /
+  LOCK at `6275fe2`.
+- Updated the F63 table row to seven accepted implementations (Schedules
+  added) and recorded the consolidated merge. F63 remains In Progress for
+  remaining separately authorized work.
+- No deferred item was closed or reopened.
+
+VERIFICATION
+
+- Documentation-only closeout. Application source is unchanged by this
+  commit.
+- Merge `32749bb` already verified: no conflicts; Daily.css matches `28b500a`;
+  Schedules.css and ScheduleLayout.jsx match `6275fe2`.
+- Source lock branches remain `28b500a` and `6275fe2` locally and on origin.
+- Consolidated branch is on origin at `32749bb`. Main remains unchanged.
+
+NOT TOUCHED
+
+No application code, CSS, JSX, assets, dependencies, queries or database.
+No additional Daily or Schedules visual polish. No Import propagation,
+Finance / Billing redesign, F63-PERF audit, Production Rate calculation
+audit, merge to main or production release. Source lock branches were not
+moved, deleted or rewritten.
+
+NEXT SESSION POINTERS
+
+Start from `ui/f63-accepted-daily-schedules` at `32749bb` unless Chris names
+another branch. Read this handoff plus `docs/BACKLOG.md`. Daily canonical is
+`28b500a`; Schedules canonical is `6275fe2`; rejected `87ad02c` is not a
+baseline. Import is the next future propagation target. Preserve sidebar-
+hidden Logistics and all deferrals. Do not reopen locked screens. No
+automatic continuation. Await Chris's next explicit task.
+
+FILES TO KNOW
+
+- `docs/BACKLOG.md` — current Daily / Schedules locks, consolidated branch
+  and deferred work.
+- `docs/handoffs/SC_Handoff_v294.txt` — prior rejected-modal documentation.
+- `src/schedule/Daily.css` — accepted ordinary-card sand + PW dark treatment
+  at `28b500a`.
+- `src/schedule/Schedules.css` — accepted Schedules materials at `6275fe2`.
+- `src/schedule/ScheduleLayout.jsx` — Schedules route marker/import from
+  `6275fe2`.
+
+GIT STATE
+
+Documentation closeout branch: `ui/f63-accepted-daily-schedules`.
+Pre-docs HEAD is merge `32749bb6eea74f52c3f7d389af2c76560d59e171`, tracking
+`origin/ui/f63-accepted-daily-schedules`. Source locks remain:
+`ui/daily-dark-modules-revision` = `28b500a49034e79e371a80e5f1f4be097ac5807a`
+`ui/schedules-canonical-reskin` = `6275fe2a53e49be698e07f98b85e95693507f690`
+Main remains `b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c`. No application
+merge to main or production release.
+
+SAFE TO CLOSE after the documentation commit/push and hygiene report.
