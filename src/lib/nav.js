@@ -27,7 +27,7 @@ export const GROUPS = [
     { id: "schedule",       label: "Crew Schedule",   path: "/schedule/schedule",        icon: "👷" }, // literal /schedule/schedule (§2a) — harmless
     { id: "calendar",       label: "Calendar",        path: "/schedule/calendar",        icon: "📅" },
     { id: "daily",          label: "Daily",           path: "/schedule/daily",           icon: "📆" },
-    { id: "materials",      label: "Logistics",       path: "/schedule/materials",       icon: "🚚" }, // label/path mismatch (§2a)
+    { id: "materials",      label: "Logistics",       path: "/schedule/materials",       icon: "🚚", sidebarHidden: true }, // retained for direct navigation and breadcrumb resolution
     { id: "billing",        label: "Finance / Billing", path: "/schedule/billing",       icon: "💵" },
     { id: "production-rate",label: "Production Rate",  path: "/schedule/production-rate", icon: "📈" },
     { id: "schedules",      label: "Schedules",       path: "/schedule/schedules",       icon: "📇" },
@@ -62,7 +62,7 @@ export function groupVisible(group, { tenantApps, memberApps }) {
 }
 
 export const itemVisible = (item, role, cfg) =>
-  (!item.roles || item.roles.includes(role)) && (!item.flag || cfg[item.flag]);
+  !item.sidebarHidden && (!item.roles || item.roles.includes(role)) && (!item.flag || cfg[item.flag]);
 
 // Top of the list (above the groups) and bottom (below):
 export const SUBCON_HOME = { id: "subcon-home", label: "Home", path: "/", icon: "◈" };
