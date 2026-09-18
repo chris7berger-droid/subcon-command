@@ -2,6 +2,7 @@
    signals; these overrides change paint without redefining its semantic tokens. */
 .schedule-root[data-daily-launch] {
   --daily-paper: #f2eada;
+  --daily-modal-sand: #e5dac5;
   --daily-control: #eae0cd;
   --daily-ink: #30281f;
   --daily-muted: #cbbda8;
@@ -181,15 +182,22 @@
   color: var(--daily-accent);
 }
 .schedule-root[data-daily-launch] :is(.mdl, .sch-modal) {
-  background: var(--daily-paper);
+  background: var(--daily-modal-sand);
+  color: var(--daily-ink);
   border-color: var(--daily-border);
   box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
 }
 .schedule-root[data-daily-launch] :is(.mbg, .sch-modal-overlay) {
-  background: rgba(28,24,20,0.60);
+  background: rgba(28,24,20,0.72);
 }
 .schedule-root[data-daily-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: var(--daily-control);
+}
+.schedule-root[data-daily-launch] :is(.mwt-row, .mcl-tbl, .mcl-inp) {
+  background: var(--daily-paper);
+}
+.schedule-root[data-daily-launch] .sch-modal-day:not(.sch-modal-day-on) {
+  background: var(--daily-paper);
 }
 .schedule-root[data-daily-launch] :is(.dly-btn, .app-act-btn, .hcs-view-btn):focus-visible {
   outline: 2px solid var(--daily-focus);
