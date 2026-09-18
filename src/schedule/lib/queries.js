@@ -1,7 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { STATUS_OPTIONS_PICKER, getJobStatus } from './jobStatus'
 import { rollupSowMaterials, coverageStatusFor } from './sowMaterials'
-import { activeScheduleCrew } from './scheduleCrew.js'
+import { scheduleCrewOnDate } from './scheduleCrew.js'
 
 // ── Paginating loader ──────────────────────────────────────────────────────
 // PostgREST caps at 1000 rows. This helper pages through with .range().
@@ -1810,10 +1810,8 @@ export function computeHomeDashboard({
   // screen omits them (safe defaults), so this stays one canonical function.
   prtMap = new Map(), mobsByJobId = {},
 }) {
-  // Roster counts (Crew Available, per-day capacity denominators) must reflect
-  // ACTIVE scheduling choices only. Linked crew follow Team archived; legacy
-  // unlinked crew keep the existing boolean archived filter.
-  crew = activeScheduleCrew(crew)
+  // Per-date roster so archiving someone today cannot shrink prior-day headcount.
+  const history = { assignments: weekAssignments, statusMap: crewStatusMap }
 
   const crewByWeek = buildCrewByCallLog(jobs, weekAssignments)
   const crewByAll = buildCrewByCallLog(jobs, allAssignments)
@@ -1846,7 +1844,8 @@ export function computeHomeDashboard({
     let out = 0, assigned = 0
     // detail lists so the capacity strip can show WHO is free / allocated / off on day-click
     const availableList = [], assignedList = [], outList = []
-    for (const c of crew) {
+    const dayCrew = scheduleCrewOnDate(crew, d, history)
+    for (const c of dayCrew) {
       const st = getCSt(c.name, d)
       if (st !== 'available') { out++; outList.push({ name: c.name, status: st }) }
       else if (asgKey.has(c.name + '|' + d)) {
@@ -1855,14 +1854,15 @@ export function computeHomeDashboard({
         for (const a of asgns) assignedList.push({ name: c.name, job: jobById[String(a.job_id)] || null })
       } else availableList.push({ name: c.name })
     }
-    const avail = crew.length - out
+    const avail = dayCrew.length - out
     const free = availableList.length            // not off AND not assigned = deployable today
     const pct = avail > 0 ? Math.round((assigned / avail) * 100) : 0
     return { date: d, assigned, avail, free, out, pct, isToday: d === todayStr,
       detail: { available: availableList, assigned: assignedList, out: outList } }
   })
 
-  const crewAvailable = crew.length
+  const todayCrew = scheduleCrewOnDate(crew, todayStr, history)
+  const crewAvailable = todayCrew.length
   // §11 B3: distinct crew assigned this week (a crew on 2 jobs must not double-count).
   const assignedCount = new Set(weekAssignments.map(a => a.crew_name).filter(Boolean)).size
   // §11: Σ shortfall over this-week scheduling jobs.

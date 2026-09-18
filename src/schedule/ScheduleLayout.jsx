@@ -17,6 +17,7 @@ import { crewLeadNames } from './lib/crewLeads'
 import { activeScheduleCrew, canUnarchiveFromScheduler, isActiveScheduleCrew } from './lib/scheduleCrew'
 import { assignmentRenameUpdate } from './lib/assignmentIdentity'
 import { crewRequirement } from './lib/allocations'
+import { tod } from '../lib/utils'
 import { printWeekSchedule, printJobList, printMaterialsList, printDailyStatus } from './lib/exports'
 import Home from './views/Home'
 import Jobs from './views/Jobs'
@@ -261,7 +262,7 @@ function ScheduleShell() {
 
   async function clArchive(name) {
     if (!confirm('Archive ' + flipName(name) + '? They will be hidden from active views.')) return
-    const { error } = await supabase.from('crew').update({ archived: true }).eq('name', name)
+    const { error } = await supabase.from('crew').update({ archived: true, archived_on: tod() }).eq('name', name)
     if (error) { console.error(error); return }
     crewDirtyRef.current = true
     await loadModalData()
@@ -273,7 +274,7 @@ function ScheduleShell() {
       toast('This person is managed in Team. Turn on Available on Crew Schedule there.', 'err')
       return
     }
-    const { error } = await supabase.from('crew').update({ archived: false }).eq('name', name)
+    const { error } = await supabase.from('crew').update({ archived: false, archived_on: null }).eq('name', name)
     if (error) { console.error(error); return }
     toast(flipName(name) + ' restored', 'ok')
     crewDirtyRef.current = true

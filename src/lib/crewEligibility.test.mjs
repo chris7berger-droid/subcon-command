@@ -96,7 +96,9 @@ const archivePlan = planCrewEligibility({
   crewRows: reuseRows,
 });
 assert(archivePlan.ok && archivePlan.action === "archive", "eligibility OFF archives");
-assert(crewPatchFromPlan(archivePlan, { teamMemberId: tm }).update.patch.archived === true, "archive sets archived true");
+assert(crewPatchFromPlan(archivePlan, { teamMemberId: tm, archivedOn: "2026-09-17" }).update.patch.archived === true, "archive sets archived true");
+assert(crewPatchFromPlan(archivePlan, { teamMemberId: tm, archivedOn: "2026-09-17" }).update.patch.archived_on === "2026-09-17", "archive stamps archived_on");
+assert(reusePatch.archived_on === null, "reuse clears archived_on");
 assert(!("delete" in (crewPatchFromPlan(archivePlan, { teamMemberId: tm }) || {})), "archive does not delete");
 
 const noopPlan = planCrewEligibility({
@@ -161,6 +163,7 @@ const archiveFake = makeFakeCrewDb([
 const archiveResult = await applyCrewEligibility(archiveFake.client, archivePlan, { teamMemberId: tm });
 assert(archiveResult.ok && archiveFake.tables.crew.length === 1, "OFF keeps the crew row");
 assert(archiveFake.tables.crew[0].archived === true, "OFF archives the linked row");
+assert(typeof archiveFake.tables.crew[0].archived_on === "string", "OFF stamps archived_on");
 
 console.log("crewEligibility tests passed");
 

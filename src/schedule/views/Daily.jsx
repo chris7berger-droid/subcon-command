@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { loadJobs, loadMobilizationsByJobId } from '../lib/queries'
 import { jobRanges, overlapsWeek, staffingForDay, staffingSummary } from '../lib/allocations'
 import { CREW_STATUS_SCHEDULED_OFF } from '../lib/crewStatus'
-import { activeScheduleCrew } from '../lib/scheduleCrew'
+import { scheduleCrewForWeek } from '../lib/scheduleCrew'
 
 /* ── Daily view — faithful port of the Apps Script rDaily() (Schedule Commander v2).
    Job cards with a crew × day check grid, gap row, status sections, and legend.
@@ -109,7 +109,7 @@ export default function Daily() {
       ['Ongoing', 'Scheduled', 'In Progress', 'On Hold'].includes(j.status)
     )
     if (jRes.data) setJobs(activeJobs)
-    if (cRes.data) setCrew(activeScheduleCrew(cRes.data))
+    if (cRes.data) setCrew(cRes.data)
     if (aRes.data) setAssignments(aRes.data)
     if (sRes.data) setCrewStatus(sRes.data)
     // Live allocations so a job also shows in a week a go-back block falls in (B87).
@@ -131,6 +131,10 @@ export default function Daily() {
     return m
   }, [crewStatus])
   const getCSt = useCallback((name, date) => statusMap[name + '|' + date] || 'available', [statusMap])
+  const weekCrew = useMemo(
+    () => scheduleCrewForWeek(crew, dates, { assignments, statusMap }),
+    [crew, dates, assignments, statusMap],
+  )
 
   /* assignment-derived maps (this week's assignments only) */
   const { jobCrew, crewJobDates, dbDaysByCrew, assignedNames } = useMemo(() => {
@@ -191,7 +195,7 @@ export default function Daily() {
 
   /* status sections */
   const sickList = [], callList = [], nsList = [], scheduledOffList = [], availList = []
-  crew.forEach(c => {
+  weekCrew.forEach(c => {
     const cn = c.name
     let hasSick = false, hasCall = false, hasNS = false, hasScheduledOff = false
     for (let di = 0; di < 6; di++) {
