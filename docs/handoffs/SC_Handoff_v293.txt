@@ -1,0 +1,161 @@
+SC Handoff v293 — Daily dark modules accepted; six canonical screens LOCKED — 2026-09-17
+
+SESSION SUMMARY
+Chris's final visual acceptance for the deployed Daily dark-module revision is
+PASS. This is now the canonical Daily material baseline, superseding the earlier
+accepted light Daily treatment. Daily is LOCKED; no additional visual polish.
+Home, Jobs, Crew Schedule, Calendar and Production Rate remain LOCKED.
+This closeout updates only docs/BACKLOG.md and this new handoff. No merge or
+production release occurred. All stated deferrals remain intact.
+
+Exact accepted Daily revision implementation:
+8e50f1c7205fcc4418814e6a3d7baf1d582af8be
+Retained branch: ui/daily-dark-modules-revision
+Exact accepted Vercel preview:
+https://sales-command-b7wvmn47o-chris7berger-droids-projects.vercel.app/schedule/daily
+Deployment: dpl_APJE36hmQo95BePMRZxUgiVG4Bf8 (Ready; target preview).
+Branch starts at the accepted Production Rate closeout, NOT main:
+ui/production-rate-canonical-reskin at
+4dda1b601cfa51e42d4482f3726ed7757bea2d9b.
+
+CHANGES SHIPPED
+Accepted preview implementation only; no production release:
+- Exactly one implementation file changed: src/schedule/Daily.css.
+- Construction photography is the loaded Daily environment. The broad sand
+  canvas is transparent; the existing image covers the host pane on tall/narrow
+  and desktop views. The asset and host scrolling remain unchanged.
+- Job and secondary/status modules use dark translucent espresso/graphite,
+  approximately 94% opacity, warm-light neutral text, restrained borders,
+  subtle inset highlights and controlled exterior depth.
+- PW modules use a dark purple-tinted espresso gradient, preserving the existing
+  PW purple rail/tag and PW-over-staffing-gap rail precedence.
+- Crew rows remain transparent except their unchanged semantic double-booking
+  tint; no separate day-cell boxes were introduced. Local light backing/halos
+  preserve readable dark semantic inks without resizing or recoloring signals.
+- Navigation controls, count badges, semantic chips, dialogs and capacity-band
+  paint retain their accepted treatments. All semantic colors/logic remain.
+- Accepted warm opaque loading covers the root and Daily surface. A Daily-only
+  loading paint rule also covers the host scroller's edge: on a very narrow view
+  with an expanded sidebar, native button focus can leave it horizontally
+  scrolled. This preserves opacity without resetting/changing either scroll axis.
+- Daily.jsx and embedded DailyStyle, ScheduleLayout.jsx, shared styles, assets,
+  other screens, queries, calculations and functionality are unchanged.
+- This documentation-only closeout records Chris's final PASS and the new lock.
+
+DECISIONS
+All six canonical primary screens are accepted and LOCKED: Home, Jobs, Crew
+Schedule, Calendar, Daily and Production Rate. No additional Daily visual polish.
+The Daily revision queue from v292 is complete; do not resume it as pending work.
+Retain ui/daily-dark-modules-revision as the canonical Daily preview branch.
+Keep ui/daily-canonical-reskin as a historical accepted reference; its light
+material treatment is superseded, not a competing current Daily baseline.
+Retain all other accepted preview branches. Acceptance is not merge/release
+authority. Preserve the exact implementation preview above even if the
+documentation push produces a newer deployment for this branch.
+
+Daily structure, geometry, six-day grid, dimensions, spacing, typography metrics,
+responsive behavior, scrolling, staffing/status semantics, interactions, data,
+calculations and functionality remain unchanged. Opaque loading remains accepted.
+
+Logistics remains intentionally sidebar-hidden via sidebarHidden. Its canonical
+navigation definition, /schedule/materials route, direct URLs/bookmarks and code
+remain available. Jobs -> Planning -> MTRL remains the visible materials workflow.
+Schedules and Import remain in the visual-propagation queue. Finance / Billing
+remains visible but deferred for its own dedicated redesign.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 remains In Progress for its remaining separately authorized work. Its Daily
+material revision is now complete, visually accepted and LOCKED. No unrelated
+backlog items were closed. All stated deferrals remain intact:
+- F63-PERF: navigation/data-loading performance audit and implementation remain
+  deferred; no refetch/remount/cache/persistence/prefetch changes or audit.
+- F63-PRT-AUDIT: Production Rate calculation/data-field consistency audit remains
+  deferred. Jobs' pct_today and standalone actual_pct / actual / pct_complete
+  paths were not reconciled; neither is declared correct.
+- Finance / Billing dedicated redesign.
+- Schedules/Import and remaining visual propagation; secondary click-through
+  surfaces, including Week Schedule, remain a separate later pass.
+- Final reference preservation, launch UI standard/DOCX/brand PDF alignment,
+  other asset work and dimensional cyan-and-black Geometry A identity assets.
+  The hard-hat photograph is not a reusable standalone identity asset. Keep the
+  existing sidebar identity; no CSS/code redraw authorized.
+- Desktop Shell Features: global search, notifications, user/business account
+  card and additional functional top-shell controls remain deferred.
+No automatic continuation or broader reopening of locked screens.
+
+VERIFICATION
+Accepted implementation verification:
+- Build passed; existing bundle-size advisory remains. CSS-only change.
+- Source/diff inspection: 23 changed declarations, all Daily-gated paint or
+  Daily material variables. Only Daily.css changed; existing loading rules,
+  capacity/control/dialog rules and semantic tokens were preserved.
+- 76 local browser state comparisons passed against accepted closeout 4dda1b6;
+  its Daily.css and Daily.jsx match the original accepted Daily implementation.
+  Geometry covered widths 1920, 1440, 1101, 1100, 1099, 1024, 768 and 390,
+  including a 390x1600 tall view, scrolling and sidebar states.
+- Ordinary/PW/PW-plus-gap modules, all crew statuses, work/vehicle tags, lead,
+  double booking, staffing counts, fully staffed green rails/counts, Today and
+  capacity colors/precedence verified. Light navigation, badges, dialogs and
+  capacity paint compared unchanged; loaded photograph coverage verified.
+- Initial loading, week changes and Refresh verified opaque. Additional frame
+  monitoring passed at desktop/tall-phone widths. The horizontal loading-edge
+  case was reproduced on the accepted baseline and covered with paint only.
+- Final full appearance/geometry checks passed on all five other locked screens
+  at desktop/phone widths, including Production Rate feed/detail. No Daily
+  selectors matched off-route; no leakage or shared-style changes.
+- Exact Ready Vercel implementation preview passed the same 76 state comparisons,
+  including semantic paint, loading-frame monitoring, photograph coverage and
+  locked-screen navigation. Desktop/phone screenshots reviewed. Chris separately
+  reviewed the deployed revision and accepted it.
+- Browser app-data requests used intercepted fixtures, with zero runtime errors
+  and no app-data writes.
+  These checks do not certify live database contents or real network performance.
+Documentation closeout verification: documentation diff/links, unchanged app
+tree, retained branches/worktrees, branch/upstream synchronization, clean working
+tree, exact accepted Ready preview and unchanged local/tracking/live main.
+No application changes or new build are part of this documentation closeout.
+
+NOT TOUCHED
+This closeout: all application code/CSS/JSX, assets, dependencies, queries and DB.
+No extra Daily polish, other locked-screen changes, functional/performance work,
+Production Rate audit, Finance / Billing redesign or other deferred work.
+No merge, promotion, production release or deletion of retained branches.
+Unrelated branches/worktrees remain untouched; hygiene checks are not cleanup.
+
+NEXT SESSION POINTERS
+STOP. Await Chris's next explicit task. All six canonical primary screens remain
+LOCKED. Daily's dark-module revision is accepted and complete; do not resume the
+superseded queue or polish it further. Use this handoff, BACKLOG.md and actual
+repository state. v293 supersedes v292's Daily queue/current-baseline pointers;
+v287-v292 retain the other acceptances and historical context.
+Schedules and Import remain future propagation work; Finance / Billing awaits
+dedicated redesign. Every listed functional/performance/identity deferral remains
+in force. No merge or production-release authorization.
+
+FILES TO KNOW
+docs/BACKLOG.md — current canonical locks and remaining deferral boundaries.
+docs/handoffs/SC_Handoff_v292.txt — Production Rate acceptance and prior queue.
+docs/handoffs/SC_Handoff_v291.txt — superseded Daily material baseline/history.
+src/schedule/Daily.css — accepted dark-module material implementation.
+src/schedule/views/Daily.jsx — unchanged Daily logic, structure and DailyStyle.
+src/schedule/ScheduleLayout.jsx — unchanged route marker and CSS import.
+src/lib/nav.js — unchanged Logistics sidebarHidden decision.
+Temporary verification: /private/tmp/check-daily-dark.mjs and daily-dark-* files;
+these are not committed test assets.
+
+GIT STATE
+Documentation-only closeout on ui/daily-dark-modules-revision, starting clean at
+accepted implementation 8e50f1c7205fcc4418814e6a3d7baf1d582af8be, synchronized
+with origin/ui/daily-dark-modules-revision. Base is 4dda1b6, not main.
+Other retained accepted/reference branches, local/origin at closeout start:
+ui/production-rate-canonical-reskin: 4dda1b601cfa51e42d4482f3726ed7757bea2d9b
+ui/daily-canonical-reskin: e3bdf88ebfb9e7a49dfb5bc623df72e8bd2fdea5
+ui/home-canonical-reskin: 5415bef7749e4c56d4b91139d8a611d34f9af863
+ui/jobs-canonical-reskin: 6d3535d5dbcbde8b6a7af7dff487908163ada5f0
+ui/calendar-canonical-reskin: e28565c3b2b8a9bfee2988da85b580446fcf3206
+ui/crew-capacity-surface-test: 6483984d360e37d68a3e01be21977181be00531b
+Main local/origin/live remote remains:
+b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c
+No accepted launch-UI work has been merged to main or released to production.
+SAFE TO CLOSE after documentation commit/push and final hygiene verification.
+Retain all accepted preview branches and stop after closeout.
