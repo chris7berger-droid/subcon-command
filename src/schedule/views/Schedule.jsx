@@ -8,7 +8,7 @@ import { useToast } from '../lib/toast'
 import { jobRanges, inRange, staffingSummary } from '../lib/allocations'
 import { tripRange } from '../lib/trips'
 import { crewWeekRows, crewCardRows, crewRowInRange, crewRowStaffing, crewRowNames } from '../lib/crewScheduleRows'
-import { activeScheduleCrew } from '../lib/scheduleCrew'
+import { activeScheduleCrew, canAssignScheduleCrewOnDate, scheduleCrewForWeek, scheduleCrewOnDate } from '../lib/scheduleCrew'
 import { newAssignmentRows } from '../lib/assignmentIdentity'
 import { crewStatusShortLabel, crewStatusUiLabel, isCrewStatusOut, CREW_STATUS_SCHEDULED_OFF, compactStatusDot, crewStatusDateKey, eachInclusiveDay, planScheduledOff, groupContiguousDays, formatScheduledOffRange } from '../lib/crewStatus'
 import ScheduleTripDetails from '../components/ScheduleTripDetails'
@@ -220,7 +220,7 @@ export default function Schedule({ embedded = false } = {}) {
         const allocs = await loadMobilizationsByJobId(jobRes.data, { liveOnly: true, throwOnError: true })
         if (stale) return
         setJobs(jobRes.data)
-        setCrew(activeScheduleCrew(crewRes.data))
+        setCrew(crewRes.data || [])
         crewByNameRef.current = Object.fromEntries((crewRes.data || []).map(c => [c.name, c]))
         setWorkTypes(wtRes.data.map(w => w.name))
         setAllocsByJobId(allocs || {})
@@ -319,6 +319,9 @@ export default function Schedule({ embedded = false } = {}) {
     [rangesByJobId, allocsByJobId])
   const jobInRange = useCallback((j, ds) => inRange(rangesFor(j), ds), [rangesFor])
 
+  const weekHistory = useMemo(() => ({ assignments, statusMap: crewStatus }), [assignments, crewStatus])
+  const weekCrew = useMemo(() => scheduleCrewForWeek(crew, dates, weekHistory), [crew, dates, weekHistory])
+
   const boardRows = useMemo(() => crewWeekRows(jobs, allocsByJobId, assignments, wsStr, weStr),
     [jobs, allocsByJobId, assignments, wsStr, weStr])
   const weekJobs = useMemo(() => [...new Map(boardRows.filter(row => !row.unavailable)
@@ -379,7 +382,8 @@ export default function Schedule({ embedded = false } = {}) {
     return dates.map(d => {
       let out = 0
       let assigned = 0
-      for (const c of crew) {
+      const dayCrew = scheduleCrewOnDate(crew, d, weekHistory)
+      for (const c of dayCrew) {
         const st = getCSt(c.name, d)
         if (isCrewStatusOut(st)) {
           out++
@@ -391,16 +395,16 @@ export default function Schedule({ embedded = false } = {}) {
           }
         }
       }
-      const avail = crew.length - out - assigned
+      const avail = dayCrew.length - out - assigned
       return { avail, out }
     })
-  }, [dates, crew, getCSt, wkAssignedNames, assignments])
+  }, [dates, crew, weekHistory, getCSt, wkAssignedNames, assignments])
 
   // Crew pool grouped by team
   const crewByTeam = useMemo(() => {
     const teams = {}
     const floaters = []
-    for (const c of crew) {
+    for (const c of weekCrew) {
       const t = String(c.team || '')
       if (t.toLowerCase() === 'floater' || t === '0' || t === '') floaters.push(c)
       else {
@@ -413,12 +417,12 @@ export default function Schedule({ embedded = false } = {}) {
     floaters.sort(byFirstName)
     const teamKeys = Object.keys(teams).sort((a, b) => a - b)
     return { teams, teamKeys, floaters }
-  }, [crew])
+  }, [weekCrew])
 
   // Pool: count available unassigned
   const availCount = useMemo(() => {
     let av = 0
-    for (const c of crew) {
+    for (const c of activeScheduleCrew(crew)) {
       if (getCSt(c.name, todayStr) === 'available' && !wkAssignedNames[c.name]) av++
     }
     return av
@@ -449,7 +453,8 @@ export default function Schedule({ embedded = false } = {}) {
   // visible week, minus any the crew is OUT (sick/off) — never auto-book time off.
   function assignableDays(m) {
     if (!m?.job) return []
-    return dates.filter(ds => crewRowInRange(m.row, ds) && getCSt(m.name, ds) === 'available')
+    return dates.filter(ds => crewRowInRange(m.row, ds) && getCSt(m.name, ds) === 'available'
+      && canAssignScheduleCrewOnDate(crewByNameRef.current[m.name] || crew.find(c => c.name === m.name), ds))
   }
 
   // One-click fill/clear: if every assignable day is already selected, clear them
@@ -475,6 +480,10 @@ export default function Schedule({ embedded = false } = {}) {
     try {
       const existing = crewJobDays(row, name)
       const toAdd = selectedDays.filter(d => !existing.includes(d))
+      const person = crewByNameRef.current[name] || crew.find(c => c.name === name)
+      if (toAdd.some(d => !canAssignScheduleCrewOnDate(person, d))) {
+        throw new Error('This person is archived and cannot be assigned on that date.')
+      }
       const removed = row.assignments.filter(a => a.crew_name === name && !selectedDays.includes(a.date))
       if (toAdd.some(d => !crewRowInRange(row, d)) || (row.trip.legacy && toAdd.length)) throw new Error('Choose a saved trip to add crew.')
       if (!row.trip.id && toAdd.length) throw new Error('Open the job and add a trip for these dates before assigning crew.')
@@ -773,7 +782,8 @@ export default function Schedule({ embedded = false } = {}) {
     const available = []
     const assigned = []
     const out = []
-    for (const c of crew) {
+    const dayCrew = scheduleCrewOnDate(crew, ds, weekHistory)
+    for (const c of dayCrew) {
       const st = getCSt(c.name, ds)
       if (isCrewStatusOut(st)) {
         out.push({ name: c.name, status: st })
@@ -790,7 +800,7 @@ export default function Schedule({ embedded = false } = {}) {
       }
     }
     return { available, assigned, out }
-  }, [dayDetailDate, crew, getCSt, assignments, jobs])
+  }, [dayDetailDate, crew, weekHistory, getCSt, assignments, jobs])
 
   // Drag state
   const [dragName, setDragName] = useState(null)

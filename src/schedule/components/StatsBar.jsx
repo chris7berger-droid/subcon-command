@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { crewStatusUiLabel } from '../lib/crewStatus'
-import { activeScheduleCrew } from '../lib/scheduleCrew'
+import { scheduleCrewOnDate } from '../lib/scheduleCrew'
 
 const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -54,7 +54,7 @@ export default function StatsBar() {
       supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
       supabase.from('jobs').select('*').or('deleted.is.null,deleted.eq.No'),
     ])
-    if (crewRes.data) setCrew(activeScheduleCrew(crewRes.data))
+    if (crewRes.data) setCrew(crewRes.data)
     if (asgnRes.data) setAssignments(asgnRes.data)
     if (jobRes.data) setJobs(jobRes.data)
     if (csRes.data) {
@@ -69,10 +69,12 @@ export default function StatsBar() {
   const getCSt = (name, ds) => crewStatus[name + '|' + ds] || 'available'
 
   const stats = useMemo(() => {
+    const history = { assignments, statusMap: crewStatus }
     return dates.map(d => {
       let out = 0
       let assigned = 0
-      for (const c of crew) {
+      const dayCrew = scheduleCrewOnDate(crew, d, history)
+      for (const c of dayCrew) {
         const st = getCSt(c.name, d)
         if (st !== 'available') {
           out++
@@ -81,7 +83,7 @@ export default function StatsBar() {
           if (hasAsgn) assigned++
         }
       }
-      const avail = crew.length - out - assigned
+      const avail = dayCrew.length - out - assigned
       return { avail, out }
     })
   }, [dates, crew, crewStatus, assignments])
@@ -93,7 +95,8 @@ export default function StatsBar() {
     const available = []
     const assignedList = []
     const out = []
-    for (const c of crew) {
+    const dayCrew = scheduleCrewOnDate(crew, ds, { assignments, statusMap: crewStatus })
+    for (const c of dayCrew) {
       const st = getCSt(c.name, ds)
       if (st !== 'available') {
         out.push({ name: c.name, status: st })

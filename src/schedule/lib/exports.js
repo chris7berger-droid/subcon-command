@@ -2,7 +2,7 @@ import { supabase } from '../../lib/supabase'
 import { loadMobilizationsByJobId, loadJobs } from './queries'
 import { jobRanges, overlapsWeek, staffingForDay, staffingSummary, pickAllocField } from './allocations'
 import { crewStatusUiLabel } from './crewStatus'
-import { activeScheduleCrew } from './scheduleCrew.js'
+import { scheduleCrewForWeek } from './scheduleCrew.js'
 
 // B103: every export shows every active job — same as the board. Routed through
 // loadJobs so prints get the call_log-joined names and the ⚠ "Needs fixing" flag
@@ -158,12 +158,12 @@ export async function printDailyStatus() {
     supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
     loadExportJobs(),
   ])
-  const crew = activeScheduleCrew(crewRes.data || [])
   const assignments = asgnRes.data || []
   const csMap = {}
   for (const c of (csRes.data || [])) {
     csMap[c.crew_name + '|' + c.date] = c.status
   }
+  const crew = scheduleCrewForWeek(crewRes.data || [], dates, { assignments, statusMap: csMap })
 
   let b = '<h2>Daily Crew Status</h2><div class="sub">' + fmtWk(monday) + '</div>'
   b += '<table><thead><tr><th>Crew</th>'

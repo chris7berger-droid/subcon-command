@@ -7,6 +7,7 @@
  * It never writes assignments, never sends invites, never creates
  * placeholder team_members.
  */
+import { tod } from "./utils.js";
 
 export function defaultCrewScheduleEligibility(role) {
   return role === "Field";
@@ -189,7 +190,7 @@ export function planCrewEligibility({
   };
 }
 
-export function crewPatchFromPlan(plan, { teamMemberId } = {}) {
+export function crewPatchFromPlan(plan, { teamMemberId, archivedOn } = {}) {
   if (!plan?.ok || plan.action === "noop") return null;
   if (plan.action === "create") {
     return {
@@ -198,6 +199,7 @@ export function crewPatchFromPlan(plan, { teamMemberId } = {}) {
         phone: plan.nextPhone,
         team: "Floater",
         archived: false,
+        archived_on: null,
         team_member_id: teamMemberId,
       },
     };
@@ -205,6 +207,7 @@ export function crewPatchFromPlan(plan, { teamMemberId } = {}) {
   const patch = {
     phone: plan.nextPhone,
     archived: plan.action === "archive",
+    archived_on: plan.action === "archive" ? (archivedOn || tod()) : null,
     team_member_id: teamMemberId,
   };
   if (plan.nextName && plan.nextName !== plan.crewName) {
