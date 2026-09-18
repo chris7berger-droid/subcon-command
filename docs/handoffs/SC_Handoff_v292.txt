@@ -1,0 +1,168 @@
+SC Handoff v292 — Production Rate LOCKED; six accepted screens; Daily revision queued — 2026-09-17
+
+SESSION SUMMARY
+Chris's final visual acceptance for Schedule Command Production Rate is PASS.
+Production Rate is visually accepted and LOCKED; no additional visual polish.
+Home, Jobs, Crew Schedule, Calendar and Daily remain accepted and LOCKED.
+This documentation-only closeout updates docs/BACKLOG.md and this handoff. It
+records acceptance, preserves the exact accepted preview, and queues Chris's
+explicitly approved future Daily visual revision without implementing it.
+No merge or production release occurred. All stated deferrals remain intact.
+
+Accepted Production Rate implementation:
+a3c3a77ad9f247ce322df419c9745348d7c597e1
+Retained accepted branch: ui/production-rate-canonical-reskin
+Exact accepted Production Rate preview:
+https://sales-command-9wvknhzc3-chris7berger-droids-projects.vercel.app/schedule/production-rate
+Deployment: dpl_J461yZ4StFQu2gAPydEKXaTYnrz9 (Ready).
+Branch base: ui/daily-canonical-reskin at post-Logistics-navigation commit
+e3bdf88ebfb9e7a49dfb5bc623df72e8bd2fdea5, NOT main.
+
+CHANGES SHIPPED
+Preview implementation only; no production release:
+- Exactly two implementation files changed: src/schedule/ScheduleLayout.jsx
+  adds the normalized /schedule/production-rate marker and stylesheet import;
+  new src/schedule/ProductionRate.css supplies isolated material overrides.
+- Every new visual rule requires .schedule-root[data-prt-launch]. New material
+  properties use only --prt-* names; shared semantic tokens remain unchanged.
+- Canonical materials come from the five previously accepted real screens:
+  construction-photo environment, espresso shell/command framing, opaque warm
+  ivory/sand reports, restrained cyan, warm borders and controlled inset depth.
+- Feed loading/empty and detail loading/error/missing states retain real text
+  on opaque operational surfaces. No bare-photo loading state or timing changes.
+- ProductionRate.jsx and PRTDetail.jsx remained byte-for-byte unchanged.
+- This closeout changes documentation only and records Chris's final PASS.
+
+DECISIONS
+Home, Jobs, Crew Schedule, Calendar, Daily and Production Rate are the six
+accepted primary screens, all LOCKED. No additional Production Rate visual
+polish. Retain all six accepted preview branches. Acceptance is not merge or
+production-release authority.
+
+Daily has one explicitly approved FUTURE visual revision, QUEUED / NOT IMPLEMENTED:
+- Remove the broad light-brown/ivory Daily background canvas.
+- Let construction photography become the Daily page environment.
+- Make individual job/crew-day modules dark translucent espresso operational
+  panels over the photograph.
+- Preserve Daily structure, geometry, staffing/status semantics and functionality.
+The accepted Daily baseline remains LOCKED and unchanged until that narrowly
+approved revision is taken up in a future task. This closeout implements none
+of it. No automatic continuation or broader reopening of locked screens.
+
+Logistics remains intentionally hidden from the Schedule Command sidebar via
+sidebarHidden; its canonical navigation definition, /schedule/materials route,
+direct links/bookmarks and implementation remain available. Jobs -> Planning ->
+MTRL remains the normal visible materials workflow. The navigation decision at
+e3bdf88 is retained. Production Rate remains a primary destination for its
+cross-job recent-report feed and full report-detail viewer.
+
+Production Rate's existing implementation remains the structural/functional
+source of truth: preserve the 14-day cutoff, 500-report limit, ordering/query
+behavior, local selection and retained feed, Refresh remount, 1100px page maximum,
+spacing, photo grid/square cropping/lazy loading/original-image links, host
+scrolling, narrow-screen behavior, All stages and both report-return controls.
+Shell dropdown/modal/toast positioning and stacking remain unchanged.
+Preserve green on-track/approved, red behind/rejected, neutral no-rate,
+submitted/default status, red/green actual percentage logic, always-green task
+progress fill, teal regular hours and amber OT hours. No calculation changes.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 now records six accepted primary screens. F63 overall remains In Progress;
+remaining F63 work remains deferred. Daily's future visual revision is recorded
+as approved/queued, not implemented. No unrelated backlog items were closed.
+All stated deferrals remain intact:
+- F63-PRT-AUDIT: Production Rate calculation/data-field consistency audit. Jobs'
+  PRTModal pct_today path and standalone actual_pct / actual / pct_complete path
+  were not reconciled. Neither was declared correct; no functional audit occurred.
+- F63-PERF: navigation/data-loading performance audit and implementation remain
+  deferred. No refetch/remount/cache/persistence/prefetch changes or audit.
+- Finance / Billing remains visible but deferred for a dedicated redesign.
+- Remaining F63 propagation, final reference preservation, launch UI standard /
+  DOCX / brand PDF alignment and other asset work remain deferred.
+- Desktop Shell Features: global search, notifications, user/business account
+  card and additional functional top-shell controls remain deferred.
+- Dimensional cyan-and-black Geometry A identity assets remain deferred; the
+  hard-hat photograph is not a reusable standalone identity asset. Keep the
+  existing sidebar identity; do not redraw it in CSS/code.
+- Secondary click-through/work surfaces, including Week Schedule, remain a
+  separate later pass. No secondary inventory or further propagation authorized.
+
+VERIFICATION
+Completed for accepted implementation a3c3a77 before this documentation closeout:
+- Build passed; existing bundle-size advisory remains. No new lint diagnostics.
+- Source/AST check limited ScheduleLayout changes to marker/import; CSS is
+  route-gated and material-only with --prt-* variables. Report components,
+  queries, navigation and locked/shared implementation sources are unchanged.
+- 85 browser state comparisons passed against e3bdf88. Feed/detail geometry
+  covered widths 1920, 1440, 1101, 1100, 1099, 1024, 768 and 390; host scrolling,
+  sidebar states and existing narrow-screen constraints were preserved.
+- Verified feed loaded/loading/empty, detail loaded/loading/error/missing,
+  approved/rejected/submitted reports, empty tasks, semantic status/progress/hour
+  colors, tasks/materials/notes, photos and original-image navigation.
+- Verified query cutoff/order/limit, feed retention on return, both return
+  controls, All stages, Refresh remount and opaque loading coverage.
+- Verified Add Job, Add Crew, Work Types, Crew List, Export, Actions dropdown,
+  dialog scrolling and toast behavior at desktop/phone widths.
+- Full appearance/geometry comparisons after navigation covered all five locked
+  screens at 1440/390px. No Production Rate selectors matched off-route;
+  Logistics remained hidden. No shared-style leakage or locked-screen changes.
+- Exact Ready Vercel preview verified at desktop/phone widths for report states,
+  material asset, signals, photos, navigation, dialogs, locks and hidden Logistics.
+  Desktop/phone screenshots inspected.
+- Browser app-data requests used intercepted fixtures; zero app-data writes or
+  runtime errors. These checks do not certify live data contents or real network
+  performance. Chris separately reviewed the real preview and accepted it.
+This documentation-only closeout does not rerun application builds/browser tests.
+Closeout checks cover documentation diff/links, unchanged application tree,
+retained branches, branch/upstream synchronization, clean working tree, exact
+accepted Ready preview and unchanged local/tracking/live main.
+
+NOT TOUCHED
+This closeout: all application code/CSS/JSX, assets, dependencies, queries and DB.
+Daily's queued revision has NOT been implemented. No additional Production Rate
+polish, performance work, functional audit, Finance / Billing redesign or other
+deferred implementation. Main and production remain unchanged. No merge,
+promotion or production release. No retained preview branches deleted/merged;
+unrelated branches/worktrees remain untouched. Hygiene checks are not cleanup.
+
+NEXT SESSION POINTERS
+STOP. Await Chris's next explicit task. Six accepted primary screens remain
+LOCKED. Daily's narrowly approved future revision is queued but not implemented;
+do not begin it automatically. Production Rate needs no additional visual polish.
+Use this handoff, BACKLOG.md and actual repository state for orientation.
+v287-v291 preserve prior acceptances; v292 supersedes their current-session
+pointers where Logistics, Production Rate acceptance or the Daily queue differs.
+Finance / Billing awaits dedicated redesign; Schedules and Import remain future
+propagation candidates, not automatic work. All functional/identity/performance
+deferrals remain in force. No merge or production-release authorization.
+Preserve the exact accepted Production Rate implementation/preview above even
+if the documentation push creates a newer preview for the retained branch.
+
+FILES TO KNOW
+docs/BACKLOG.md — six locks, Daily future revision and all deferral boundaries.
+docs/handoffs/SC_Handoff_v291.txt — accepted Daily baseline and prior closeout.
+src/schedule/ProductionRate.css — accepted isolated material styling.
+src/schedule/ScheduleLayout.jsx — normalized route marker and stylesheet import.
+src/schedule/views/ProductionRate.jsx — unchanged cross-job report feed.
+src/schedule/components/PRTDetail.jsx — unchanged full report detail.
+src/lib/nav.js — retained Logistics sidebarHidden decision.
+Temporary verification: /private/tmp/check-prt-source.mjs,
+/private/tmp/check-prt-canonical.mjs and /private/tmp/check-prt-deployed.mjs;
+these are not committed test assets.
+
+GIT STATE
+Documentation-only closeout on retained ui/production-rate-canonical-reskin,
+starting clean at accepted implementation a3c3a77ad9f247ce322df419c9745348d7c597e1,
+tracking origin of the same name. Branch originated from post-Logistics Daily
+e3bdf88ebfb9e7a49dfb5bc623df72e8bd2fdea5, not main.
+Other retained accepted branches, local/origin at closeout start:
+ui/daily-canonical-reskin: e3bdf88ebfb9e7a49dfb5bc623df72e8bd2fdea5
+ui/home-canonical-reskin: 5415bef7749e4c56d4b91139d8a611d34f9af863
+ui/jobs-canonical-reskin: 6d3535d5dbcbde8b6a7af7dff487908163ada5f0
+ui/calendar-canonical-reskin: e28565c3b2b8a9bfee2988da85b580446fcf3206
+ui/crew-capacity-surface-test: 6483984d360e37d68a3e01be21977181be00531b
+Main local/origin/live remote remains:
+b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c
+None of the six accepted launch-UI implementations has been merged to main or
+released to production. SAFE TO CLOSE after documentation commit/push and final
+hygiene verification. Retain all accepted preview branches; stop after closeout.
