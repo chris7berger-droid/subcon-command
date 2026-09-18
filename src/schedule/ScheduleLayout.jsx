@@ -10,6 +10,7 @@ import './App.css'
 import './index.css'
 import './Daily.css'
 import './ProductionRate.css'
+import './Schedules.css'
 import { supabase } from '../lib/supabase'
 import { ToastProvider, useToast } from './lib/toast'
 import { UserProvider, useUser } from './lib/user'
@@ -47,7 +48,7 @@ export default function ScheduleLayout({ teamMember }) {
   // covers DOM they emit as siblings of the shell — notably ToastProvider's toast
   // node — which would otherwise render outside the scope and lose all its CSS.
   return (
-    <div className="schedule-root" data-home-launch={pathname.replace(/\/+$/, '') === '/schedule/home' ? '' : undefined} data-calendar-launch={pathname.replace(/\/+$/, '') === '/schedule/calendar' ? '' : undefined} data-jobs-launch={pathname.replace(/\/+$/, '') === '/schedule/jobs' ? '' : undefined} data-daily-launch={pathname.replace(/\/+$/, '') === '/schedule/daily' ? '' : undefined} data-prt-launch={pathname.replace(/\/+$/, '') === '/schedule/production-rate' ? '' : undefined}>
+    <div className="schedule-root" data-home-launch={pathname.replace(/\/+$/, '') === '/schedule/home' ? '' : undefined} data-calendar-launch={pathname.replace(/\/+$/, '') === '/schedule/calendar' ? '' : undefined} data-jobs-launch={pathname.replace(/\/+$/, '') === '/schedule/jobs' ? '' : undefined} data-daily-launch={pathname.replace(/\/+$/, '') === '/schedule/daily' ? '' : undefined} data-prt-launch={pathname.replace(/\/+$/, '') === '/schedule/production-rate' ? '' : undefined} data-schedules-launch={pathname.replace(/\/+$/, '') === '/schedule/schedules' ? '' : undefined}>
       <ToastProvider>
         <UserProvider teamMember={teamMember}>
           <ScheduleShell />

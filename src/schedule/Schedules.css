@@ -1,0 +1,171 @@
+/* Schedules-only materials. Embedded Schedules styles retain all geometry,
+   typography metrics, responsive rules and native control behavior. */
+.schedule-root[data-schedules-launch],
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) {
+  --schedules-sand: #e5dac5;
+  --schedules-paper: #f2eada;
+  --schedules-control: #eae0cd;
+  --schedules-ink: #30281f;
+  --schedules-muted: #534532;
+  --schedules-accent: #79cde0;
+  --schedules-accent-hover: #a0dfec;
+  --schedules-focus: #367d8d;
+  --schedules-dark: #302a23;
+  --schedules-action-ink: #1c1814;
+  --schedules-command-ink: #f3ede0;
+  --schedules-command-muted: #bfb3a1;
+  --schedules-border: #b5a183;
+  --schedules-command-border: rgba(219,200,169,0.35);
+  --schedules-command: linear-gradient(180deg, #40372c, #322b23 45%, #211c17);
+  --schedules-sidebar: linear-gradient(160deg, #352c23, #1e1b18);
+  --schedules-selected: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06));
+  --schedules-hover: rgba(231,222,203,0.07);
+  --schedules-action-hover: rgba(121,205,224,0.12);
+  --schedules-shadow: inset 0 1px rgba(255,248,229,0.55), 0 2px 6px rgba(61,47,31,0.14);
+  --schedules-inset: inset 0 1px rgba(243,237,224,0.10);
+  --schedules-sidebar-shadow: inset -1px 0 rgba(221,201,168,0.20), inset 0 2px rgba(121,205,224,0.26);
+  --schedules-selected-shadow: inset 0 0 0 1px rgba(121,205,224,0.24), inset 3px 0 rgba(121,205,224,0.14);
+  --schedules-dialog-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
+  --schedules-overlay: rgba(28,24,20,0.60);
+}
+
+/* Opaque at every lifecycle stage, including host scroll edges. No photograph,
+   loading selector or timing dependency; scroll ownership remains unchanged. */
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) > div:has(> [data-app-header]),
+[data-app-content]:has(.schedule-root[data-schedules-launch]),
+.schedule-root[data-schedules-launch] {
+  background: var(--schedules-sand);
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-header] {
+  background: var(--schedules-command) !important;
+  border-bottom-color: var(--schedules-command-border) !important;
+  box-shadow: var(--schedules-inset);
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-header] > div:first-child > span {
+  color: var(--schedules-command-ink) !important;
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-header] > div:first-child > span:last-child {
+  color: var(--schedules-accent) !important;
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-sidebar] {
+  background: var(--schedules-sidebar) !important;
+  border-right-color: var(--schedules-command-border) !important;
+  box-shadow: var(--schedules-sidebar-shadow);
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-sidebar] button {
+  color: var(--schedules-command-muted) !important;
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-sidebar] button:hover {
+  background: var(--schedules-hover) !important;
+  color: var(--schedules-command-ink) !important;
+}
+[data-app-shell]:has(.schedule-root[data-schedules-launch]) [data-app-sidebar] button[aria-current="page"] {
+  background: var(--schedules-selected) !important;
+  color: var(--schedules-accent) !important;
+  border-left-color: var(--schedules-accent) !important;
+  box-shadow: var(--schedules-selected-shadow);
+}
+
+.schedule-root[data-schedules-launch] .crew-text,
+.schedule-root[data-schedules-launch] .crew-text :is(h1, h2) {
+  color: var(--schedules-ink);
+}
+.schedule-root[data-schedules-launch] :is(.crew-text-controls, .crew-text-preview) {
+  background: var(--schedules-paper);
+  border-color: var(--schedules-border);
+  box-shadow: var(--schedules-shadow);
+}
+.schedule-root[data-schedules-launch] .crew-text-week {
+  border-color: var(--schedules-border);
+}
+.schedule-root[data-schedules-launch] .crew-text :is(input, select, textarea, button) {
+  background: var(--schedules-control);
+  color: var(--schedules-ink);
+  border-color: var(--schedules-border);
+}
+.schedule-root[data-schedules-launch] .crew-text :is(select option, textarea) {
+  background: var(--schedules-paper);
+  color: var(--schedules-ink);
+}
+.schedule-root[data-schedules-launch] .crew-text .crew-text-back {
+  background: transparent;
+  color: var(--schedules-focus);
+}
+.schedule-root[data-schedules-launch] .crew-text .crew-text-copy {
+  background: var(--schedules-accent);
+  color: var(--schedules-action-ink);
+  border-color: var(--schedules-accent);
+}
+.schedule-root[data-schedules-launch] .crew-text button:hover:not(:disabled) {
+  border-color: var(--schedules-focus);
+}
+.schedule-root[data-schedules-launch] .crew-text .crew-text-copy:hover:not(:disabled) {
+  background: var(--schedules-accent-hover);
+  border-color: var(--schedules-accent-hover);
+}
+.schedule-root[data-schedules-launch] .crew-text :is(button, input, select, textarea):focus-visible {
+  outline-color: var(--schedules-focus);
+}
+.schedule-root[data-schedules-launch] .crew-text-preview {
+  border-top-color: var(--schedules-accent);
+}
+.schedule-root[data-schedules-launch] .crew-text :is(.crew-text-eyebrow, .crew-text-range, .crew-text-hint, .crew-text-feedback),
+.schedule-root[data-schedules-launch] .crew-text input::placeholder {
+  color: var(--schedules-muted);
+}
+/* Preserve the embedded amber warning rail and neutral copy/failure feedback. */
+.schedule-root[data-schedules-launch] .crew-text-review {
+  background: var(--schedules-control);
+}
+/* The host's global autofill paint is important; match it only on this route. */
+.schedule-root[data-schedules-launch] .crew-text input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--schedules-control) inset !important;
+  -webkit-text-fill-color: var(--schedules-ink) !important;
+  background-color: var(--schedules-control) !important;
+}
+
+/* Shared toolbar/dialog materials are scoped here; semantic save/delete/toast
+   colors, dimensions, positioning and scroll behavior keep their owners. */
+.schedule-root[data-schedules-launch] .app-schedule-toolbar {
+  background: var(--schedules-command);
+  box-shadow: var(--schedules-inset);
+}
+.schedule-root[data-schedules-launch] .app-schedule-toolbar .app-act-btn:not(.app-act-primary) {
+  color: var(--schedules-command-ink);
+  border-color: var(--schedules-command-border);
+}
+.schedule-root[data-schedules-launch] .app-act-primary {
+  background: var(--schedules-accent);
+  border-color: var(--schedules-accent);
+  color: var(--schedules-action-ink);
+}
+.schedule-root[data-schedules-launch] .app-act-primary:hover:not(:disabled) {
+  background: var(--schedules-accent-hover);
+  border-color: var(--schedules-accent-hover);
+}
+.schedule-root[data-schedules-launch] .app-act-btn:hover {
+  border-color: var(--schedules-focus);
+}
+.schedule-root[data-schedules-launch] .app-actions-dropdown {
+  background: var(--schedules-dark);
+  border-color: var(--schedules-border);
+}
+.schedule-root[data-schedules-launch] .app-actions-dropdown button:hover {
+  background: var(--schedules-action-hover);
+  color: var(--schedules-accent);
+}
+.schedule-root[data-schedules-launch] .mdl {
+  background: var(--schedules-paper);
+  border-color: var(--schedules-border);
+  box-shadow: var(--schedules-dialog-shadow);
+}
+.schedule-root[data-schedules-launch] .mbg {
+  background: var(--schedules-overlay);
+}
+.schedule-root[data-schedules-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea, option) {
+  background: var(--schedules-control);
+}
+.schedule-root[data-schedules-launch] :is(.app-act-btn, .mfr input, .mfr select, .mfr textarea):focus-visible {
+  outline: 2px solid var(--schedules-focus);
+  outline-offset: 2px;
+}
