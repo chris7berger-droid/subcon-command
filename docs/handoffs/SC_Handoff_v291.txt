@@ -1,0 +1,155 @@
+SC Handoff v291 — Daily LOCKED; five accepted launch screens — 2026-09-17
+
+SESSION SUMMARY
+Chris's final visual acceptance for Schedule Command Daily is PASS. Daily's
+canonical reskin is visually accepted and LOCKED; no additional visual polish.
+Home, Jobs, Crew Schedule and Calendar remain accepted, LOCKED and unchanged.
+This documentation-only closeout changes docs/BACKLOG.md and this handoff. It
+records Daily acceptance and supersedes pending visual review; it does not
+authorize further implementation. F63-PERF and all other deferred F63 work remain
+deferred. No performance work occurred.
+
+Accepted Daily implementation:
+71d2c71cc47f06487cc3f62b9f4f09c91c4209d9
+Retained accepted preview branch: ui/daily-canonical-reskin
+Exact accepted Daily preview:
+https://sales-command-jp57i8sy7-chris7berger-droids-projects.vercel.app/schedule/daily
+Deployment: dpl_4wjwTbkUEgjdkMiUY18tJGuHZXEu (Ready).
+Branch base: accepted Home closeout
+5415bef7749e4c56d4b91139d8a611d34f9af863, not main.
+
+CHANGES SHIPPED
+Preview only; no production release:
+- Exactly two implementation files changed: src/schedule/ScheduleLayout.jsx
+  adds the normalized /schedule/daily route marker and stylesheet import;
+  src/schedule/Daily.css supplies isolated material paint overrides.
+- Every new selector requires .schedule-root[data-daily-launch]. New material
+  variables use only --daily-* names; shared semantic tokens remain unchanged.
+- Accepted real Home, Jobs, Crew Schedule and Calendar supply the materials:
+  construction photography in the existing host environment, espresso command
+  framing, opaque warm ivory/sand working surfaces, restrained cyan and inset
+  depth. Daily's existing implementation remains the structural source of truth.
+- Existing real loading text and the Daily root receive opaque operational
+  paper coverage. No skeletons, fake content or data-timing changes.
+- Daily.jsx and embedded DailyStyle remained byte-for-byte unchanged.
+- This closeout changes documentation only and records Chris's final PASS.
+
+DECISIONS
+Home, Jobs, Crew Schedule, Calendar and Daily are visually accepted and LOCKED.
+No further Daily visual polish. No changes to any locked screen without explicit
+reopening by Chris. Retain all five accepted preview branches. Acceptance is not
+merge or production-release authority.
+Preserve Daily's six-day grid and 130px name column, 1100px maximum canvas,
+dimensions, padding, indicator sizes, wrapping/truncation, host scrolling,
+non-sticky behavior, capacity breakpoint, week navigation, current-week capacity
+model, dialogs/toasts and their scrolling/stacking. Preserve all operational
+colors and their precedence, including PW versus staffing gaps, double booking
+versus lead dots, status cells, red Today labels and capacity thresholds.
+Keep DailyStyle embedded; no extraction or conversion was needed. No shared-theme
+extraction, shared-token/base-style broadening or geometry copied from other views.
+
+F63-PERF remains a separately scoped future navigation/data-loading performance
+audit, as defined in v290 and BACKLOG.md. Refetching, remounting, cached data,
+persistence, prefetching and loading-transition performance were not changed or
+audited here. Existing reported navigation slowness does not authorize performance
+work or reopening accepted visuals. Audit and implementation require a future
+dedicated authorization.
+
+NEW/CLOSED BACKLOG ITEMS
+F63 records Daily visual acceptance/lock and now has five accepted primary screens.
+F63 overall remains In Progress for separately scoped and authorized follow-ups.
+F63-PERF remains deferred; no performance work occurred.
+All other existing F63 deferred items remain deferred; no automatic continuation:
+- Global search, notifications, user/business account card and additional
+  functional top-shell controls. No new placeholders were added.
+- Dimensional cyan-and-black Geometry A — Bold & Open production identity
+  assets. The hard-hat photo mark is not a standalone reusable identity asset;
+  retain existing sidebar identity and do not redraw it in CSS/code.
+- Final reference preservation, remaining separately authorized primary-screen
+  propagation and launch UI standard/DOCX/brand PDF alignment; other asset work.
+Secondary click-through/work surfaces such as Week Schedule remain a separate
+later pass after the primary surfaces. No secondary inventory was commissioned.
+No unrelated backlog items were closed by this presentation work.
+
+VERIFICATION
+Completed during Daily implementation, before this documentation closeout:
+- Build passed; the existing bundle-size advisory remains.
+- Source/AST comparison verified ScheduleLayout differs only by Daily's route
+  marker and CSS import. All new CSS is Daily-gated, paint-only and uses only
+  Daily-prefixed new variables. No new lint diagnostics; shared/locked source
+  unchanged. Daily.jsx including DailyStyle is byte-identical to the branch base.
+- Allocation/staffing model checks and crew eligibility browser check passed.
+- 64 browser state comparisons passed against accepted Home closeout 5415bef.
+  Daily geometry covered eight widths (1920, 1440, 1101, 1100, 1099, 1024, 768,
+  390), host scrolling, expanded/collapsed sidebar and empty-data presentation.
+- Verified initial/route-entry and selected-week loading, opaque root/canvas
+  coverage, Prev/Next/This Week, and independent current-week capacity behavior.
+- Verified PW plus staffing gaps, unknown/overlapping-trip requirements, leads,
+  double bookings, every crew status, work tags, red Today and capacity signals.
+  Compared operational paints and precedence against the pre-change source.
+- Verified capacity detail and its scrolling, Add Job, Add Crew, Work Types,
+  Crew List, Export dialogs and Actions dropdown at desktop/phone widths.
+- Full appearance/geometry comparisons after navigation covered locked Home,
+  Jobs, Crew Schedule and Calendar at 1440/390px. Daily selectors matched no
+  elements off-route. No shared-style leakage or locked-screen changes.
+- Exact Ready Vercel preview checked with existing deployment access: photograph,
+  opaque paper, semantic paints, desktop/phone dialogs, delayed loading, week
+  navigation and locked routes. Also verified green staffed badges/rails and PW
+  precedence with a fully staffed fixture. Desktop/phone screenshots inspected.
+- Browser app-data requests used intercepted fixtures; zero app-data writes or
+  runtime errors. These checks do not certify live data contents or real network
+  performance. Chris separately reviewed the real preview and accepted Daily.
+This documentation-only closeout does not rerun application builds/browser tests.
+Closeout checks cover the documentation diff, unchanged application tree,
+branch/upstream synchronization, clean working tree, retained branches, the exact
+accepted Ready preview and unchanged local/tracking/live main.
+
+NOT TOUCHED
+This closeout: application code/CSS/JSX, assets, dependencies, queries, data/DB.
+Across Daily implementation: Daily.jsx/DailyStyle, shared components/tokens/base
+styles and locked Home/Jobs/Crew Schedule/Calendar implementations remained
+unchanged. No navigation, refetch, remount, caching, persistence or prefetch changes.
+Main and production remain unchanged. No merge, promotion or production release.
+No retained preview branch deleted or merged. Unrelated historical branches and
+worktrees remain untouched; hygiene verification is not cleanup authority.
+
+NEXT SESSION POINTERS
+STOP. Await Chris's next explicit task. Orient from this handoff, BACKLOG.md and
+actual repository/branch state. No automatic polish, propagation, performance
+audit/implementation, deferred functionality, identity work, merge or production
+release. All five accepted primary screens remain LOCKED.
+The remaining primary menu order is Logistics, Finance / Billing, Production Rate,
+Schedules, Import; this pointer does not authorize work.
+Use v287/v288/v289/v290 for Crew/Calendar/Jobs/Home acceptance and deferred scope.
+Daily's accepted implementation/preview above remain the visual baseline after
+this documentation commit; a later branch preview must not obscure that reference.
+
+FILES TO KNOW
+docs/BACKLOG.md — F63 acceptance/locks, F63-PERF and existing deferred boundaries.
+docs/handoffs/SC_Handoff_v290.txt — accepted Home closeout and performance deferral.
+src/schedule/Daily.css — isolated Daily materials and loading coverage.
+src/schedule/ScheduleLayout.jsx — route markers and Daily stylesheet import.
+src/schedule/views/Daily.jsx — original implementation and DailyStyle, unchanged.
+Temporary verification: /private/tmp/check-daily-source.mjs,
+/private/tmp/check-daily-canonical.mjs and /private/tmp/check-daily-deployed.mjs;
+not committed test assets.
+
+GIT STATE
+Documentation-only closeout on retained ui/daily-canonical-reskin, starting clean
+at accepted implementation 71d2c71cc47f06487cc3f62b9f4f09c91c4209d9, tracking origin
+of the same name. Daily was branched from accepted Home closeout
+5415bef7749e4c56d4b91139d8a611d34f9af863, not main.
+Retained ui/home-canonical-reskin local/origin:
+5415bef7749e4c56d4b91139d8a611d34f9af863
+Retained ui/jobs-canonical-reskin local/origin:
+6d3535d5dbcbde8b6a7af7dff487908163ada5f0
+Retained ui/calendar-canonical-reskin local/origin:
+e28565c3b2b8a9bfee2988da85b580446fcf3206
+Retained ui/crew-capacity-surface-test local/origin:
+6483984d360e37d68a3e01be21977181be00531b
+Main local/origin/live remote remains:
+b32b30ad9a01c17a0ff17fccae7960cfc6d41f1c
+No Home/Jobs/Crew/Calendar/Daily launch-UI work has been merged to main or released
+to production. The closeout records acceptance and deferred work; it grants no
+new implementation authority. SAFE TO CLOSE after documentation push and hygiene
+verification; retain all accepted preview branches.
