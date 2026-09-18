@@ -1,0 +1,158 @@
+/* Production Rate materials only. Keep the existing feed/detail geometry,
+   query behavior, photo presentation and operational reporting colors. */
+.schedule-root[data-prt-launch] {
+  --prt-paper: #f2eada;
+  --prt-sand: #e5dac5;
+  --prt-control: #eae0cd;
+  --prt-ink: #30281f;
+  --prt-muted: #534532;
+  --prt-accent: #79cde0;
+  --prt-focus: #367d8d;
+  --prt-dark: #302a23;
+  --prt-border: #b5a183;
+  --prt-line: #d0c0a5;
+  --prt-shadow: inset 0 1px rgba(255,248,229,0.55), 0 2px 6px rgba(61,47,31,0.14);
+  background: transparent;
+}
+
+/* Existing host environment. Important declarations override inline shell
+   paint only; no new containing blocks, clipping or scroll owners. */
+[data-app-shell]:has(.schedule-root[data-prt-launch]) > div:has(> [data-app-header]) {
+  background: linear-gradient(180deg, rgba(28,24,20,0.18), rgba(28,24,20,0.04) 40%),
+    url('./assets/crew-capacity-command-bg.png') left top / 100% auto no-repeat,
+    #746049;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-header] {
+  background: rgba(33,28,23,0.74) !important;
+  border-bottom-color: rgba(219,200,169,0.24) !important;
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+  text-shadow: 0 1px 2px #1c1814;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-header] > div:first-child > span {
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-header] > div:first-child > span:last-child {
+  color: #79cde0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-sidebar] {
+  background: linear-gradient(160deg, rgba(53,44,35,0.94), rgba(30,27,24,0.97)) !important;
+  border-right-color: rgba(219,200,169,0.22) !important;
+  box-shadow: inset -1px 0 rgba(221,201,168,0.20), inset 0 2px rgba(121,205,224,0.26);
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-sidebar] button {
+  color: #bfb3a1 !important;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-sidebar] button:hover {
+  background: rgba(231,222,203,0.07) !important;
+  color: #f3ede0 !important;
+}
+[data-app-shell]:has(.schedule-root[data-prt-launch]) [data-app-sidebar] button[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(121,205,224,0.20), rgba(121,205,224,0.06)) !important;
+  color: #79cde0 !important;
+  border-left-color: #79cde0 !important;
+  box-shadow: inset 0 0 0 1px rgba(121,205,224,0.24), inset 3px 0 rgba(121,205,224,0.14);
+}
+
+/* Default to full operational paper until a real list or detail is present.
+   This also covers empty, error and missing-report states without timing changes. */
+.schedule-root[data-prt-launch]:not(:has(.pr-wrap > .jd-prt-list, .pr-wrap > .jd-prt-detail)) {
+  background: var(--prt-paper);
+}
+.schedule-root[data-prt-launch] .pr-wrap {
+  background: var(--prt-sand);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--prt-border), inset 0 2px rgba(255,248,229,0.55);
+}
+.schedule-root[data-prt-launch] .pr-wrap:has(> .jh-empty) {
+  background: var(--prt-paper);
+}
+.schedule-root[data-prt-launch] :is(.pr-title, .pr-job, .jd-prt-date, .jd-prt-detail-date, .jd-prt-task-desc, .jd-prt-notes, .jh-empty) {
+  color: var(--prt-ink);
+}
+.schedule-root[data-prt-launch] :is(.pr-sub, .jd-prt-submitter, .jd-prt-detail-submitter, .jd-label, .jd-prt-pct-target, .jd-prt-task-notes) {
+  color: var(--prt-muted);
+}
+.schedule-root[data-prt-launch] :is(.jd-prt-card, .jd-prt-task) {
+  background: var(--prt-paper);
+  border-color: var(--prt-border);
+  box-shadow: var(--prt-shadow);
+}
+.schedule-root[data-prt-launch] .jd-prt-card:hover {
+  border-color: var(--prt-focus);
+}
+.schedule-root[data-prt-launch] :is(.jd-prt-meta, .jd-prt-header) {
+  border-color: var(--prt-line);
+}
+.schedule-root[data-prt-launch] .jd-table {
+  background: var(--prt-paper);
+  box-shadow: inset 0 0 0 1px var(--prt-border), inset 0 1px rgba(255,248,229,0.55);
+}
+.schedule-root[data-prt-launch] .jd-table th {
+  background: var(--prt-control);
+  color: var(--prt-muted);
+  border-color: var(--prt-line);
+}
+.schedule-root[data-prt-launch] .jd-table td {
+  border-color: var(--prt-line);
+}
+.schedule-root[data-prt-launch] .jd-prt-photo {
+  background: var(--prt-control);
+  border-color: var(--prt-border);
+}
+.schedule-root[data-prt-launch] .jh-back-btn {
+  background: var(--prt-control);
+  color: var(--prt-ink);
+  border-color: var(--prt-border);
+}
+.schedule-root[data-prt-launch] .jd-back {
+  color: var(--prt-muted);
+}
+.schedule-root[data-prt-launch] .jd-back:hover {
+  color: var(--prt-focus);
+}
+
+/* Shell commands and in-tree dialogs. Semantic pills, actual percentages,
+   progress fill, hour colors and toast signals keep their original definitions. */
+.schedule-root[data-prt-launch] .app-schedule-toolbar {
+  background: linear-gradient(180deg, rgba(64,55,44,0.94), rgba(50,43,35,0.94) 45%, rgba(33,28,23,0.97));
+  box-shadow: inset 0 1px rgba(243,237,224,0.10);
+}
+.schedule-root[data-prt-launch] .app-schedule-toolbar .app-act-btn:not(.app-act-primary) {
+  color: #f3ede0;
+  border-color: rgba(219,200,169,0.35);
+}
+.schedule-root[data-prt-launch] .app-act-primary {
+  background: var(--prt-accent);
+  border-color: var(--prt-accent);
+  color: #1c1814;
+}
+.schedule-root[data-prt-launch] .app-act-primary:hover:not(:disabled) {
+  background: #a0dfec;
+  border-color: #a0dfec;
+}
+.schedule-root[data-prt-launch] :is(.app-act-btn, .jh-back-btn):hover {
+  border-color: var(--prt-focus);
+}
+.schedule-root[data-prt-launch] .app-actions-dropdown {
+  background: var(--prt-dark);
+  border-color: var(--prt-border);
+}
+.schedule-root[data-prt-launch] .app-actions-dropdown button:hover {
+  background: rgba(121,205,224,0.12);
+  color: var(--prt-accent);
+}
+.schedule-root[data-prt-launch] .mdl {
+  background: var(--prt-paper);
+  border-color: var(--prt-border);
+  box-shadow: inset 0 1px rgba(255,248,229,0.55), 0 8px 32px rgba(28,24,20,0.30);
+}
+.schedule-root[data-prt-launch] .mbg {
+  background: rgba(28,24,20,0.60);
+}
+.schedule-root[data-prt-launch] .mfr :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: var(--prt-control);
+}
+.schedule-root[data-prt-launch] :is(.app-act-btn, .jh-back-btn, .jd-back):focus-visible {
+  outline: 2px solid var(--prt-focus);
+  outline-offset: -2px;
+}
