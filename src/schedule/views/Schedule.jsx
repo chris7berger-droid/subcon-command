@@ -103,6 +103,7 @@ function gTagClass(t) {
 export default function Schedule({ embedded = false } = {}) {
   const user = useUser()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const toast = useToast()
   const changedBy = user?.name || 'unknown'
   const [jobs, setJobs] = useState([])
@@ -116,7 +117,14 @@ export default function Schedule({ embedded = false } = {}) {
   const [staticRetry, setStaticRetry] = useState(0)
   const [loadedWeek, setLoadedWeek] = useState(null)
   const [error, setError] = useState(null)
-  const [weekOffset, setWeekOffset] = useState(0)
+  // Use the destination week on the first render, before effects can run.
+  const [weekOffset, setWeekOffset] = useState(() => {
+    const week = searchParams.get('week')
+    const target = week && new Date(week + 'T00:00:00')
+    if (!target || Number.isNaN(target.getTime())) return 0
+    const diffDays = Math.round((target - getMonday(new Date())) / (1000 * 60 * 60 * 24))
+    return Math.round(diffDays / 7)
+  })
   const [weekChanged, setWeekChanged] = useState(false)
   const editingTrips = useRef(new Set())
   const onTripEditStateChange = useCallback((editorKey, editing) => {
@@ -159,7 +167,6 @@ export default function Schedule({ embedded = false } = {}) {
   const [allocsByJobId, setAllocsByJobId] = useState({})
 
   // URL-param deep-link from JobDetail: /schedule?job=<id>&week=<YYYY-MM-DD>
-  const [searchParams] = useSearchParams()
   const focusJobId = searchParams.get('job')
   const focusWeek = searchParams.get('week')
   const focusTripId = searchParams.get('trip')

@@ -231,18 +231,19 @@ function ScheduleShell() {
       },
       changedBy,
     )
-    setAddBusy(false)
-    if (error) { console.error(error); toast(error.message || 'Error adding trip', 'err'); return }
-    toast(d.is_go_back ? 'Go-back added' : 'Trip added', 'ok')
-    closeModal()
+    if (error) { setAddBusy(false); console.error(error); toast(error.message || 'Error adding trip', 'err'); return }
+    const destination = crewScheduleLink(pickedJob, [savedTrip])
     // Force the routed view to remount + refetch so the new job shows immediately
     // (the add happens from the shell; the view owns its own data load, and
     // realtime timing isn't guaranteed). Same mechanism as the Refresh button.
     // BrowserRouter transitions navigation; remount in the same transition so
     // Schedule reads the saved trip's week, not the previous URL's week.
     startTransition(() => {
+      navigate(destination)
       setRefreshKey(k => k + 1)
-      navigate(crewScheduleLink(pickedJob, [savedTrip]))
+      closeModal()
+      setAddBusy(false)
+      toast(d.is_go_back ? 'Go-back added' : 'Trip added', 'ok')
     })
   }
 
