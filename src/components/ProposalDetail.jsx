@@ -4,6 +4,7 @@ import { C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fmt$, fmt$c, fmtD, rateCardLabel } from "../lib/utils";
 import { calcLabor, calcMaterialRow, calcTravel, calcWtcPrice, calcProposalTotal, calcWtcBreakdown, calcBidStamp, usesExactPricing, sumContractBilled } from "../lib/calc";
+import { jobsAmountFromProposalTotal, scheduleSendErrorMessage } from "../lib/jobsAmount";
 import { PROP_C } from "../lib/mockData";
 import { getTenantConfig } from "../lib/config";
 import { useAlerts } from "../lib/alerts";
@@ -717,8 +718,14 @@ async function deletePropAttachment(fullName) {
       const totalSize = wtcList.reduce((sum, w) => sum + (parseFloat(w.size) || 0), 0);
       const sizeUnit = wtcList.find(w => w.unit)?.unit || "SF";
 
-      // Amount as plain number string (Jobs view uses parseFloat)
-      const amount = p.total ? String(Number(p.total)) : "";
+      // 0 is a real contract amount (rate cards). Blank stays null. Never send "".
+      const amountResult = jobsAmountFromProposalTotal(p.total);
+      if (!amountResult.ok) {
+        alert(amountResult.error);
+        setSendingToSchedule(false);
+        return;
+      }
+      const amount = amountResult.amount;
 
       const row = {
         call_log_id: p.call_log_id || null,
@@ -746,7 +753,7 @@ async function deletePropAttachment(fullName) {
       const { data: inserted, error } = await supabase.from("jobs").insert([row]).select("job_id, status");
       if (error) {
         if (error.code === "23505") { alert("This proposal has already been sent to Schedule Command."); setSentToSchedule(true); }
-        else { alert("Error sending to Schedule: " + error.message); }
+        else { alert(scheduleSendErrorMessage(error)); }
         setSendingToSchedule(false);
         return;
       }
