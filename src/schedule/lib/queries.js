@@ -593,11 +593,11 @@ export async function loadJobs({ includeDeleted = false, withWTCs = false } = {}
 // jobs!inner — a phantom (a jobs row with a null call_log_id) is unreachable
 // from call_log and can therefore NEVER be surfaced or picked here.
 //
-// Matching is on the BARE integer job_number (compared as text), plus customer /
-// job name — NEVER display_job_number, which is a composite label like
-// "10252 - Flattening" that a bare "10252" would not usefully match (R2). Because
-// job_number is an integer column, PostgREST can't ilike it server-side, so the
-// term is matched in JS. The fetch is PAGINATED via loadAllRows on the qualified
+// Match the same identity Jobs displays (Sales display number, then jobs.job_num),
+// plus the bare Sales number, customer and job name. Ignore spacing in identity
+// matches so "6507 CO8", "6507CO8" and "6507 CO 8" find the same CO.
+// Matching stays in JS because job_number is an integer column.
+// The fetch is PAGINATED via loadAllRows on the qualified
 // base key call_log.id (buildvsplan T2-1): the active set is ~380 today — one
 // page — but ordering id-DESC without paging would silently drop the OLDEST
 // call_logs once the set crosses PostgREST's 1000-row cap, wrongly blocking a
@@ -608,9 +608,10 @@ export async function loadJobs({ includeDeleted = false, withWTCs = false } = {}
 export async function searchExistingJobs(term) {
   const q = (term || '').trim().toLowerCase()
   if (!q) return { data: [], error: null }
+  const compactQ = q.replace(/\s+/g, '')
   const { data, error } = await loadAllRows(
     'call_log',
-    'id, job_number, display_job_number, customer_name, job_name, jobs!inner(job_id, deleted, merged_into_job_id)',
+    'id, job_number, display_job_number, customer_name, job_name, jobs!inner(job_id, job_num, deleted, merged_into_job_id)',
     { orderBy: 'id', orderAsc: false },
   )
   if (error) return { data: [], error }
@@ -622,13 +623,14 @@ export async function searchExistingJobs(term) {
       // Never offer that hidden row as the parent of a new allocation.
       if (j.deleted === 'Yes' || j.merged_into_job_id != null) continue
       const num = cl.job_number == null ? '' : String(cl.job_number)
+      const identity = cl.display_job_number || j.job_num || num
       const hay = `${num} ${cl.customer_name || ''} ${cl.job_name || ''}`.toLowerCase()
-      if (!hay.includes(q)) continue
+      if (!hay.includes(q) && !identity.toLowerCase().replace(/\s+/g, '').includes(compactQ)) continue
       out.push({
         job_id: j.job_id,
         call_log_id: cl.id,
         job_number: cl.job_number,
-        display_job_number: cl.display_job_number,
+        display_job_number: identity,
         customer: cl.customer_name,
         job_name: cl.job_name,
       })
