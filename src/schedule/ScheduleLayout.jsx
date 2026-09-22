@@ -128,11 +128,13 @@ function ScheduleShell() {
   // Sales-unlinked jobs). It resolves to exactly two outcomes:
   //   1. Pick an existing Sales-linked job from the search dropdown → add a
   //      mobilization (a trip) to it, with an "is this go-back work?" flag.
-  //   2. Typed text matches no Sales job → BLOCK ("create it in Sales first").
+  //   2. Typed text matches no eligible job → show an empty result.
   // No path here creates a jobs row, so it can never mint a null-call_log_id orphan.
   const [jobSearch, setJobSearch] = useState('')
   const [jobResults, setJobResults] = useState([])
   const [jobSearching, setJobSearching] = useState(false)
+  const [jobSearchError, setJobSearchError] = useState(false)
+  const [jobSearchRetry, setJobSearchRetry] = useState(0)
   const [pickedJob, setPickedJob] = useState(null)   // { job_id, call_log_id, job_number, customer, job_name }
   const [mobDraft, setMobDraft] = useState(null)      // { label, start_date, end_date, is_go_back, crew_needed, lead, vehicle, equipment, power_source, sow }
   const [addBusy, setAddBusy] = useState(false)
@@ -169,6 +171,7 @@ function ScheduleShell() {
     setJobSearch('')
     setJobResults([])
     setJobSearching(false)
+    setJobSearchError(false)
     setPickedJob(null)
     setMobDraft(null)
     setLeadAvailability(null)
@@ -180,15 +183,24 @@ function ScheduleShell() {
   useEffect(() => {
     if (modal !== 'job' || pickedJob) return
     const term = jobSearch.trim()
-    if (!term) { setJobResults([]); setJobSearching(false); return }
+    setJobResults([])
+    setJobSearchError(false)
+    if (!term) { setJobSearching(false); return }
     let alive = true
     setJobSearching(true)
     const t = setTimeout(async () => {
-      const { data } = await searchExistingJobs(term)
-      if (alive) { setJobResults(data || []); setJobSearching(false) }
+      try {
+        const { data, error } = await searchExistingJobs(term)
+        if (error) throw error
+        if (alive) setJobResults(data || [])
+      } catch {
+        if (alive) setJobSearchError(true)
+      } finally {
+        if (alive) setJobSearching(false)
+      }
     }, 300)
     return () => { alive = false; clearTimeout(t) }
-  }, [jobSearch, modal, pickedJob])
+  }, [jobSearch, modal, pickedJob, jobSearchRetry])
 
   function pickJob(r) {
     setPickedJob(r)
@@ -412,7 +424,7 @@ function ScheduleShell() {
       </main>
 
       {/* Add to Schedule Modal (add-job-dedup) — search a Sales-linked job → add a
-          mobilization; typed text with no match blocks ("create it in Sales first"). */}
+          mobilization; no match or a failed search cannot create a job. */}
       {modal === 'job' && (
         <div className="mbg" onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
           <div className="mdl">
@@ -432,7 +444,7 @@ function ScheduleShell() {
                   <div className="mwt-list">
                     {jobResults.map(r => (
                       <div key={`${r.call_log_id}-${r.job_id}`} className="mwt-row" style={{ cursor: 'pointer' }} onClick={() => pickJob(r)}>
-                        <span><b>#{r.job_number}</b>{r.customer ? ` · ${r.customer}` : ''}{r.job_name ? ` · ${r.job_name}` : ''}</span>
+                        <span><b>#{r.display_job_number}</b>{r.customer ? ` · ${r.customer}` : ''}{r.job_name ? ` · ${r.job_name}` : ''}</span>
                       </div>
                     ))}
                   </div>
@@ -440,11 +452,15 @@ function ScheduleShell() {
                 {jobSearch.trim() && jobSearching && (
                   <div className="mfr-label" style={{ color: 'var(--sand-dark)' }}>Searching…</div>
                 )}
-                {jobSearch.trim() && !jobSearching && jobResults.length === 0 && (
+                {jobSearchError && (
+                  <div className="mfr-label" role="alert">
+                    Couldn’t search jobs. Please try again.{' '}
+                    <button className="app-act-btn" onClick={() => setJobSearchRetry(n => n + 1)}>Retry search</button>
+                  </div>
+                )}
+                {jobSearch.trim() && !jobSearching && !jobSearchError && jobResults.length === 0 && (
                   <div className="mfr-label" style={{ color: 'var(--sand-dark)' }}>
-                    {/^\d+$/.test(jobSearch.trim())
-                      ? `Job #${jobSearch.trim()} isn’t in Sales yet — create it in Sales first.`
-                      : 'No matching job — create it in Sales first.'}
+                    No matching job found.
                   </div>
                 )}
                 <div className="macts">
@@ -456,7 +472,7 @@ function ScheduleShell() {
             {pickedJob && mobDraft && (
               <>
                 <div className="mfr-label">
-                  ▸ Job #{pickedJob.job_number}{pickedJob.customer ? ` · ${pickedJob.customer}` : ''}{pickedJob.job_name ? ` · ${pickedJob.job_name}` : ''}
+                  ▸ Job #{pickedJob.display_job_number}{pickedJob.customer ? ` · ${pickedJob.customer}` : ''}{pickedJob.job_name ? ` · ${pickedJob.job_name}` : ''}
                 </div>
                 <div className="mfr">
                   <label className="mchk"><input type="checkbox" checked={mobDraft.is_go_back} onChange={e => setMobDraft(p => ({ ...p, is_go_back: e.target.checked }))} /> Is this go-back work?</label>
