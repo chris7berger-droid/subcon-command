@@ -5,7 +5,7 @@
 // (Phase 2, Beat 5). Auth/access gate + duplicate sidebar from the old App.jsx
 // are dropped — the host handles login, entitlement, and navigation.
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, startTransition } from 'react'
 import './App.css'
 import './index.css'
 import { supabase } from '../lib/supabase'
@@ -14,6 +14,8 @@ import { UserProvider, useUser } from './lib/user'
 import { ToolbarContext } from './lib/toolbar'
 import { searchExistingJobs, getNextMobSeq, addJobMobilization } from './lib/queries'
 import { crewLeadNames } from './lib/crewLeads'
+import { crewScheduleLink } from './lib/jobCardSchedule'
+import { crewStatusUiLabel, isCrewStatusOut } from './lib/crewStatus'
 import { activeScheduleCrew, canUnarchiveFromScheduler, isActiveScheduleCrew } from './lib/scheduleCrew'
 import { assignmentRenameUpdate } from './lib/assignmentIdentity'
 import { crewRequirement } from './lib/allocations'
@@ -134,6 +136,33 @@ function ScheduleShell() {
   const [pickedJob, setPickedJob] = useState(null)   // { job_id, call_log_id, job_number, customer, job_name }
   const [mobDraft, setMobDraft] = useState(null)      // { label, start_date, end_date, is_go_back, crew_needed, lead, vehicle, equipment, power_source, sow }
   const [addBusy, setAddBusy] = useState(false)
+  const [leadAvailability, setLeadAvailability] = useState(null)
+  const [availabilityRetry, setAvailabilityRetry] = useState(0)
+  const availabilityDate = modal === 'job' ? mobDraft?.start_date : null
+
+  useEffect(() => {
+    if (!availabilityDate) return
+    let stale = false
+    setLeadAvailability(null)
+    async function loadAvailability() {
+      try {
+        const [assignRes, statusRes] = await Promise.all([
+          supabase.from('assignments').select('crew_name').eq('date', availabilityDate),
+          supabase.from('crew_status').select('crew_name, status').eq('date', availabilityDate),
+        ])
+        if (assignRes.error || statusRes.error) throw assignRes.error || statusRes.error
+        if (!stale) setLeadAvailability({
+          date: availabilityDate,
+          booked: new Set((assignRes.data || []).map(row => row.crew_name)),
+          statuses: new Map((statusRes.data || []).map(row => [row.crew_name, row.status])),
+        })
+      } catch {
+        if (!stale) setLeadAvailability({ date: availabilityDate, error: true })
+      }
+    }
+    loadAvailability()
+    return () => { stale = true }
+  }, [availabilityDate, availabilityRetry])
 
   function openAddJob() {
     loadModalData()
@@ -142,6 +171,7 @@ function ScheduleShell() {
     setJobSearching(false)
     setPickedJob(null)
     setMobDraft(null)
+    setLeadAvailability(null)
     setAddBusy(false)
     setModal('job')
   }
@@ -190,7 +220,7 @@ function ScheduleShell() {
     // by the picked job's id, never re-derived from the typed text.
     const { seq, error: seqErr } = await getNextMobSeq(pickedJob.job_id)
     if (seqErr) { console.error(seqErr); setAddBusy(false); toast('Error preparing trip', 'err'); return }
-    const { error } = await addJobMobilization(
+    const { data: savedTrip, error } = await addJobMobilization(
       pickedJob.job_id,
       {
         seq, label: d.label, start_date: d.start_date || null, end_date: d.end_date || null, is_go_back: d.is_go_back,
@@ -208,7 +238,12 @@ function ScheduleShell() {
     // Force the routed view to remount + refetch so the new job shows immediately
     // (the add happens from the shell; the view owns its own data load, and
     // realtime timing isn't guaranteed). Same mechanism as the Refresh button.
-    setRefreshKey(k => k + 1)
+    // BrowserRouter transitions navigation; remount in the same transition so
+    // Schedule reads the saved trip's week, not the previous URL's week.
+    startTransition(() => {
+      setRefreshKey(k => k + 1)
+      navigate(crewScheduleLink(pickedJob, [savedTrip]))
+    })
   }
 
   // --- Add Crew ---
@@ -429,7 +464,7 @@ function ScheduleShell() {
                   <input aria-label="Trip title" required placeholder="Trip title (required)" value={mobDraft.label} onChange={e => setMobDraft(p => ({ ...p, label: e.target.value }))} />
                 </div>
                 <div className="mfr">
-                  <input type="date" value={mobDraft.start_date} onChange={e => setMobDraft(p => ({ ...p, start_date: e.target.value }))} />
+                  <input type="date" value={mobDraft.start_date} onChange={e => { setLeadAvailability(null); setMobDraft(p => ({ ...p, start_date: e.target.value })) }} />
                   <input type="date" value={mobDraft.end_date} onChange={e => setMobDraft(p => ({ ...p, end_date: e.target.value }))} />
                 </div>
                 {/* Per-allocation crew + scope (B87). Blank = inherit the job's own.
@@ -441,8 +476,26 @@ function ScheduleShell() {
                   <input type="number" min="0" step="1" placeholder="Crew #" value={mobDraft.crew_needed} onChange={e => setMobDraft(p => ({ ...p, crew_needed: e.target.value }))} />
                   <select aria-label="Crew lead" required disabled={crewLoading || crewLoadError || !leadNames.length} value={mobDraft.lead} onChange={e => setMobDraft(p => ({ ...p, lead: e.target.value }))}>
                     <option value="">{crewLoading ? 'Loading crew…' : crewLoadError ? 'Crew unavailable' : !leadNames.length ? 'No active crew' : 'Lead (required)…'}</option>
-                    {leadNames.map(n => <option key={n} value={n}>{flipName(n)}</option>)}
+                    {leadNames.map(n => {
+                      let label = ''
+                      if (availabilityDate) {
+                        if (leadAvailability?.date !== availabilityDate) label = 'Checking…'
+                        else if (leadAvailability.error) label = 'Availability unknown'
+                        else {
+                          const status = leadAvailability.statuses.get(n)
+                          label = isCrewStatusOut(status) ? crewStatusUiLabel(status) : leadAvailability.booked.has(n) ? 'Booked' : 'Available'
+                        }
+                      }
+                      return <option key={n} value={n}>{flipName(n)}{label ? ` — ${label}` : ''}</option>
+                    })}
                   </select>
+                </div>
+                <div className="mfr-label" role="status">
+                  Availability on start date{availabilityDate ? ` (${availabilityDate})` : ' — select a start date.'}
+                  {leadAvailability?.date === availabilityDate && leadAvailability?.error && <>
+                    {' — Couldn’t load availability. '}
+                    <button className="app-act-btn" onClick={() => { setLeadAvailability(null); setAvailabilityRetry(n => n + 1) }}>Retry availability</button>
+                  </>}
                 </div>
                 {crewLoadError && <div className="mfr" role="alert"><span>Couldn’t load the crew list.</span><button className="app-act-btn" onClick={loadModalData}>Retry</button></div>}
                 {!crewLoading && !crewLoadError && !leadNames.length && <p className="mfr-label" role="status">Add or restore a crew member in Actions → Crew List first.</p>}
