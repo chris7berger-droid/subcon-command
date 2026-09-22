@@ -1,0 +1,68 @@
+SC Handoff v285 — Add to Schedule week + lead availability — 2026-09-22
+
+SESSION SUMMARY
+Two bounded UX fixes implemented in ScheduleLayout.jsx. Preview verified;
+not merged or released to production. No migrations or live data mutations.
+
+CHANGES SHIPPED (PREVIEW ONLY)
+1. Add to Schedule captures addJobMobilization's returned row and navigates
+   with crewScheduleLink(pickedJob, [savedTrip]). Only the new trip is passed.
+   Existing refreshKey remount remains. Refresh and navigation are wrapped
+   together in startTransition: BrowserRouter transitions navigation, so an
+   urgent refresh otherwise remounted Schedule against the old ?week= first.
+   A browser regression reproduced that ordering bug and verified the fix.
+2. Existing lead options use the same crewLeadNames roster and stored values.
+   Two start-date-filtered reads load assignments + crew_status. Absence takes
+   priority, then Booked, then Available, matching Crew Schedule day details.
+   Existing crewStatus helpers supply absence classification and labels.
+   Availability on start date is explicit. No date = no status claim; loading
+   = Checking; either read fails = Availability unknown + retry. Changing dates
+   clears old labels immediately and ignores late responses for an old date.
+
+DECISIONS
+Only the shell's Add to Schedule flow changed. No MobsModal / Build schedule
+or ScheduleTripDetails / inline Save Trip navigation or lead-picker changes.
+Availability is informational; booked/out leads remain selectable. Selecting
+a lead does not create an assignments row. No role filtering or new system.
+
+NEW/CLOSED BACKLOG ITEMS
+Added Add to Schedule UX as In Progress, built/preview-verified, pending release.
+IDENT-4 and all unrelated backlog items remain untouched.
+
+VERIFICATION
+- npm run build: pass (existing bundle-size warning).
+- node scripts/check-job-card-schedule.mjs: pass.
+- Focused eslint: same existing unused clDelete error as HEAD; no new findings.
+- Local built app and deployed preview browser checks: pass. Checked save from
+  Crew Schedule with an old ?week= and from Jobs; exact new trip ID/week;
+  Friday and post-DST dates; refresh/reload; save failure does not navigate;
+  all six availability labels; active/legacy roster retained, archived excluded;
+  unchanged selected lead; date-filtered reads only; loading, either read failing,
+  retry, clearing date, and out-of-order responses.
+- Browser calls were fully intercepted synthetic fixtures. No live app-data
+  reads/writes or real-user acceptance claimed.
+- Temporary browser harness: /private/tmp/schedule-ux-check/check.mjs
+  Screenshots: availability.png, landing.png in that directory.
+- git diff --check: pass.
+
+NOT TOUCHED
+MobsModal, BuildScheduleModal, ScheduleTripDetails, Schedule.jsx, helpers,
+CSS, migrations, production, historical records, assignments, IDENT-4.
+
+NEXT SESSION POINTERS
+Review preview with Chris before release. No database work is needed.
+Preview (final app source):
+https://sales-command-45c8vzxc3-chris7berger-droids-projects.vercel.app
+Ready deployment: dpl_74EMQPaVBU1y7JzpH2SgfZYECurh.
+The earlier 46owjnoxn preview lacks the navigation-transition correction;
+do not review/release that older deployment.
+
+FILES TO KNOW
+src/schedule/ScheduleLayout.jsx — only application file changed.
+src/schedule/lib/jobCardSchedule.js — reused crewScheduleLink, unchanged.
+src/schedule/lib/crewStatus.js — reused status rules/labels, unchanged.
+docs/BACKLOG.md — preview-only status.
+
+GIT STATE
+Branch: fix/add-schedule-week-lead-availability, based on main e563b75.
+Main/production unchanged. This handoff accompanies the implementation commit.
