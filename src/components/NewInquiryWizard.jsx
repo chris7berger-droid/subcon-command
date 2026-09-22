@@ -3,6 +3,7 @@ import { C, F } from "../lib/tokens";
 import { selectableWorkTypes } from "../lib/workTypes";
 import { supabase } from "../lib/supabase";
 import { STAGES } from "../lib/mockData";
+import { changeOrderInsertErrorMessage, nextCoNumberFromQuery } from "../lib/nextCoNumber";
 import Checkbox from "./Checkbox";
 import Btn from "./Btn";
 import SearchSelect from "./SearchSelect";
@@ -303,8 +304,20 @@ function NewInquiryWizard({ onClose, onSaved, team, customers, allJobs, workType
 
     let coNum = null;
     if (data.jobType === "co" && data.parentJobId) {
-      const { data: cos } = await supabase.from("call_log").select("co_number").eq("parent_job_id", data.parentJobId).order("co_number", { ascending: false }).limit(1);
-      coNum = cos && cos.length > 0 ? (cos[0].co_number || 0) + 1 : 1;
+      const { data: cos, error: coReadErr } = await supabase
+        .from("call_log")
+        .select("co_number, is_go_back")
+        .eq("parent_job_id", data.parentJobId)
+        .eq("is_go_back", false)
+        .not("co_number", "is", null)
+        .order("co_number", { ascending: false, nullsFirst: false });
+      const allocated = nextCoNumberFromQuery({ data: cos, error: coReadErr });
+      if (!allocated.ok) {
+        setError("Couldn't look up existing CO numbers. Try again.");
+        setSaving(false);
+        return;
+      }
+      coNum = allocated.coNumber;
     }
 
     const billingAddrStreet = data.billingAddressSame ? data.businessAddress : data.billingAddrStreet;
@@ -411,7 +424,7 @@ function NewInquiryWizard({ onClose, onSaved, team, customers, allJobs, workType
         setError(`Job number ${jobNum} is already in use. Try a different number or use auto-assign.`); setSaving(false); return;
       }
       if (isCo) {
-        setError("Couldn't allocate a CO number — another CO was created at the same time. Reload and try again."); setSaving(false); return;
+        setError(changeOrderInsertErrorMessage(err)); setSaving(false); return;
       }
       const { data: last } = await supabase.from("call_log").select("job_number").order("job_number", { ascending: false }).limit(1);
       jobNum = last && last.length > 0 ? (last[0].job_number || 9999) + 1 : 10000;
