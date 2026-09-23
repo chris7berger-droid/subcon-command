@@ -148,7 +148,7 @@ export default function CrewPhone() {
         <span className="cp-brand">SUBCON COMMAND</span>
         <h1>{mode === 'midweek' ? 'Midweek Update' : 'Weekly crew texts'}</h1>
         <p>{mode === 'midweek'
-          ? 'Choose a person. Share remaining days through Friday from your phone.'
+          ? 'Choose a person. Share remaining days through Saturday from your phone.'
           : 'Choose a person. Share their week from your phone.'}</p>
       </header>
       <section className="cp-picker" aria-label="Choose schedule">
@@ -165,8 +165,8 @@ export default function CrewPhone() {
           <button aria-label="Next week" disabled={sharing} onClick={() => moveWeek(1)}>→</button>
         </div> : <p className="cp-midweek-range">
           {midweekDates.length
-            ? `${crewCompactDayLabel(midweekDates[0])} – ${crewCompactDayLabel(midweekDates.at(-1))} · today through Friday`
-            : 'No remaining weekdays through Friday'}
+            ? `${crewCompactDayLabel(midweekDates[0])} – ${crewCompactDayLabel(midweekDates.at(-1))} · today through Saturday`
+            : 'No remaining days through Saturday'}
         </p>}
         {ready && names.length > 0 && <>
           <label>Crew member<select value={name} disabled={sharing} onChange={e => choose(e.target.value)}>
@@ -192,7 +192,7 @@ export default function CrewPhone() {
           <div className="cp-section-title"><h2>{displayName}’s {mode === 'midweek' ? 'update' : 'week'}</h2>
             <button disabled={sharing} onClick={() => setRefresh(n => n + 1)}>Refresh</button>
           </div>
-          <p className="cp-updated">Updated {snapshot.updatedAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · {mode === 'midweek' ? 'Today through Friday' : 'Monday–Sunday'}</p>
+          <p className="cp-updated">Updated {snapshot.updatedAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · {mode === 'midweek' ? 'Today through Saturday' : 'Monday–Sunday'}</p>
           {message.warnings?.length > 0 && <section className="cp-notice" aria-label="Check before sharing">
             <h2>Check before sharing</h2><ul>{message.warnings.map(w => <li key={w}>{w}</li>)}</ul>
           </section>}
@@ -207,7 +207,7 @@ export default function CrewPhone() {
             </section>)}
           </div> : <section className="cp-midweek-days" aria-label="Midweek update preview">
             {message.days.length ? message.days.map((line, index) => <p key={`${line}-${index}`}>{line}</p>) :
-              <p>No remaining assignments or scheduled-off days through Friday.</p>}
+              <p>No remaining assignments or scheduled-off days through Saturday.</p>}
           </section>}
           <details className="cp-exact" open={showText} onToggle={e => setShowText(e.currentTarget.open)}>
             <summary>Full text to share</summary>

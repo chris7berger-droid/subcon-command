@@ -3,12 +3,16 @@ import { buildCrewMidweekText, buildCrewWeekText, crewCompactDayLabel, crewMidwe
 
 const week = crewWeekDates('2026-09-11')
 assert.deepEqual(week, ['2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11', '2026-09-12', '2026-09-13'])
-assert.deepEqual(crewMidweekDates('2026-09-08'), week.slice(1, 5), 'Tuesday through Friday of the current week')
-assert.deepEqual(crewMidweekDates('2026-09-07'), week.slice(0, 5), 'Monday through Friday')
-assert.deepEqual(crewMidweekDates('2026-09-11'), ['2026-09-11'], 'Friday is only remaining weekday')
-assert.deepEqual(crewMidweekDates('2026-09-12'), [], 'Saturday has no remaining weekdays through Friday')
-assert.deepEqual(crewMidweekDates('2026-09-13'), [], 'Sunday has no remaining weekdays through Friday')
-assert.deepEqual(crewMidweekDates('2026-09-15'), ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18'])
+assert.deepEqual(crewMidweekDates('2026-09-08'), week.slice(1, 6), 'Tuesday through Saturday of the current week')
+assert.deepEqual(crewMidweekDates('2026-09-07'), week.slice(0, 6), 'Monday through Saturday')
+assert.deepEqual(crewMidweekDates('2026-09-11'), ['2026-09-11', '2026-09-12'], 'Friday and Saturday remain')
+assert.deepEqual(crewMidweekDates('2026-09-12'), ['2026-09-12'], 'Saturday includes today')
+assert.deepEqual(crewMidweekDates('2026-09-13'), [], 'Sunday still has no remaining days')
+assert.deepEqual(crewMidweekDates('2026-09-15'), ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19'])
+assert.deepEqual(crewMidweekDates('2026-09-23'), ['2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26'])
+assert.deepEqual(crewMidweekDates('2026-09-25'), ['2026-09-25', '2026-09-26'])
+assert.deepEqual(crewMidweekDates('2026-09-26'), ['2026-09-26'])
+assert.deepEqual(crewMidweekDates('2026-09-27'), [])
 assert.equal(crewCompactDayLabel('2026-09-15'), 'TUE 9/15')
 assert.equal(crewCompactDayLabel('2026-09-18'), 'FRI 9/18')
 
@@ -97,7 +101,7 @@ const missing = buildCrewMidweekText({
 assert.match(missing.text, /FRI 9\/11 — Job details unavailable$/)
 
 const inferred = buildCrewMidweekText({
-  name: 'Garcia, Jose', dates: week.slice(1, 5), jobs: [job], allocations, assignments: [],
+  name: 'Garcia, Jose', dates, jobs: [job], allocations, assignments: [],
   statuses: [{ crew_name: 'Garcia, Jose', date: week[2], status: 'off' }],
 })
 assert.doesNotMatch(inferred.text, /OFF — MAY CHANGE|WED 9\/9|JOB #/)
@@ -114,4 +118,27 @@ const unlinked = buildCrewMidweekText({
 assert.match(unlinked.text, /FRI 9\/11 — JOB #1842$/)
 assert.doesNotMatch(unlinked.text, /with Mike Jones/)
 
-console.log('PASS: midweek today–Friday window, compact lines, assignment-over-off, no inferred off, weekly text unchanged')
+// Read-only production inspection, 2026-09-23: Antonio's saved Saturday assignment
+// and same-trip coworkers. Keep the real identities that exposed the omission.
+const antonioTrip = '992499ae-74bc-403a-8c06-10a2b9a96acd'
+const antonio = {
+  name: 'Antonio',
+  jobs: [{ job_id: 1150, job_num: '7215 - STY 4' }],
+  allocations: { 1150: { 10: { id: antonioTrip, seq: 10,
+    start_date: '2026-09-21', end_date: '2026-09-26' } } },
+  assignments: [[15697, 'Antonio'], [15698, 'Victor'], [15699, 'Luna, Daniel'], [15700, 'Williams, Lucas']]
+    .map(([id, crew_name]) => ({ id, crew_name, job_id: 1150,
+      mobilization_id: antonioTrip, date: '2026-09-26' })),
+}
+const saturdayLine = 'SAT 9/26 — JOB #7215 - STY 4 — with Daniel Luna, Victor, Lucas Williams'
+for (const today of ['2026-09-23', '2026-09-25', '2026-09-26']) {
+  const message = buildCrewMidweekText({ ...antonio, dates: crewMidweekDates(today) })
+  assert.deepEqual(message.days, [saturdayLine], `${today}: Saturday assignment survives into the message`)
+  assert.ok(message.text.endsWith(saturdayLine))
+}
+assert.deepEqual(buildCrewMidweekText({ ...antonio, dates: crewMidweekDates('2026-09-27') }).days, [])
+const antonioWeekly = buildCrewWeekText({ ...antonio, dates: crewWeekDates('2026-09-23') })
+assert.match(antonioWeekly.text, /SATURDAY, SEP 26[\s\S]*7215 - STY 4/)
+assert.match(antonioWeekly.text, /With: Daniel Luna, Victor, Lucas Williams/)
+
+console.log('PASS: midweek today–Saturday window, Antonio production fixture, Sunday empty, compact lines, assignment-over-off, no inferred off, weekly text unchanged')
