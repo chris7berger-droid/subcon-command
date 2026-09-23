@@ -105,13 +105,13 @@ export function buildCrewWeekText({ name, dates, jobs, allocations, assignments,
 
 const COMPACT_WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
-// Remaining Midweek Update days: local today through Friday of the week that
-// contains today. Saturday/Sunday yield no remaining days. Independent of the
+// Remaining Midweek Update days: local today through Saturday of the week that
+// contains today. Sunday yields no remaining days. Independent of the
 // weekly-send Monday–Sunday window.
 export function crewMidweekDates(today) {
   const day = String(today || '').slice(0, 10)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return []
-  return crewWeekDates(day).slice(0, 5).filter(date => date >= day)
+  return crewWeekDates(day).slice(0, 6).filter(date => date >= day)
 }
 
 export function crewCompactDayLabel(date) {
@@ -130,7 +130,7 @@ function compactAssignmentLine(date, job, coworkers) {
   return coworkers.length ? `${line} — with ${coworkers.map(crewDisplayName).join(', ')}` : line
 }
 
-// Read-only compact text for remaining Mon–Fri days. Does not write assignments
+// Read-only compact text for remaining Mon–Sat days. Does not write assignments
 // or crew_status. Only stored scheduled-off becomes (OFF — MAY CHANGE).
 export function buildCrewMidweekText({ name, dates, jobs = [], allocations = {}, assignments = [], statuses = [] }) {
   const remaining = new Set(dates || [])

@@ -25,7 +25,7 @@ const statuses = [
   { crew_name: 'JoseJR', date: '2026-09-12', status: 'noshow' },
 ]
 let signedIn = false, allowedApps = ['sales', 'schedule'], failTable = null, delayedWeek = null
-const pending = [], errors = [], writes = [], reads = []
+const pending = [], errors = [], writes = [], reads = [], assignmentReads = []
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 })
 const cookieFile = process.env.PREVIEW_COOKIES || '/private/tmp/crew-phone-preview-cookies.txt'
 if (existsSync(cookieFile)) {
@@ -72,6 +72,7 @@ await context.route('**/*', async route => {
   if (table === 'tenant_config') return send(signedIn ? { id: tenant, company_name: 'Preview Company', apps: ['sales', 'schedule'] } : null)
   const week = url.searchParams.getAll('date').find(v => v.startsWith('gte.'))?.slice(4)
   const end = url.searchParams.getAll('date').find(v => v.startsWith('lte.'))?.slice(4)
+  if (table === 'assignments') assignmentReads.push({ week, end })
   if (table === 'assignments' && week === delayedWeek) await new Promise(resolve => pending.push(resolve))
   if (table === failTable) return send({ message: 'Fixture unavailable' }, 400)
   const inRange = row => {
@@ -122,17 +123,35 @@ try {
   await page.getByRole('button', { name: 'Midweek Update', exact: true }).click()
   await page.getByRole('button', { name: 'Copy update', exact: true }).waitFor()
   assert.equal(await page.getByLabel('Week of').count(), 0, 'Week navigation hidden in midweek')
-  const midweekText = await preview.inputValue()
+  let midweekText = await preview.inputValue()
   assert.match(midweekText, /^UPDATED CREW SCHEDULE — ABBREVIATED\nJoseJR\nCurrent schedule from today forward/)
   assert.match(midweekText, /THU 9\/10 — \(OFF — MAY CHANGE\)/)
   assert.match(midweekText, /FRI 9\/11 — JOB #6618 — with Kurtis Zomparelli/)
   assert.doesNotMatch(midweekText, /SUNDAY, SEP 13|SUN 9\/13|SAT 9\/12|Week of|TUE 9\/8|WED 9\/9/)
   assert.doesNotMatch(midweekText, /FRI 9\/11 — \(OFF/)
   assert.doesNotMatch(midweekText, /Wrong Coworker|PRIVATE OFFICE|No work assigned/)
+  assert.match(await page.locator('.cp-midweek-range').innerText(), /SAT 9\/12 · today through Saturday/)
+  assert.doesNotMatch(await root.innerText(), /through Friday|remaining weekdays/)
+  // A new Saturday assignment must appear after Refresh, then reach Copy/Share
+  // unchanged. Only the intercepted fixture changes; no app-data writes occur.
+  assignments.push(
+    { id: 5, job_id: 1, date: '2026-09-12', crew_name: 'JoseJR', mobilization_id: 'burnish' },
+    { id: 6, job_id: 1, date: '2026-09-12', crew_name: 'Kurtis Zomparelli', mobilization_id: 'burnish' },
+  )
+  const readsBeforeRefresh = assignmentReads.length
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click()
+  await page.waitForFunction(() => document.querySelector('textarea[aria-label="Full text to share"]')?.value.includes('SAT 9/12 — JOB #6618'))
+  assert(assignmentReads.length > readsBeforeRefresh, 'Refresh re-queries assignments')
+  assert.deepEqual(assignmentReads.at(-1), { week: '2026-09-07', end: '2026-09-13' }, 'Read window remains Monday–Sunday')
+  midweekText = await preview.inputValue()
+  assert.match(midweekText, /SAT 9\/12 — JOB #6618 — with Kurtis Zomparelli/)
+  assert.match(await page.locator('.cp-midweek-days').innerText(), /SAT 9\/12 — JOB #6618 — with Kurtis Zomparelli/)
+  assert.doesNotMatch(midweekText, /SUN 9\/13/)
   await page.getByRole('button', { name: 'Copy update', exact: true }).click()
   assert.equal(await page.evaluate(() => window.copiedText), midweekText, 'Copy receives compact midweek text')
   await page.getByRole('button', { name: 'Share update', exact: true }).click()
   assert.equal(await page.evaluate(() => window.sharedText), midweekText, 'Share receives compact midweek text')
+  assignments.splice(-2)
   await page.getByRole('button', { name: 'Weekly send', exact: true }).click()
   await copy.waitFor()
   assert.match(await preview.inputValue(), /^JoseJR\n/)

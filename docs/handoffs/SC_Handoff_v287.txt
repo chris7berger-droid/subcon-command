@@ -1,0 +1,66 @@
+SC Handoff v287 — Crew Share Midweek Update includes Saturday — 2026-09-23
+
+SESSION SUMMARY
+Chris confirmed the omission occurred in Midweek Update, accepted the bounded
+date-window correction, wording, and focused checks, and authorized commit/push
+on fix/crew-midweek-saturday. Merge and production release are not authorized.
+
+CHANGES (ACCEPTED, PENDING MERGE)
+crewMidweekDates() uses slice(0, 6) instead of slice(0, 5): local today through
+Saturday. Sunday remains empty. All five Friday-specific phone UI strings now
+say Saturday; "remaining weekdays" becomes "remaining days".
+Existing model/browser checks extended for Saturday and refresh-to-share flow.
+
+DECISIONS
+This explicitly supersedes v278's Friday-only Midweek Update endpoint.
+Weekly Send stays Monday–Sunday. No new data source or persistence changes.
+
+BACKLOG
+Bounded Saturday follow-up is In Progress, accepted and pending merge.
+
+VERIFICATION
+Model checks pass: Wednesday Sep 23 gives Sep 23–26; Friday gives Sep 25–26;
+Saturday gives Sep 26; Sunday remains empty. Production-based fixture for
+assignment 15697, job 1150 / 7215, trip 992499ae-74bc-403a-8c06-10a2b9a96acd:
+SAT 9/26 — JOB #7215 - STY 4 — with Daniel Luna, Victor, Lucas Williams
+Existing Weekly Send model checks pass, including Sunday.
+Focused application lint and npm run build pass (existing bundle-size warning).
+Local built-app phone browser regression passes: Saturday added to intercepted
+fixture appears after Refresh, assignment GET repeats with Monday–Sunday bounds,
+screen/Copy/Share agree, Weekly Send text unchanged after mode switching.
+All application API calls intercepted; zero app-data writes or page errors.
+The same deployed-preview browser regression passes with intercepted API data.
+Preview access used a fresh Vercel cookie after the initial access-gate timeout.
+Weekly Send functions, phone read/refresh logic and Copy/Share handlers are
+byte-for-byte unchanged versus HEAD. git diff --check passes.
+Finalization reran both focused model scripts, application lint, build and the
+phone browser regression against both the local rebuilt app and accepted
+deployed preview: all pass. Date windows and Antonio's exact Saturday line
+remain correct; Refresh re-queries assignments and Copy/Share preserve the text.
+
+PREVIEW
+https://sales-command-7mc7t8nv7-chris7berger-droids-projects.vercel.app/crew?mode=midweek
+Ready deployment: dpl_74VZKHf3vNYkDV6vyWZRV2fn3jPx (preview only).
+
+NOT TOUCHED
+Weekly Send behavior, assignments/trips, Crew Scheduler, production application
+and data, schemas, migrations, desktop Schedules.jsx, historical repairs.
+
+NEXT SESSION POINTERS
+Accepted behavior must remain unchanged. Merge/release needs Chris's direction.
+
+FILES TO KNOW
+src/schedule/lib/crewWeekText.js
+src/schedule/views/CrewPhone.jsx
+scripts/check-crew-midweek-text-model.mjs
+scripts/check-crew-phone.mjs
+docs/BACKLOG.md
+
+GIT STATE
+Fresh origin fetch confirms main equals origin/main at
+be0bbcea22dded71412f44edd87fa87375e8a6c5. Exactly the six intended files were
+present before creating fix/crew-midweek-saturday, preserving the accepted edits.
+Commit/push authorized with subject: Include Saturday in crew midweek updates.
+Only acceptance/finalization documentation changed during finalization; the four
+accepted application/test files are protected by a before/after SHA-256 check.
+No merge to main, production deployment, or application data changes.
