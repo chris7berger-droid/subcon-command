@@ -3,6 +3,8 @@ import { supabase } from "../../lib/supabase";
 import { tod } from "../../lib/utils";
 import { jobFormStatus } from "./lateForm";
 import { buildCrewCommandView } from "./crewBoard";
+import { loadJobs } from "../../schedule/lib/queries";
+import { buildFieldJobs } from "./fieldJobs.js";
 
 // Field-web reads. All child tables (time_punches, job_crew, daily_log_entries,
 // daily_production_reports, job_material_checks) anchor job_id on CALL_LOG.id
@@ -277,38 +279,22 @@ export async function fetchLoadOutJobs({ today = tod(), windowDays = 7 } = {}) {
 // ── Plain reads for the four "later UI session" screens ─────────────────────
 // Real data, minimal shape — polished layouts come in Chris's later UI sessions.
 
-// Count job_crew rows per call_log id (job_crew.job_id → call_log.id).
-async function crewCountByCallLog(clIds) {
-  const counts = new Map();
-  if (clIds.length === 0) return counts;
-  const crew = await fetchAll("job_crew", "job_id", {
-    filters: [["in", "job_id", clIds]],
-  });
-  for (const c of crew) counts.set(c.job_id, (counts.get(c.job_id) || 0) + 1);
-  return counts;
-}
-
-function fieldJobShape(j, crewCount = 0) {
-  return {
-    jobPk: j.job_id,
-    callLogId: j.call_log_id,
-    jobName: j.job_name || j.call_log?.display_job_number || `Job ${j.call_log_id}`,
-    jobNum: j.call_log?.display_job_number || j.job_num,
-    stage: j.call_log?.stage || null,
-    scheduledStart: j._fieldStart,
-    scheduledEnd: j._fieldEnd,
-    crewCount,
-  };
-}
-
-// Jobs: every active field-stage job (the office's full field job list).
-export async function fetchFieldJobs() {
-  const active = await fetchActiveFieldJobs();
-  const clIds = [...new Set(active.map((j) => j.call_log_id))];
-  const counts = await crewCountByCallLog(clIds);
-  return active
-    .map((j) => fieldJobShape(j, counts.get(j.call_log_id) || 0))
-    .sort((a, b) => (a.scheduledStart || "").localeCompare(b.scheduledStart || ""));
+// Jobs alone uses the canonical Schedule population/lifecycle. Do not route
+// Today/Load-Outs through this adapter: their existing behavior is separate.
+export async function fetchFieldJobs({ today = tod() } = {}) {
+  const { data: jobs, error } = await loadJobs();
+  if (error) throw new Error(error.message);
+  if (!jobs?.length) return [];
+  const jobIds = jobs.map(j => j.job_id);
+  const [trips, assignments] = await Promise.all([
+    fetchAllStrict("job_mobilizations", "id, job_id, seq, label, start_date, end_date", {
+      order: "id", filters: [["in", "job_id", jobIds]],
+    }),
+    fetchAllStrict("assignments", "id, job_id, crew_name, date, mobilization_id", {
+      order: "id", filters: [["in", "job_id", jobIds], ["gte", "date", today]],
+    }),
+  ]);
+  return buildFieldJobs(jobs, trips, assignments, today);
 }
 
 // Crews office command view: scheduled truth is Crew Scheduler (`assignments` +

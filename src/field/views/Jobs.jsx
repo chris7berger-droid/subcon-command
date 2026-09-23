@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../lib/tokens";
-import { fmtD } from "../../lib/utils";
+import { tripRange } from "../../schedule/lib/trips.js";
 import FieldScreen, {
   StatStrip,
   FilterChips,
@@ -25,16 +25,16 @@ export default function Jobs() {
   const { data: rows, loading, error, reload } = useAsync(fetchFieldJobs, []);
   const [chip, setChip] = useState("all");
   const list = rows || [];
-  const live = list.filter((j) => isLiveStage(j.stage) && (j.crewCount || 0) > 0);
+  const live = list.filter((j) => isLiveStage(j.stage) && j.period === "current" && j.crewCount > 0);
   const scheduled = list.filter((j) => isScheduled(j.stage));
-  const noCrew = list.filter((j) => (j.crewCount || 0) === 0);
+  const noCrew = list.filter((j) => j.stage !== "Complete" && j.crewCount === 0);
   const shown =
     chip === "live" ? live : chip === "scheduled" ? scheduled : chip === "none" ? noCrew : list;
 
   return (
     <FieldScreen
       title="Jobs"
-      subtitle="Which jobsites are live — and which need a look."
+      subtitle="Schedule jobs, with crew for the current or next trip."
       right={<RefreshBtn onClick={reload} loading={loading} />}
     >
       <StatStrip
@@ -60,14 +60,15 @@ export default function Jobs() {
         <PlainTable
           keyField="jobPk"
           rows={shown}
-          empty={loading ? "Loading…" : "No active field jobs."}
+          empty={loading ? "Loading…" : "No jobs match this view."}
           columns={[
             {
               key: "job",
               label: "Job #",
               render: (r) => (
                 <span>
-                  {r.jobNum ? <b style={{ color: C.textHead }}>#{r.jobNum}</b> : "—"} {r.jobName}
+                  {r.jobNum ? <b style={{ color: C.textHead }}>#{r.jobNum}</b> : "—"}
+                  {r.jobName && !r.jobNum?.endsWith(r.jobName) ? ` ${r.jobName}` : ""}
                 </span>
               ),
             },
@@ -79,16 +80,30 @@ export default function Jobs() {
             {
               key: "crew",
               label: "Crew",
-              render: (r) =>
-                (r.crewCount || 0) === 0 ? <StatusChip tone="red">None</StatusChip> : r.crewCount,
+              render: (r) => r.crewCount == null
+                ? <span style={{ color: C.textFaint }}>{r.period === "past" ? "No current trip" : "Dates to set"}</span>
+                : <div title={r.crewNames.join(", ")}>
+                    {r.crewCount === 0 ? <StatusChip tone="red">None</StatusChip> : r.crewCount}
+                    <div style={{ color: C.textFaint, fontSize: 11.5, marginTop: 4 }}>
+                      {r.period === "current" ? "Today onward" : "Upcoming trip"}
+                    </div>
+                  </div>,
             },
             {
               key: "dates",
               label: "Dates",
-              render: (r) =>
-                r.scheduledStart
-                  ? `${fmtD(r.scheduledStart)}${r.scheduledEnd ? " – " + fmtD(r.scheduledEnd) : ""}`
-                  : "—",
+              render: (r) => <div>
+                {r.contexts.length ? r.contexts.map(t => <div key={t.key} style={{ marginBottom: 4 }}>
+                  <div>{tripRange(t)}</div>
+                  <div style={{ color: C.textFaint, fontSize: 11.5 }}>
+                    {r.period === "past" ? "Past" : r.period === "current" ? "Current" : r.period === "upcoming" ? "Next" : "Undated"}
+                    {t.label ? ` · ${t.label}` : " trip"}
+                  </div>
+                </div>) : "Dates to set"}
+                {r.otherTripCount > 0 && <div style={{ color: C.textFaint, fontSize: 11.5 }}>
+                  {r.otherTripCount} other trip{r.otherTripCount === 1 ? "" : "s"}
+                </div>}
+              </div>,
             },
           ]}
         />

@@ -1,0 +1,110 @@
+SC Handoff v286 — Field desktop Jobs canonical data — 2026-09-22
+
+SESSION SUMMARY
+Implemented the authorized read-layer correction for /field/jobs. Local and
+deployed preview checks pass. Accepted 2026-09-23; commit/push authorized.
+No merge to main, production release or data writes authorized in this step.
+Earlier Next Up / 10252 completion investigations are context only: no completion
+actions, lifecycle repairs, duplicate-row fixes or Next Up changes in this slice.
+
+CHANGES SHIPPED (PREVIEW ONLY)
+1. fetchFieldJobs now calls Schedule loadJobs(), preserving its deleted/merged
+   exclusions, jobs.job_id identity, call_log_id relationship, display_job_number
+   / CO identity and existing authenticated Supabase/RLS path. Sales stage no
+   longer gates eligibility or supplies lifecycle. The All view includes the
+   canonical Schedule population, including Complete and unlinked rows.
+2. New pure buildFieldJobs adapter uses unchanged Schedule getJobStatus and
+   buildJobTrips/tripPeriod helpers. Parked/Scheduled -> Scheduled; In Progress
+   stays In Progress; Hold/On Hold -> On Hold; Complete/Completed/Done -> Complete;
+   missing/other values -> Ongoing. No second lifecycle model or writer.
+3. Jobs reads saved job_mobilizations and assignments (today onward), scoped to
+   canonical Schedule job IDs. All current trips are selected; otherwise nearest
+   upcoming start (including ties), otherwise undated contexts, otherwise latest
+   past trip. Separate ranges stay separate; other trips are counted. Parent
+   Schedule dates are a fallback only when no saved trip has dates.
+4. Crew is distinct assigned names for the selected valid current/upcoming
+   range, from max(today, trip start) through trip end. Saved dated trips require
+   exact saved-trip UUID and same-job ownership. Parent fallback permits same-job
+   unlinked assignments or links to that job's saved trips, within parent dates.
+   Past or incomplete/unknown date contexts make no current crew claim. Jobs
+   never reads job_crew. Failed child reads surface an error instead of None.
+5. Existing table/chips retained. Live requires normalized active lifecycle,
+   current trip and scoped crew; Scheduled uses normalized Scheduled; No Crew
+   means a verified relevant range with zero crew (excluding Complete). Past
+   work displays No current trip. No actions added.
+
+DECISIONS
+Kept fetchActiveFieldJobs and Today/Load-Outs readers unchanged. No shared
+Schedule helper modifications; reused their existing rules. Crew context is
+today onward for current trips, not everyone who ever worked the Sales job.
+No new tables, migrations, copied jobs or historical repairs.
+
+NEW/CLOSED BACKLOG ITEMS
+Field desktop Jobs canonical data is In Progress: accepted, pending merge.
+Other backlog items remain untouched.
+
+VERIFICATION
+- npm run build: pass; existing bundle-size warning only.
+- node scripts/check-field-jobs.mjs: pass. Covers CO identity, Sales/Schedule
+  status disagreement, same-Sales-ID siblings, exact trip ownership, historical
+  exclusion, current/upcoming/past, overlap deduplication, gaps, parent fallback,
+  partial/invalid dates, Complete and unlinked rows.
+- Focused eslint on the three changed application files: pass.
+- Local built app and final deployed preview browser checks: pass using a
+  read-only production snapshot intercepted at the API boundary. Frozen date
+  2026-09-22. All 214 eligible Schedule rows appear versus one in the old adapter.
+  Deleted and merged query guards checked; CO identity preserved; no job_crew
+  reads from Jobs; assignments date filter checked; loading/error/retry checked.
+- Job 10009 / Schedule 1270 / Sales 42: before Scheduled, None, Apr 27-29;
+  after Ongoing (jobs.status), Apr 27-29 saved trip labeled Past, No current trip.
+  Six historical assignments are not represented as current staffing.
+- Job 6507 CO8 - T&M / Schedule 1298 / Sales 3947: previously excluded by Sales
+  Parked stage; now Scheduled from jobs.status Parked, five distinct crew on
+  saved trip e4f8b606-8c60-40b4-a66d-e6d12c513476, Oct 1-26, 2026.
+- Field Today: unchanged reader bodies verified against HEAD; browser regression
+  retains its legacy job_crew behavior and original population/date filters.
+  Other Field readers also have unchanged function bodies.
+- Browser runs recorded zero app-data write attempts and zero page errors.
+  Snapshot SQL was read-only; intercepted checks do not claim real-user/RLS
+  acceptance. No live application data was mutated.
+- git diff --check: pass.
+- Temporary artifacts: /private/tmp/field-jobs-canonical/{check.mjs,
+  production-snapshot.json,jobs.png,co.png,past.png}.
+
+NOT TOUCHED
+Field Today, mobile, completion/closeout, Schedule lifecycle rules, Next Up,
+14-day grace window, schemas/RLS, historical trips/assignments, duplicate rows,
+production application and production data.
+
+NEXT SESSION POINTERS
+Chris accepted the final preview and authorized commit/push on 2026-09-23.
+Merge to main and production release still need explicit authorization.
+Do not resume completion or data repair work.
+Preview (final application source):
+https://sales-command-a7kbc4y7i-chris7berger-droids-projects.vercel.app/field/jobs
+Ready deployment: dpl_7RxQBfeNXJUATaLWjfMLqL17kPNk.
+
+FILES TO KNOW
+src/field/lib/queries.js — isolated fetchFieldJobs read adapter.
+src/field/lib/fieldJobs.js — new pure Schedule-to-Field projection.
+src/field/views/Jobs.jsx — canonical status and scoped crew/trip rendering.
+scripts/check-field-jobs.mjs — focused pure regression checks.
+docs/BACKLOG.md — review status.
+src/schedule/lib/{queries,jobStatus,trips}.js — reused, unchanged authorities.
+
+GIT STATE
+Branch: fix/field-jobs-canonical-data, based on main 0776379.
+Fresh origin fetch on 2026-09-23 confirms origin/main is still 0776379, equal to
+the branch base. No rebase/merge needed and no conflicts. Only the six intended
+files accompany this implementation commit, titled:
+Fix Field Command Jobs canonical data
+Focused regression, build, lint, diff checks and Field Today source comparison
+rerun successfully before committing. Accepted application behavior unchanged;
+only acceptance/finalization documentation updated during this step.
+Local and freshly deployed preview browser regressions also pass with the same
+intercepted production snapshot: 214 canonical jobs, 6507 CO8 Scheduled/five
+crew/Oct 1-26, 10009 Ongoing/past/No current trip, deleted/merged exclusions,
+Field Today unchanged, zero writes and page errors. Finalization preview:
+https://sales-command-1l72vl3ij-chris7berger-droids-projects.vercel.app/field/jobs
+Ready deployment: dpl_A5CoDDPhWJGUduYdEAyqgbDEa7he.
+Main and production remain unchanged; branch commit/push authorized, merge is not.
