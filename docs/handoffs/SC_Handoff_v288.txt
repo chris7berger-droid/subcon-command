@@ -1,0 +1,91 @@
+SC Handoff v288 — Desktop Time Clock range read — 2026-09-23
+
+SESSION SUMMARY
+First read-only office Time Clock slice for Friday's field test. The screen
+finds recorded punches by date range, employee, job, and customer, and shows
+stored regular/OT hours. Preview is Ready. No merge and no production release.
+
+CHANGES SHIPPED (PREVIEW ONLY)
+/field/timeclock reads time_punches directly for an inclusive punch_date range.
+Both dates are required; invalid or reversed ranges are rejected. The default
+is today in America/Los_Angeles. The query does not start from active Schedule
+jobs. call_log (job number, name, customer) and team_members (employee name)
+are left-resolved. Missing related rows stay in the list, labeled with the raw
+id or a missing-value label. Employee, job, and customer filters use ids, so
+duplicate names stay separate. Customer name is a label only. Unmatched punches
+remain when no customer is selected.
+
+Columns: work date, punch date (Pacific), punch time (Pacific), employee, job,
+customer, punch type, regular hours, OT hours. Unfamiliar punch types render.
+Regular and OT show the stored value: real zero stays visible, null stays
+blank, including on non-clock-out rows. No duration, lunch, overtime, or
+paid-hours calculation, and no hours total.
+
+Pages are ordered by punch_date, punch_time, then punch id. A failed page
+throws and is not shown as a complete result. Punch id is the row key. A newer
+range clears the previous rows and ignores an older response.
+
+fetchTodayRows, fetchActiveFieldJobs, shared fetchAll, and shared useAsync are
+unchanged. The old fetchFieldPunches helper remains in queries.js and is no
+longer used by this screen.
+
+DECISIONS
+Office visibility of stored regular/OT is in this slice. The phone hours writer
+was not changed. Blank hours are a data gap, not a calculated substitute.
+Queued and not built: work-type reporting, quick audited corrections,
+Live/Issues views, configurable CSV exports.
+
+BACKLOG
+F64 is In Progress. The hours-writer gap stays open on F64. No other row closed.
+
+VERIFICATION
+Synthetic — node scripts/check-time-clock.mjs passed:
+inclusive and rejected ranges, Pacific today, historical punches, missing
+joins, duplicate employee/job/customer ids, null versus zero hours, unfamiliar
+punch types, multi-page reads, a failed second page, and a late response that
+cannot replace a newer range.
+Focused eslint on the touched files passed. npm run build passed (existing
+bundle-size warning).
+
+Actual data — linked read-only SQL on Command Suite DB, 2026-09-23. Not the
+office PostgREST session, and no rows were written:
+29 punches, punch_date 2026-04-09 through 2026-09-20.
+Types: clock_in 9, clock_out 8, lunch_start 4, lunch_end 4, drive_start 2,
+drive_end 2.
+hours_regular, hours_ot, and hours_drive are null on all 29 rows. No stored
+zero and no stored non-zero. Joins resolve for every row (0 missing call_log,
+0 missing team member, 4 jobs, 4 customers, 1 employee, 0 duplicate employee
+names).
+The anon key returns 0 punches because time_punches_select is authenticated
+only. Localhost and the Vercel preview both stopped at login (app login, then
+Vercel deployment protection), so the signed-in screen was not walked.
+
+PREVIEW
+https://sales-command-jkqo9hppk-chris7berger-droids-projects.vercel.app/field/timeclock
+Ready deployment dpl_DjN3n3CcB7wzsPfteAJ8ahm8ZzBH (preview only).
+Branch alias:
+https://sales-command-git-feat-time-8e2aa7-chris7berger-droids-projects.vercel.app/field/timeclock
+
+NOT TOUCHED
+Mobile Field Command, sync, schema, permissions, production data, Today,
+fetchTodayRows, fetchActiveFieldJobs, shared fetchAll, shared useAsync, and
+the other Field boards.
+
+NEXT SESSION POINTERS
+Open the preview signed in. Today's default range is empty: the latest stored
+punch_date is 2026-09-20. Set From/To across 2026-04-09–2026-09-20 and confirm
+lunch and drive rows appear with blank regular/OT cells. Do not treat blank
+hours as a display bug and do not calculate replacements. Merge is not
+authorized. Queued Time Clock work stays queued.
+
+FILES TO KNOW
+src/field/views/TimeClock.jsx
+src/field/lib/timeClock.js
+src/field/lib/queries.js
+scripts/check-time-clock.mjs
+docs/BACKLOG.md
+
+GIT STATE
+Branch feat/time-clock-range-read from origin/main c36d8ec.
+Feature commit 0b42da6. This handoff commit follows on the same branch.
+Pushed to origin. main was not changed. No merge.
