@@ -5,6 +5,7 @@ import { jobFormStatus } from "./lateForm";
 import { buildCrewCommandView } from "./crewBoard";
 import { loadJobs } from "../../schedule/lib/queries";
 import { buildFieldJobs } from "./fieldJobs.js";
+import { loadTimeClockPunches } from "./timeClock.js";
 
 // Field-web reads. All child tables (time_punches, job_crew, daily_log_entries,
 // daily_production_reports, job_material_checks) anchor job_id on CALL_LOG.id
@@ -469,4 +470,10 @@ export async function fetchFieldLogs({ today = tod(), days = 7 } = {}) {
       at: e.created_at,
     }))
     .sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+}
+
+// Office Time Clock: punches in an inclusive punch_date range. Identity comes
+// from time_punches, not from the active Schedule job list.
+export function fetchTimeClockPunches({ from, to } = {}) {
+  return loadTimeClockPunches(supabase, { from, to });
 }
