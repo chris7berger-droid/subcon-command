@@ -66,6 +66,14 @@ export function pacificToday(now = new Date()) {
   }).format(now);
 }
 
+// Fresh open and refresh start on the Pacific reporting day. The screen does
+// not read a date range from the URL. A later edit of either date stays until
+// the next load.
+export function defaultTimeClockRange(now = new Date()) {
+  const day = pacificToday(now);
+  return { from: day, to: day };
+}
+
 export const TIME_CLOCK_CONTEXT_DAYS = 2;
 
 export function mondayOf(iso) {

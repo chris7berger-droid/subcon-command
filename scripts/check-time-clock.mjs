@@ -21,6 +21,7 @@ import {
   mondayOf,
   pacificLocalToIso,
   pacificTimeValue,
+  defaultTimeClockRange,
   pacificToday,
   reviewFetchBounds,
   sundayOf,
@@ -57,6 +58,8 @@ assert.deepEqual(assertPunchDateRange("2026-09-01", "2026-09-30"), { from: "2026
 // 2026-09-24 06:30Z is still Sep 23 in Pacific (PDT, UTC-7). 07:00Z is Sep 24.
 assert.equal(pacificToday(new Date("2026-09-24T06:30:00.000Z")), "2026-09-23");
 assert.equal(pacificToday(new Date("2026-09-24T07:00:00.000Z")), "2026-09-24");
+assert.deepEqual(defaultTimeClockRange(new Date("2026-09-24T06:30:00.000Z")), { from: "2026-09-23", to: "2026-09-23" });
+assert.deepEqual(defaultTimeClockRange(new Date("2026-09-24T07:00:00.000Z")), { from: "2026-09-24", to: "2026-09-24" });
 
 assert.equal(formatStoredHours(null), "");
 assert.equal(formatStoredHours(undefined), "");

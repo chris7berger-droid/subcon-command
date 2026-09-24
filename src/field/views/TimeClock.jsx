@@ -22,6 +22,7 @@ import {
   pacificDate,
   pacificLocalToIso,
   pacificTimeValue,
+  defaultTimeClockRange,
   pacificToday,
   punchClockLabel,
   punchFilterOptions,
@@ -137,8 +138,9 @@ function shiftColumns(tableView, selectedKey, setSelectedKey) {
 
 export default function TimeClock({ teamMember }) {
   const today = useMemo(() => pacificToday(), []);
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
+  const [seed] = useState(defaultTimeClockRange);
+  const [from, setFrom] = useState(seed.from);
+  const [to, setTo] = useState(seed.to);
   const [jobId, setJobId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [customerId, setCustomerId] = useState("");
@@ -299,11 +301,11 @@ export default function TimeClock({ teamMember }) {
       >
         <label style={{ display: "flex", flexDirection: "column" }}>
           <span style={FILTER_LABEL}>From</span>
-          <input type="date" value={from} aria-label="From" onChange={(e) => setFrom(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }} />
+          <input type="date" value={from} aria-label="From" autoComplete="off" onChange={(e) => setFrom(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }} />
         </label>
         <label style={{ display: "flex", flexDirection: "column" }}>
           <span style={FILTER_LABEL}>To</span>
-          <input type="date" value={to} aria-label="To" onChange={(e) => setTo(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }} />
+          <input type="date" value={to} aria-label="To" autoComplete="off" onChange={(e) => setTo(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }} />
         </label>
         <label style={{ display: "flex", flexDirection: "column" }}>
           <span style={FILTER_LABEL}>Employee</span>
