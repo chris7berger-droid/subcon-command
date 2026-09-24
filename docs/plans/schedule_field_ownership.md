@@ -125,3 +125,47 @@ Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are 
 - New tables, grants, migrations, or a second query path for logs, punches, or production reports.
 - A new Field nav item, or a change to `PlainTable`.
 - Wiring the unwired FILES stub onto the Schedule card.
+
+## Audit manifest
+
+Plan Audit, round 1, against `9ace6bc`. Reviewed the plan against current `main` (`689d43c`); the plan commit adds only this file. **NOT CONVERGED. Not build-ready.** Do not build from this revision. Scope sections above are unchanged.
+
+### F1 — High. Job-detail links cannot see the Jobs list
+
+`/field/jobs` is `fetchFieldJobs` → `loadJobs()` (`src/field/lib/queries.js` 284–287, `src/field/lib/fieldJobs.js` 54–58, `src/field/views/Jobs.jsx` 24–72). That list is every non-deleted, non-merged schedule job, including Complete (`src/schedule/lib/jobStatus.js` 8–16).
+
+`fetchFieldLogs` and `fetchFieldPunches` do not load that population. Both start from `fetchActiveFieldJobs` (`src/field/lib/queries.js` 104–117, 424–435, 450–456), which keeps only rows with a `call_log_id` whose `call_log.stage` is in `ACTIVE_FIELD_STAGE_KEYS` (15–23). Complete is not in that set. They then drop `job_id` while shaping rows (438–445, 464–470).
+
+Adding `callLogId` and filtering those rows, and not adding a query, leaves a Jobs-list detail with an empty Daily Logs or Time Clock whenever the job is outside the active-stage set — including a Complete job that has logs inside the last 7 days or punches today. The empty copy ("No log entries in the last 7 days." / "No punches today.") reads as no history. The plan's "windows they already use" names the 7-day read and today's punches, not this stage gate.
+
+Related gap: `DailyLogs.jsx` 31–38 and `TimeClock.jsx` 36–39 compute the stat strip and chips from the full list. Acceptance does not say those counts are limited to `?job=`.
+
+Revision: state the stage gate, or let `?job=` read that call log inside the existing date window. Acceptance must say what a Complete job shows, and that strip/chip counts match the filtered rows.
+
+### F2 — High. The Budget tab is the bid, not execution actuals
+
+`BudgetPanel` (`src/schedule/components/StageJobCard.jsx` 391–449, 501–523) renders the frozen `job_wtcs.bid_breakdown` (hours, labor, materials, travel, cost, margin, burden rates). Actual and Δ are the literals `pending` and `—`. No other screen renders that breakdown. Finance → Budget is still the placeholder at `src/schedule/views/Billing.jsx` 226–231. Field is out of scope for a budget screen.
+
+Deleting the tab removes Schedule's only bid-cost view. That is planning data. The ownership boundary says Schedule keeps planning. The remove line describes the tab as execution actuals.
+
+Revision: keep the bid breakdown on the card, or name the other screen that will show it before the tab is deleted. Do not describe the placeholder Actual/Δ columns as live execution actuals.
+
+### F3 — High. NotesPanel is not on Details
+
+Details only prints `job.notes` (`StageJobCard.jsx` 381–386). `NotesPanel` (533–564) is a separate editor. The only control that opens it is the Management NOTES tile (349–352, 777). The parent trip already shows `job.notes` in `TripsPanel` and is not the editor.
+
+"NotesPanel on Details, which already shows `jobs.notes`" and "Do not add another notes editor" tell Build to remove Management and leave Details as it is. That drops the save path. Acceptance still says notes save.
+
+Revision: move the existing `NotesPanel` onto Details, and say that in the implementation steps. Do not treat the read-only Details row as the editor.
+
+### F4 — Medium. The card dollar is not Finance Contract
+
+PROP and the collapsed row (`StageJobCard.jsx` 274–282, 706–719; the Jobs list uses `variant="home-compact"` in `JobsToPrepare.jsx` 161) show `jobs.amount`. That column is the proposal total sent to Schedule (`src/lib/jobsAmount.js`). Finance Contract is `authoritativeTotal`: `billing_schedule.contract_sum` when it is > 0, otherwise `proposal.total` (`src/schedule/lib/billingForecast.js` 30–52, `BillingCard.jsx` 120–122). Those figures diverge when the SOV sum is stale (`docs/BACKLOG.md` B70).
+
+Removing the card figure does not leave that same number on Contract. Sales proposals still hold the proposal total. The plan's "already shows it as Contract" is the wrong equivalence.
+
+Revision: say the card figure is `jobs.amount`, and that Contract is the billing authoritative total. Keep the removal only if that difference is accepted.
+
+### Held
+
+Checked and not findings: `jobId` is `jobs.job_id` (`jobPk`); child rows are `call_log.id`; `loadJobWithWTCs` returns `call_log_id` and `_wtcs`; `PRTModal` calls `loadPRTsForJob(job.call_log_id)` and reads `job._wtcs`; Load-Outs already opens `LoadOutModal` inside `.schedule-root`; FILES is an unwired stub; `billingWorklist` feeds the ready-to-bill count, not only the tile; Home's production KPI loads `loadPRTsForCallLogIds` on its own (`src/schedule/views/Home.jsx` 82–88); `LogsModal` is imported only by the card; `PlainTable` already renders a cell `render`, so the Job # link does not require editing that component. `invoices.is_deposit` and `billing_worklist.chris_notes` match the ownership lines.
