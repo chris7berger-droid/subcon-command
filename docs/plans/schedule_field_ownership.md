@@ -2,17 +2,17 @@
 
 Planning artifact. Locked 2026-09-24. Schedule Command owns planning and readiness. Field Command owns execution and what actually happened. No new tables, migrations, or data paths. One new view.
 
-This file records the locked scope. It does not authorize a build.
+Revision 2, after Plan Audit round 1. Resolves F1–F4 below. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
 
 ## Ownership boundary
 
 - Schedule Command owns planning and readiness.
 - Field Command owns execution and what actually happened.
-- PROP stays on Sales Proposals. The Schedule card figure is the synced proposal total. Schedule Finance / Billing already shows it as Contract.
+- PROP stays on Sales Proposals. The removed card figure is `jobs.amount`, the proposal total sent to Schedule. Finance Contract is a different figure: `authoritativeTotal` (`billing_schedule.contract_sum` when it is greater than 0, otherwise `proposal.total`). Those can diverge. Removing the card dollar does not leave that same number on Contract. The removal is intentional.
 - BILLING stays on Schedule Finance / Billing (`/schedule/billing`).
 - DEPOSIT stays on Sales Invoices (`invoices.is_deposit`).
 - FILES stay on Sales Call Log Attachments. The card FILES tile was never wired.
-- NOTES stay on the Schedule job. Details and the parent trip show `jobs.notes`. Billing notes stay on Finance / Billing (`billing_worklist.chris_notes`).
+- NOTES stay on the Schedule job. Move the existing `NotesPanel` into Details before Management is removed. The parent trip already shows `jobs.notes` and is not the editor. Billing notes stay on Finance / Billing (`billing_worklist.chris_notes`).
 
 ## Schedule job card
 
@@ -25,15 +25,15 @@ Keep:
 - Details readout of the SOW
 - Readiness
 - Load-Out, moved into Planning. It still opens `LoadOutModal`. Desktop Field Load-Outs opens this same modal.
-- `NotesPanel` on Details, which already shows `jobs.notes`. Do not add another notes editor.
+- The existing `NotesPanel`, moved into Details before Management is removed. Details today only prints `job.notes`. Do not add another notes editor. Do not treat that read-only row as the save path.
 
 Remove:
 
-- Management panel
-- Budget tab, including Actual / Δ and other execution actuals
+- Management panel, only after `NotesPanel` is on Details
+- Budget tab. This tab is the only view of the frozen `job_wtcs.bid_breakdown` (hours, labor, materials, travel, cost, margin, burden). Actual and Δ there are the literals `pending` and `—`, not live execution actuals. Removing the tab drops that bid view. That removal is intentional. This slice does not add a replacement Budget screen.
 - PRT tile, active-banner PRT label, and PRT modal
 - Logs tile and `LogsModal`
-- PROP, BILLING, and DEPOSIT tiles, and the collapsed-row dollar amount
+- PROP, BILLING, and DEPOSIT tiles, and the collapsed-row dollar amount (`jobs.amount`)
 - FILES stub
 
 `billingWorklist` on the Schedule Jobs page stays. It still feeds the nothing-to-bill filter, not the removed tile.
@@ -61,20 +61,23 @@ Today (`/field/today`) stays a today/status screen and keeps only today’s PRT 
 
 `jobId` is `jobs.job_id` (the Jobs list `jobPk`). Child rows stay keyed by call log: `daily_log_entries.job_id`, `time_punches.job_id`, and `daily_production_reports.job_id` are `call_log.id`. Do not put the call log id in this path. `loadJobWithWTCs(jobId)` already returns both.
 
-`fetchFieldLogs` and `fetchFieldPunches` already load the rows those screens show. Add `callLogId` onto each shaped row (they drop `job_id` today). Do not add a second query.
+`/field/jobs` lists every non-deleted, non-merged schedule job, including Complete. Unfiltered `fetchFieldLogs` and `fetchFieldPunches` do not. They start from `fetchActiveFieldJobs`, which keeps only call logs whose stage is in `ACTIVE_FIELD_STAGE_KEYS`. Complete is outside that set.
 
-- `/field/dailylogs?job=<callLogId>` keeps the current 7-day read and shows only that call log.
-- `/field/timeclock?job=<callLogId>` keeps today’s punches and shows only that call log.
-- No `job` param: both screens stay exactly as they are.
-- A param that matches nothing: the existing empty state, not the full list.
+When `?job=<callLogId>` is present, read that call log inside the existing date window. Include Complete jobs and any other job outside the active-stage set. Do not filter the active-stage result and then drop the job. Logs stay the last 7 days. Punches stay today.
+
+Unfiltered Daily Logs and Time Clock stay on `fetchActiveFieldJobs`. Do not widen that list.
+
+Stat strip and chip counts are computed from the rows on screen. With `?job=`, they match that job. Without it, they match the current list.
+
+A `?job=` that has no rows inside the window uses the existing empty state, not the unfiltered list. Empty means nothing in that window, not that the stage gate excluded the job.
 
 ## Reuse
 
 - `loadJobWithWTCs`, `loadPRTsForJob`, `PRTModal`
-- `fetchFieldLogs`, `fetchFieldPunches`
+- `fetchFieldLogs`, `fetchFieldPunches` for the unfiltered screens. The `?job=` read uses the same tables and the same date windows, without the active-stage gate.
 - `LoadOutModal` and the Load-Outs open path
 - `job_material_checks` checked/total rule inside `fetchLoadOutJobs`
-- `NotesPanel` and `updateJobField` for `jobs.notes`
+- The existing `NotesPanel` and `updateJobField` for `jobs.notes`, placed on Details
 - `FieldScreen`
 
 Modify:
@@ -102,27 +105,30 @@ Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are 
 
 1. Route and job-detail shell (`loadJobWithWTCs`, identity, back link).
 2. Inline PRT history.
-3. `?job=` on Daily Logs and Time Clock, and the two links.
+3. `?job=` on Daily Logs and Time Clock, including jobs outside the active-stage set, and the two links. Filtered stat and chip counts use the filtered rows.
 4. Load-out status and the existing modal.
-5. Schedule card edits, then delete `LogsModal` and the card-only Schedule fetches.
+5. Move the existing `NotesPanel` into Details. Then remove Management, the Budget tab, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount`. Then delete `LogsModal` and the card-only Schedule fetches.
 
 ## Acceptance criteria
 
 - `/field/jobs/:jobId` opens one job. PRT history is on that page and matches `loadPRTsForJob` for its call log. Today still shows only today’s PRT flag.
-- Daily Logs and Time Clock with `?job=` show only that job, inside the windows they already use. Without `?job=`, they match current behavior.
+- Daily Logs and Time Clock with `?job=` show that call log’s rows inside the windows they already use, including a Complete job and any other job outside `ACTIVE_FIELD_STAGE_KEYS`. A Complete job with a log in the last 7 days, or a punch today, shows that row. Empty means nothing in the window. Without `?job=`, both screens match current behavior.
+- With `?job=`, the stat strip and chip counts match the filtered job. Without it, they match the unfiltered list.
 - Load-Out on the detail shows loaded of total and opens the same `LoadOutModal` as `/field/loadouts`.
-- Schedule card still has SOW, crew, materials, days, trips, mobilizations, readiness, and Load-Out under Planning. Notes still save. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed dollar amount are gone.
+- Schedule card still has SOW, crew, materials, days, trips, mobilizations, readiness, and Load-Out under Planning. `NotesPanel` is on Details and notes still save after Management is gone. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount` are gone. No replacement Budget screen exists. Finance Contract still uses its own authoritative total.
 - No new table, grant, or migration. Home’s production figure still loads on its own.
 
 ## Out of scope
 
 - A second Field screen for PRT history, Daily Logs, Time Clock, or Load-Out.
 - Changing Today into a report archive, or changing its PRT flag.
-- A Field budget screen, week timesheet, or manager punch-correction flow.
+- A Field budget screen, a replacement Schedule Budget screen, or relocating `job_wtcs.bid_breakdown` in this slice.
+- A week timesheet, or a manager punch-correction flow.
 - Retargeting Home’s production KPI.
-- Changing Finance / Billing, Sales proposals, Sales invoices, or Call Log attachments.
+- Changing Finance / Billing, Sales proposals, Sales invoices, or Call Log attachments, including making Contract equal `jobs.amount`.
 - A new notes editor. Billing notes stay where they are.
-- New tables, grants, migrations, or a second query path for logs, punches, or production reports.
+- New tables, grants, or migrations.
+- Widening unfiltered Daily Logs or Time Clock beyond the active-stage set.
 - A new Field nav item, or a change to `PlainTable`.
 - Wiring the unwired FILES stub onto the Schedule card.
 
@@ -169,3 +175,12 @@ Revision: say the card figure is `jobs.amount`, and that Contract is the billing
 ### Held
 
 Checked and not findings: `jobId` is `jobs.job_id` (`jobPk`); child rows are `call_log.id`; `loadJobWithWTCs` returns `call_log_id` and `_wtcs`; `PRTModal` calls `loadPRTsForJob(job.call_log_id)` and reads `job._wtcs`; Load-Outs already opens `LoadOutModal` inside `.schedule-root`; FILES is an unwired stub; `billingWorklist` feeds the ready-to-bill count, not only the tile; Home's production KPI loads `loadPRTsForCallLogIds` on its own (`src/schedule/views/Home.jsx` 82–88); `LogsModal` is imported only by the card; `PlainTable` already renders a cell `render`, so the Job # link does not require editing that component. `invoices.is_deposit` and `billing_worklist.chris_notes` match the ownership lines.
+
+## Revision 2
+
+Recorded after Plan Audit round 1. The round-1 manifest above stays as written. This revision changes the scope sections. **NOT CONVERGED. Not build-ready.**
+
+- F1. `?job=` reads that call log inside the existing date window, including Complete and any other job outside the active-stage set. Unfiltered Daily Logs and Time Clock stay on the active-stage list. Filtered stat and chip counts match the filtered job. Empty means nothing in the window.
+- F2. The Budget tab still comes off the Schedule job card. It is the only bid-cost breakdown, and Actual / Δ are placeholders, not live execution actuals. Removal is intentional. This slice does not create a replacement Budget screen.
+- F3. The existing `NotesPanel` moves into Details before Management is removed. The read-only Details row is not the editor.
+- F4. The removed card dollar is `jobs.amount`. Finance Contract keeps its own authoritative total. Removal is intentional.
