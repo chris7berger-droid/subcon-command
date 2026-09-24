@@ -255,26 +255,44 @@ export async function fetchLoadOutJobs({ today = tod(), windowDays = 7 } = {}) {
   const checks = await fetchAll("job_material_checks", "job_id, checked", {
     filters: [["in", "job_id", clIds]],
   });
-  const checkedBy = new Map();
-  const totalBy = new Map();
+  const checksByCallLog = new Map();
   for (const c of checks) {
-    totalBy.set(c.job_id, (totalBy.get(c.job_id) || 0) + 1);
-    const cur = checkedBy.get(c.job_id) || 0;
-    checkedBy.set(c.job_id, cur + (c.checked ? 1 : 0));
+    const list = checksByCallLog.get(c.job_id) || [];
+    list.push(c);
+    checksByCallLog.set(c.job_id, list);
   }
 
   return {
-    jobs: inWindow.map((j) => ({
-      jobPk: j.job_id, // jobs PK — feed to loadJobWithWTCs
-      callLogId: j.call_log_id,
-      jobName: j.job_name || j.call_log?.display_job_number || `Job ${j.job_num || j.call_log_id}`,
-      jobNum: j.call_log?.display_job_number || j.job_num,
-      scheduledStart: j._fieldStart,
-      loaded: checkedBy.get(j.call_log_id) || 0,
-      total: totalBy.get(j.call_log_id) || 0,
-    })),
+    jobs: inWindow.map((j) => {
+      const counts = countMaterialChecks(checksByCallLog.get(j.call_log_id));
+      return {
+        jobPk: j.job_id, // jobs PK — feed to loadJobWithWTCs
+        callLogId: j.call_log_id,
+        jobName: j.job_name || j.call_log?.display_job_number || `Job ${j.job_num || j.call_log_id}`,
+        jobNum: j.call_log?.display_job_number || j.job_num,
+        scheduledStart: j._fieldStart,
+        loaded: counts.loaded,
+        total: counts.total,
+      };
+    }),
     today,
   };
+}
+
+// Checked vs total, the same rule fetchLoadOutJobs uses for one call log.
+export function countMaterialChecks(checks) {
+  const list = checks || [];
+  let loaded = 0;
+  for (const c of list) if (c.checked) loaded += 1;
+  return { loaded, total: list.length };
+}
+
+export async function fetchMaterialChecksForCallLog(callLogId) {
+  if (callLogId == null || String(callLogId).trim() === "") return { loaded: 0, total: 0 };
+  const checks = await fetchAll("job_material_checks", "job_id, checked", {
+    filters: [["eq", "job_id", callLogId]],
+  });
+  return countMaterialChecks(checks);
 }
 
 // ── Plain reads for the four "later UI session" screens ─────────────────────
@@ -449,9 +467,7 @@ export async function fetchFieldPunches({ today = tod() } = {}) {
 
 // Daily Logs: recent SOD/MOD/EOD entries across active field jobs (last `days`).
 export async function fetchFieldLogs({ today = tod(), days = 7 } = {}) {
-  const from = new Date(today + "T00:00:00");
-  from.setDate(from.getDate() - days);
-  const fromStr = from.toLocaleDateString("en-CA");
+  const fromStr = fieldLogWindowStart(today, days);
 
   const active = await fetchActiveFieldJobs();
   const clIds = [...new Set(active.map((j) => j.call_log_id))];
@@ -469,6 +485,43 @@ export async function fetchFieldLogs({ today = tod(), days = 7 } = {}) {
       notes: e.notes || "",
       at: e.created_at,
     }))
+    .sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+}
+
+function fieldLogWindowStart(today, days) {
+  const from = new Date(today + "T00:00:00");
+  from.setDate(from.getDate() - days);
+  return from.toLocaleDateString("en-CA");
+}
+
+function shapeFieldLog(entry, jobLabel) {
+  return {
+    job: jobLabel,
+    type: entry.entry_type,
+    notes: entry.notes || "",
+    at: entry.created_at,
+  };
+}
+
+// One call log inside the same 7-day window as fetchFieldLogs, with no
+// active-stage gate. Complete and other non-active jobs stay readable.
+export async function fetchFieldLogsForCallLog({ callLogId, today = tod(), days = 7 } = {}) {
+  const id = callLogId == null ? "" : String(callLogId).trim();
+  if (!id) return [];
+  const fromStr = fieldLogWindowStart(today, days);
+  const logs = await fetchAll("daily_log_entries", "job_id, entry_type, notes, created_at", {
+    filters: [["eq", "job_id", id], ["gte", "created_at", fromStr + "T00:00:00"]],
+  });
+  let jobLabel = `Job ${id}`;
+  const { data } = await supabase
+    .from("jobs")
+    .select("job_name, job_num, call_log:call_log_id(display_job_number)")
+    .eq("call_log_id", id)
+    .limit(1);
+  const row = Array.isArray(data) ? data[0] : null;
+  if (row) jobLabel = row.job_name || row.call_log?.display_job_number || row.job_num || jobLabel;
+  return logs
+    .map((e) => shapeFieldLog(e, jobLabel))
     .sort((a, b) => (b.at || "").localeCompare(a.at || ""));
 }
 

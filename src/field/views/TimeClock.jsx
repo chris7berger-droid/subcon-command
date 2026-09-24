@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { C, F } from "../../lib/tokens";
 import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
@@ -137,11 +138,13 @@ function shiftColumns(tableView, selectedKey, setSelectedKey) {
 }
 
 export default function TimeClock({ teamMember }) {
+  const [searchParams] = useSearchParams();
+  const urlJobId = searchParams.get("job") || "";
   const today = useMemo(() => pacificToday(), []);
   const [seed] = useState(defaultTimeClockRange);
   const [from, setFrom] = useState(seed.from);
   const [to, setTo] = useState(seed.to);
-  const [jobId, setJobId] = useState("");
+  const [jobId, setJobId] = useState(urlJobId);
   const [employeeId, setEmployeeId] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [selectedKey, setSelectedKey] = useState("");
@@ -201,6 +204,10 @@ export default function TimeClock({ teamMember }) {
   }, [from, to, loadRange]);
 
   useEffect(() => {
+    setJobId(urlJobId);
+  }, [urlJobId]);
+
+  useEffect(() => {
     let cancelled = false;
     fetchTimeClockEmployees()
       .then((list) => {
@@ -236,7 +243,10 @@ export default function TimeClock({ teamMember }) {
   const jobOptions = useMemo(() => punchFilterOptions(rows, "jobId", "job"), [rows]);
   const customerOptions = useMemo(() => punchFilterOptions(rows, "customerId", "customer"), [rows]);
   const selectedEmployeeId = employeeOptions.some((option) => option.id === employeeId) ? employeeId : "";
-  const selectedJobId = jobOptions.some((option) => option.id === jobId) ? jobId : "";
+  // A ?job= deep link stays filtered when that call log has no punches in the
+  // open range. The dropdown still clears an id that is not in jobOptions.
+  const urlJobPinned = urlJobId !== "" && jobId === urlJobId;
+  const selectedJobId = jobOptions.some((option) => option.id === jobId) || urlJobPinned ? jobId : "";
   const selectedCustomerId = customerOptions.some((option) => option.id === customerId) ? customerId : "";
   const shownPunches = useMemo(
     () => filterTimeClockRows(rows, { jobId: selectedJobId, employeeId: selectedEmployeeId, customerId: selectedCustomerId }),
@@ -320,6 +330,9 @@ export default function TimeClock({ teamMember }) {
           <span style={FILTER_LABEL}>Job</span>
           <select value={selectedJobId} aria-label="Job" onChange={(e) => setJobId(e.target.value)} style={{ ...FILTER_INPUT, width: 240, cursor: "pointer" }}>
             <option value="">All jobs</option>
+            {selectedJobId && !jobOptions.some((option) => option.id === selectedJobId) && (
+              <option value={selectedJobId}>{selectedJobId}</option>
+            )}
             {jobOptions.map((option) => (
               <option key={option.id} value={option.id}>{option.label}</option>
             ))}

@@ -13,7 +13,7 @@ function parseArr(v) {
 // Production Reports — the office production picture for a job: overall progress
 // vs. where the plan says the job should be, then each day's PRT compared to the
 // SOW plan (target vs actual) with the crew's notes.
-export default function PRTModal({ job, onClose }) {
+export default function PRTModal({ job, onClose, embedded = false }) {
   const [prts, setPrts] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -74,15 +74,7 @@ export default function PRTModal({ job, onClose }) {
   const expectedPct = Math.round(sowTasks.reduce((s, t) => s + (t.dayIndex <= currentDay ? t.target : 0), 0) / denom)
   const delta = actualPct - expectedPct
 
-  return (
-    <div className="mbg" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="mdl mdl-wide" style={{ maxWidth: 760, maxHeight: '90vh', overflow: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h3 style={{ margin: 0 }}>Production — {job.job_num || job.job_name || ''}</h3>
-          <button className="app-act-btn" onClick={onClose}>Close</button>
-        </div>
-
-        {loading ? (
+  const report = loading ? (
           <div className="jh-empty">Loading…</div>
         ) : (
           <>
@@ -147,7 +139,29 @@ export default function PRTModal({ job, onClose }) {
               </div>
             )}
           </>
-        )}
+  )
+
+  const heading = (
+    <h3 style={{ margin: embedded ? '0 0 12px' : 0 }}>Production — {job.job_num || job.job_name || ''}</h3>
+  )
+
+  if (embedded) {
+    return (
+      <div>
+        {heading}
+        {report}
+      </div>
+    )
+  }
+
+  return (
+    <div className="mbg" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="mdl mdl-wide" style={{ maxWidth: 760, maxHeight: '90vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          {heading}
+          <button className="app-act-btn" onClick={onClose}>Close</button>
+        </div>
+        {report}
       </div>
     </div>
   )

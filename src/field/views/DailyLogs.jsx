@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { C } from "../../lib/tokens";
 import { fmtD, tod } from "../../lib/utils";
 import FieldScreen, {
@@ -10,7 +11,7 @@ import FieldScreen, {
   RefreshBtn,
 } from "../components/FieldScreen";
 import { useAsync } from "../lib/useAsync";
-import { fetchFieldLogs } from "../lib/queries";
+import { fetchFieldLogs, fetchFieldLogsForCallLog } from "../lib/queries";
 import { logTypeLabel, logTypeTone } from "../lib/display";
 
 const fmtWhen = (iso) => {
@@ -27,7 +28,12 @@ function dayKey(iso) {
 }
 
 export default function DailyLogs() {
-  const { data: rows, loading, error, reload } = useAsync(() => fetchFieldLogs({ days: 7 }), []);
+  const [searchParams] = useSearchParams();
+  const jobParam = (searchParams.get("job") || "").trim();
+  const { data: rows, loading, error, reload } = useAsync(
+    () => (jobParam ? fetchFieldLogsForCallLog({ callLogId: jobParam, days: 7 }) : fetchFieldLogs({ days: 7 })),
+    [jobParam]
+  );
   const [chip, setChip] = useState("all");
   const list = rows || [];
   const today = tod();

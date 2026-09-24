@@ -5,6 +5,7 @@ import Crews from "./views/Crews";
 import TimeClock from "./views/TimeClock";
 import DailyLogs from "./views/DailyLogs";
 import LoadOuts from "./views/LoadOuts";
+import JobDetail from "./views/JobDetail";
 
 // Field Command — the office web side of the crew app (Phase 3).
 // View-only: reads tables the phones already sync (jobs, job_crew, time_punches,
@@ -18,6 +19,7 @@ export default function FieldLayout({ teamMember }) {
       <Route index element={<Navigate to="/field/today" replace />} />
       <Route path="today" element={<Today teamMember={teamMember} />} />
       <Route path="jobs" element={<Jobs teamMember={teamMember} />} />
+      <Route path="jobs/:jobId" element={<JobDetail />} />
       <Route path="crews" element={<Crews teamMember={teamMember} />} />
       <Route path="timeclock" element={<TimeClock teamMember={teamMember} />} />
       <Route path="dailylogs" element={<DailyLogs teamMember={teamMember} />} />

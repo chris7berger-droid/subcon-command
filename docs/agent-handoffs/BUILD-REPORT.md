@@ -1,109 +1,45 @@
 ## Status
 
-Scheduled Off lifecycle (create → see → edit → remove) complete — waiting on Chris preview accept. **Do not merge.**
-
-No production `crew_status` rows were migrated. No `assignments` rows are deleted or moved.
+Build complete for the converged Schedule and Field ownership plan (`docs/plans/schedule_field_ownership.md`, commit `55d2b06`). Stopped at the Build gate. Do not merge.
 
 ## Summary
 
-Scheduled Off is planned availability. The office can:
+Field Jobs opens one job detail. That page shows production-report history, links to Daily Logs and Office Time Clock for the job’s call log, and shows load-out progress that opens the existing Load-Out modal.
 
-1. **Create** a future FROM/TO range without navigating to that week.
-2. **See** gray Mon–Sat compact dots on that week from stored `scheduled-off` rows.
-3. **Edit** a contiguous range from the crew detail view.
-4. **Remove** that range after confirmation.
+Daily Logs `?job=` reads that call log inside the existing 7-day window, including jobs outside the active-stage set. Unfiltered Daily Logs is unchanged. Office Time Clock still uses `fetchTimeClockReview`, From/To, review hours, and office corrections. `?job=` filters that screen and stays empty when the job has no punches in the selected range.
 
-Sick, Call In, and No Show keep the existing week day-picker. Legacy `off` is not treated as Scheduled Off.
+The Schedule job card keeps planning (including Load-Out) and puts the existing notes editor on Details. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed dollar amount are removed.
 
-## Compact indicators
+## Files Changed
 
-Crew chips render M/T/W/T/F/S dots for:
-
-- assigned crew (existing job rows), and
-- unassigned crew who have `scheduled-off` on any day this week.
-
-`scheduled-off` uses legend gray (`sch-cdot-soff` / `sch-dot-of`). Legacy `off` stays the Call In orange dot. Empty days stay the faint unused dot.
-
-Example: Adam Little `scheduled-off` Oct 12–16 while viewing that week → gray Mon–Fri. Sat Oct 17 is unchanged.
-
-`crew_status.date` keys are normalized to `YYYY-MM-DD` so timestamp-shaped values still match the week dates.
-
-## Crew detail
-
-The existing crew week popup still shows the week STATUS grid.
-
-It also loads that person’s `scheduled-off` rows (not `off` / `sick` / `noshow`) and groups contiguous calendar days:
-
-```
-SCHEDULED OFF
-Oct 12 – Oct 16, 2026
-EDIT DATES
-REMOVE SCHEDULED OFF
-```
-
-Separate gaps are separate ranges, each with its own Edit / Remove.
-
-## Edit Dates
-
-Opens the existing FROM/TO modal with that range pre-filled.
-
-Save updates **only** `scheduled-off` rows belonging to that range:
-
-- days added: upsert `scheduled-off` (unless another explicit status is already there)
-- days removed from the range: delete `status = scheduled-off` only
-- other Scheduled Off ranges, `sick`, `off`, `noshow`, and `assignments` are untouched
-
-Expanding onto Sick / Call In / No Show still surfaces a conflict and does not overwrite. Assignments in the new range still warn; they are not deleted or moved.
-
-Example: Oct 12–16 edited to Oct 12–14 → Oct 12–14 remain `scheduled-off`; Oct 15–16 `scheduled-off` rows are deleted.
-
-## Remove Scheduled Off
-
-Confirmation:
-
-```
-Remove Adam Little's Scheduled Off
-Oct 12 – Oct 16, 2026?
-```
-
-Confirm deletes only `crew_status` rows with `status = scheduled-off` for that person and those dates. Cancel writes nothing.
-
-## Storage (unchanged)
-
-| Stored `crew_status.status` | Crew Scheduler | Field Crews |
-|---|---|---|
-| *(no row)* | Available | not an exception |
-| `sick` | Sick (S) | **Called Out** |
-| `off` | Call In (C) | **Called Out** |
-| `scheduled-off` | Scheduled Off (Off) | **Scheduled Off** |
-| `noshow` | No Show (N) | **No Show** |
-
-Not inferred from a missing assignment, punch, or phone activity.
-
-## Files changed (this pass)
-
-- `src/schedule/lib/crewStatus.js` — contiguous ranges, labels, edit add/remove plan, compact-dot kind
-- `src/schedule/lib/crewStatus.test.mjs`
-- `src/schedule/components/ScheduledOffModal.jsx` — pre-filled FROM/TO; edit remove-day note
-- `src/schedule/views/Schedule.jsx` — gray week dots, detail ranges, edit/remove writers
-- `src/schedule/App.css` — detail range actions
+- `src/field/FieldLayout.jsx` — `/field/jobs/:jobId`
+- `src/field/views/JobDetail.jsx` — new job detail
+- `src/field/views/Jobs.jsx` — Job # links to the detail
+- `src/field/views/DailyLogs.jsx` — `?job=` read
+- `src/field/views/TimeClock.jsx` — `?job=` on the existing Office Time Clock
+- `src/field/lib/queries.js` — call-log Daily Logs read and material-check counts
+- `src/schedule/components/PRTModal.jsx` — inline `embedded` view
+- `src/schedule/components/StageJobCard.jsx` — notes on Details; planning Load-Out; removed panels and tiles
+- `src/schedule/views/Jobs.jsx` — dropped the card-only log and PRT loads
+- `src/schedule/components/LogsModal.jsx` — deleted
 - `docs/agent-handoffs/BUILD-REPORT.md`
-- `docs/BACKLOG.md`
 
-Not changed: Field Command, Sick / Call In / No Show pickers, assignment writers, leftover `off` rows.
+## Important Implementation Decisions
 
-## Verification
+- The branch started at the converged plan commit, then merged `origin/main` (`abad440`) so Office Time Clock stayed `fetchTimeClockReview`. The plan commit itself did not contain that screen.
+- `/field/timeclock` does not call `fetchFieldPunches` or `fetchActiveFieldJobs`. A `?job=` id that is missing from the loaded range stays selected. The job dropdown still clears an id that is not pinned by the URL.
+- Daily Logs `?job=` queries `daily_log_entries` for that call log inside the same 7-day window. It does not filter the active-stage list.
+- Load-out counts use the same checked-vs-total rule as `fetchLoadOutJobs`. Opening the modal calls `loadJobWithWTCs`, the same door as `/field/loadouts`.
+- Home still loads its own production reports. Schedule Jobs no longer loads `daily_log_entries` or `loadPRTsForCallLogIds` for the card.
 
-- `node src/schedule/lib/crewStatus.test.mjs` ✅ (Oct 12–16 gray Mon–Fri / Sat empty; shrink deletes 15–16; sick not overwritten; assignment warning; legacy `off` not deleted)
-- `npx eslint src/schedule/lib/crewStatus.js src/schedule/components/ScheduledOffModal.jsx` ✅
-- `npm run build` ✅
-- Pre-existing unused-var eslint on `Schedule.jsx` not cleaned up
+## Verification Performed
 
-This VM has mock Supabase. Authenticated create → navigate to week → gray dots → detail range → edit → remove is for Chris on the preview.
+- `npx eslint` on the changed application files — passed
+- `npm run build` — passed
 
-## Visual verification
+## Visual Verification
 
-CSS reuses Crew Scheduler modal/button language. Live click-through requires preview login.
+Authenticated Field and Schedule screens were not walked. This environment has no logged-in session.
 
 ## Deviations From Handoff
 
@@ -111,6 +47,5 @@ None.
 
 ## Issues / Follow-up
 
-- Existing `off` person-days still display as Call In / Called Out until marked Scheduled Off.
-- If a production CHECK rejects `scheduled-off`, add that value additively in `command-suite-db`. Do not remap `off`.
-- Assignment + `scheduled-off` coexistence is still a real conflict; this pass does not auto-reassign.
+- Preview walk and Chris acceptance are later gates.
+- No new table, grant, or migration.

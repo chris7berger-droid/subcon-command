@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { C } from "../../lib/tokens";
 import { tripRange } from "../../schedule/lib/trips.js";
 import FieldScreen, {
@@ -66,10 +67,10 @@ export default function Jobs() {
               key: "job",
               label: "Job #",
               render: (r) => (
-                <span>
+                <Link to={`/field/jobs/${r.jobPk}`} style={{ color: "inherit", textDecoration: "none" }}>
                   {r.jobNum ? <b style={{ color: C.textHead }}>#{r.jobNum}</b> : "—"}
                   {r.jobName && !r.jobNum?.endsWith(r.jobName) ? ` ${r.jobName}` : ""}
-                </span>
+                </Link>
               ),
             },
             {

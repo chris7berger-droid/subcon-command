@@ -12,8 +12,6 @@ import DaysModal from './DaysModal'
 import MobsModal from './MobsModal'
 import BuildScheduleModal from './BuildScheduleModal'
 import LoadOutModal from './LoadOutModal'
-import PRTModal from './PRTModal'
-import LogsModal from './LogsModal'
 import TripsPanel from './TripsPanel'
 import DeleteScheduleItem from './DeleteScheduleItem'
 
@@ -27,19 +25,6 @@ function daysBetween(dateStr, refDate) {
   r.setHours(0, 0, 0, 0)
   return Math.ceil((d - r) / (1000 * 60 * 60 * 24))
 }
-
-function fmtMoney(n) {
-  if (n == null || n === '' || isNaN(n)) return '-'
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-}
-
-// Per-hour rates need cents — a $58.50/hr burden rate must not read "$59/hr".
-// Used only for the Budget rate header, never for aggregate cost figures.
-function fmtRate(n) {
-  if (n == null || n === '' || isNaN(n)) return '-'
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
 
 function ymd(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -71,29 +56,7 @@ function formatDays(days) {
   return labels.join(' · ') + more
 }
 
-function getPrtStatus(prts) {
-  if (!prts || prts.length === 0) return { label: 'no PRTs yet', color: 'neutral' }
-  if (prts.length === 1) return { label: '1 PRT submitted', color: 'neutral' }
-  const recent = prts.slice(0, Math.min(prts.length, 3))
-  let totalTarget = 0, totalActual = 0
-  for (const prt of recent) {
-    const tasks = Array.isArray(prt.tasks) ? prt.tasks : []
-    for (const t of tasks) {
-      totalTarget += parseFloat(t.pct_target || t.target || 0)
-      totalActual += parseFloat(t.pct_complete || t.actual || 0)
-    }
-  }
-  if (totalTarget === 0) return { label: `${prts.length} PRTs`, color: 'neutral' }
-  const gap = totalTarget - totalActual
-  const pctBehind = gap / totalTarget
-  if (pctBehind > 0.10) {
-    const daysBehind = Math.ceil(gap)
-    return { label: `${daysBehind > 0 ? daysBehind + 'd behind' : 'behind target'}`, color: 'warn' }
-  }
-  return { label: 'on target', color: 'ok' }
-}
-
-function StageBanner({ job, stage, crewRows, matRows, prtMap, today }) {
+function StageBanner({ job, stage, crewRows, matRows, today }) {
   const start = effectiveStart(job)
   const daysToKickoff = start ? daysBetween(start, today) : null
   const kickoffText = daysToKickoff !== null
@@ -138,13 +101,10 @@ function StageBanner({ job, stage, crewRows, matRows, prtMap, today }) {
     // first clock-punch + "Nd overdue" reframe — is deferred to Field Command.)
     const dayNum = totalDays && elapsed != null ? Math.min(totalDays, Math.max(1, elapsed + 1)) : null
     const dayText = dayNum != null ? `day ${dayNum} of ${totalDays}` : null
-    const prts = prtMap instanceof Map ? (prtMap.get(job.call_log_id) || []) : []
-    const prt = getPrtStatus(prts)
     return (
       <div className="sjc-banner sjc-banner-active">
         <span className="sjc-banner-stage">ACTIVE</span>
         {dayText && <span className="sjc-banner-countdown">{dayText}</span>}
-        <span className={`sjc-banner-prt sjc-prt-${prt.color}`}>{prt.label}</span>
       </div>
     )
   }
@@ -213,7 +173,7 @@ function IdentityRow({ job }) {
   )
 }
 
-function PlanningPanel({ job, crewRows, matRows, onSowClick, onCrewClick, onMtrlClick, onDateClick, mobs = [], onMobsClick, scheduleSummary }) {
+function PlanningPanel({ job, crewRows, matRows, onSowClick, onCrewClick, onMtrlClick, onDateClick, mobs = [], onMobsClick, onLoadoutClick, scheduleSummary }) {
   const hasSOW = hasFieldSow(job)
   const hasCrew = crewRows.length >= 1
   // Mirror the fail-closed gate (baseChecklistPasses): SOW + 0 tracker rows = not OK.
@@ -265,91 +225,10 @@ function PlanningPanel({ job, crewRows, matRows, onSowClick, onCrewClick, onMtrl
             </div>
           )
         })()}
-      </div>
-    </div>
-  )
-}
-
-function ManagementPanel({ job, logsCount = 0, prtMap, onBilledClick, onPrtClick, onLogsClick, onLoadoutClick, onNotesClick }) {
-  const amount = job.amount ? parseFloat(job.amount) : 0
-
-  return (
-    <div className="sjc-panel sjc-panel-management">
-      <div className="sjc-scorecards">
-        <div className="sjc-score sjc-score-neutral">
-          <span className="sjc-score-icon">{'💵'}</span>
-          <span className="sjc-score-label">PROP</span>
-          <span className="sjc-score-val">{amount > 0 ? fmtMoney(amount) : '—'}</span>
-        </div>
-        <div className="sjc-score sjc-score-click sjc-score-neutral" onClick={onBilledClick}>
-          <span className="sjc-score-icon">{'📊'}</span>
-          <span className="sjc-score-label">BILLING</span>
-          <span className="sjc-score-val">View &rarr;</span>
-        </div>
-        {(() => {
-          // Deposit indicator (Cycle 2) — informational, no click. Hidden when the
-          // job has no deposit requirement (job._deposit is null). Pure read of
-          // sale-side state: Sales flags the deposit + marks the invoice; Schedule
-          // only mirrors sent/days-since/due/paid here.
-          const dep = job._deposit
-          if (!dep) return null
-          const color = dep.status === 'paid' ? 'ok' : dep.status === 'sent' ? 'neutral' : 'bad'
-          const due = fmtMD(dep.dueDate)
-          // dep.amount is what's STILL OWED while unpaid, so the tooltip says which
-          // figure it is — "Deposit $6,000" beside a yellow tag would otherwise read
-          // as the job's whole deposit. Part-paid jobs show owed-of-total.
-          const val = dep.status === 'paid'
-            ? 'Paid'
-            : dep.status === 'sent'
-              ? <>Sent {dep.daysSince}d{due && <span className="sjc-score-dates"> due {due}</span>}</>
-              : 'Due'
-          return (
-            <div
-              className={`sjc-score sjc-score-${color}`}
-              title={dep.amount == null
-                ? 'Deposit'
-                : dep.status === 'paid'
-                  ? `Deposit paid — ${fmtMoney(dep.amount)}`
-                  : dep.amountTotal > dep.amount
-                    ? `Deposit outstanding ${fmtMoney(dep.amount)} of ${fmtMoney(dep.amountTotal)}`
-                    : `Deposit outstanding ${fmtMoney(dep.amount)}`}
-            >
-              <span className="sjc-score-icon">{'🏦'}</span>
-              <span className="sjc-score-label">DEPOSIT</span>
-              <span className="sjc-score-val">{val}</span>
-            </div>
-          )
-        })()}
-        {(() => {
-          const prts = prtMap instanceof Map ? (prtMap.get(job.call_log_id) || []) : []
-          const prt = getPrtStatus(prts)
-          return (
-            <div className={`sjc-score sjc-score-click sjc-score-${prt.color}`} onClick={onPrtClick}>
-              <span className="sjc-score-icon">{'📊'}</span>
-              <span className="sjc-score-label">PRT</span>
-              <span className="sjc-score-val">{prt.label}</span>
-            </div>
-          )
-        })()}
-        <div className="sjc-score sjc-score-click sjc-score-neutral" onClick={onLogsClick}>
-          <span className="sjc-score-icon">{'📅'}</span>
-          <span className="sjc-score-label">LOGS</span>
-          <span className="sjc-score-val">{logsCount > 0 ? logsCount : '—'}</span>
-        </div>
         <div className="sjc-score sjc-score-click sjc-score-neutral" onClick={onLoadoutClick} title="Crew material load-out confirmation">
           <span className="sjc-score-icon">{'🚚'}</span>
           <span className="sjc-score-label">LOAD-OUT</span>
           <span className="sjc-score-val">View &rarr;</span>
-        </div>
-        <div className="sjc-score sjc-score-stub" title="Coming soon — attachments">
-          <span className="sjc-score-icon">{'📎'}</span>
-          <span className="sjc-score-label">FILES</span>
-          <span className="sjc-score-val">—</span>
-        </div>
-        <div className="sjc-score sjc-score-click sjc-score-neutral" onClick={onNotesClick}>
-          <span className="sjc-score-icon">{'📝'}</span>
-          <span className="sjc-score-label">NOTES</span>
-          <span className="sjc-score-val">{job.notes ? `${job.notes.length}c` : '—'}</span>
         </div>
       </div>
     </div>
@@ -388,148 +267,6 @@ function DetailsPanel({ job, crewRows }) {
   )
 }
 
-// Budget tab — Bid side. Renders the frozen bid cost breakdown stamped by Sales
-// onto each job_wtcs.bid_breakdown at Send-to-Schedule. The Actual/Δ columns are
-// scaffolded but "pending" this loop (Field Command not connected). Reads only
-// pre-computed numbers off job._wtcs — no math is re-derived here.
-function BudgetPanel({ job }) {
-  const wtcs = job._wtcs || []
-
-  // Whole-job empty state applies ONLY when the job has zero WTCs.
-  if (wtcs.length === 0) {
-    return (
-      <div className="sjc-panel sjc-panel-budget">
-        <div className="sjc-detail-val" style={{ color: 'var(--text-secondary)' }}>
-          No work types on this job yet.
-        </div>
-      </div>
-    )
-  }
-
-  const mono = { fontFamily: 'var(--font-mono)' }
-
-  // Roll-up: sum EXTENSIVE quantities only (rates and percentages are NOT
-  // additive). Coalesce per-WTC so an unstamped sibling contributes 0, never
-  // NaN. Then margin = Σprofit / Σprice (guarded).
-  const stamped = wtcs.filter(w => w.bid_breakdown)
-  const sum = (f) => stamped.reduce((s, w) => s + (w.bid_breakdown?.[f] ?? 0), 0)
-  const roll = {
-    regular_hours: sum('regular_hours'),
-    ot_hours: sum('ot_hours'),
-    labor_cost: sum('labor_cost'),
-    material_cost: sum('material_cost'),
-    travel_cost: sum('travel_cost'),
-    total_cost: sum('total_cost'),
-    profit: sum('profit'),
-    price: sum('price'),
-  }
-  roll.margin_pct = roll.price > 0 ? (roll.profit / roll.price) * 100 : 0
-
-  // A roll-up over a proper SUBSET of the job's WTCs is not the job total: it
-  // understates cost/price and computes margin on a slice. Never present it as
-  // authoritative without saying so. Unstamped siblings can persist (re-sends
-  // never re-stamp; backfill can skip a row), so this state is not transient.
-  const partial = stamped.length < wtcs.length
-
-  const marginCell = (profit, pct) => (
-    <span style={mono}>
-      {fmtMoney(profit)}{' '}
-      <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>({pct.toFixed(1)}%)</span>
-    </span>
-  )
-
-  // A single BID · ACTUAL · Δ row. Actual/Δ are pending/— this loop; the
-  // three-column scaffold stays so Field data drops in without a 1→3 refactor.
-  const BidRow = (label, bid, strong) => (
-    <tr>
-      <td>{label}</td>
-      <td style={{ ...mono, textAlign: 'right', ...(strong ? { fontWeight: 700 } : {}) }}>{bid}</td>
-      <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>pending</td>
-      <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>—</td>
-    </tr>
-  )
-
-  return (
-    <div className="sjc-panel sjc-panel-budget">
-      {/* Job-level roll-up across stamped WTCs */}
-      {stamped.length > 0 && (
-        <>
-          {partial && (
-            <div
-              className="jd-value"
-              style={{ marginBottom: 8, fontWeight: 700, fontSize: 12 }}
-            >
-              ⚠ Partial roll-up — {stamped.length} of {wtcs.length} work types stamped.
-              Totals and margin below EXCLUDE the unstamped work type(s) and understate the job.
-            </div>
-          )}
-          <div className="jd-grid" style={{ marginBottom: 16 }}>
-            <div className="jd-field"><span className="jd-label">Regular Hrs</span><span className="jd-value" style={mono}>{roll.regular_hours.toFixed(1)}</span></div>
-            <div className="jd-field"><span className="jd-label">OT Hrs</span><span className="jd-value" style={mono}>{roll.ot_hours.toFixed(1)}</span></div>
-            <div className="jd-field"><span className="jd-label">Labor</span><span className="jd-value" style={mono}>{fmtMoney(roll.labor_cost)}</span></div>
-            <div className="jd-field"><span className="jd-label">Materials</span><span className="jd-value" style={mono}>{fmtMoney(roll.material_cost)}</span></div>
-            {roll.travel_cost > 0 && (
-              <div className="jd-field"><span className="jd-label">Travel</span><span className="jd-value" style={mono}>{fmtMoney(roll.travel_cost)}</span></div>
-            )}
-            <div className="jd-field"><span className="jd-label">{partial ? 'Total Cost (partial)' : 'Total Cost'}</span><span className="jd-value" style={mono}>{fmtMoney(roll.total_cost)}</span></div>
-            <div className="jd-field"><span className="jd-label">{partial ? 'Margin (partial)' : 'Margin'}</span><span className="jd-value">{marginCell(roll.profit, roll.margin_pct)}</span></div>
-          </div>
-        </>
-      )}
-
-      {/* One table per WTC */}
-      {wtcs.map((w, i) => {
-        const name = w.work_type_name || job.work_type || 'Work Type'
-        const b = w.bid_breakdown
-        // Per-WTC empty state on an unstamped row — NOT an all-or-nothing gate.
-        if (!b) {
-          return (
-            <div key={w.id || i} style={{ marginBottom: 16 }}>
-              <div className="jd-label" style={{ marginBottom: 4 }}>{name}</div>
-              <div className="jd-value" style={{ color: 'var(--text-secondary)' }}>Bid not yet stamped.</div>
-            </div>
-          )
-        }
-        return (
-          <div key={w.id || i} style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8 }}>
-              <span className="jd-label">{name}</span>
-              <span className="jd-label" style={{ color: 'var(--text-secondary)' }}>
-                Burden {fmtRate(b.burden_rate)}/hr · OT {fmtRate(b.ot_burden_rate)}/hr
-              </span>
-            </div>
-            <table className="jobs-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th style={{ textAlign: 'right' }}>Bid</th>
-                  <th style={{ textAlign: 'right' }}>Actual</th>
-                  <th style={{ textAlign: 'right' }}>Δ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {BidRow('Regular hours', (b.regular_hours ?? 0).toFixed(1))}
-                {BidRow('Overtime hours', (b.ot_hours ?? 0).toFixed(1))}
-                {BidRow('Labor cost', fmtMoney(b.labor_cost ?? 0))}
-                {BidRow('Materials', fmtMoney(b.material_cost ?? 0))}
-                {BidRow('Added materials', fmtMoney(0))}
-                {(b.travel_cost ?? 0) > 0 && BidRow('Travel', fmtMoney(b.travel_cost))}
-                {BidRow('Total Cost', fmtMoney(b.total_cost ?? 0), true)}
-                <tr>
-                  <td>Margin</td>
-                  <td style={{ textAlign: 'right' }}>{marginCell(b.profit ?? 0, b.margin_pct ?? 0)}</td>
-                  <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>pending</td>
-                  <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 function NotesPanel({ job, changedBy, onSaved }) {
   const [val, setVal] = useState(job.notes || '')
   const [saving, setSaving] = useState(false)
@@ -564,7 +301,7 @@ function NotesPanel({ job, changedBy, onSaved }) {
   )
 }
 
-export default function StageJobCard({ job, stage, variant = null, crewByCallLog = {}, matsByJobId = {}, logsByCallLog = {}, assignmentsByJobId = {}, proposalMaterialsByCallLog = {}, mobsByJobId = {}, prtMap = new Map(), today = new Date(), onJobUpdate, autoOpen = false, initialPanel = null }) {
+export default function StageJobCard({ job, stage, variant = null, crewByCallLog = {}, matsByJobId = {}, assignmentsByJobId = {}, proposalMaterialsByCallLog = {}, mobsByJobId = {}, today = new Date(), onJobUpdate, autoOpen = false, initialPanel = null }) {
   const navigate = useNavigate()
   const user = useUser()
   const changedBy = user?.name || 'unknown'
@@ -576,7 +313,7 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
   // scrolls it into view — this is the target Open Job / Edit Schedule / View Job
   // now land on (JobDetail retired).
   const [expanded, setExpanded] = useState(!!autoOpen)
-  const [panels, setPanels] = useState({ planning: false, management: false, details: false, budget: false, trips: initialPanel === 'trips' })
+  const [panels, setPanels] = useState({ planning: false, details: false, trips: initialPanel === 'trips' })
   const cardRef = useRef(null)
   useEffect(() => {
     if (autoOpen) setExpanded(true)
@@ -593,14 +330,10 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
   const [showBuildSchedule, setShowBuildSchedule] = useState(false)
   const [showMobsModal, setShowMobsModal] = useState(false)
   const [showLoadoutModal, setShowLoadoutModal] = useState(false)
-  const [showPrtModal, setShowPrtModal] = useState(false)
-  const [showLogsModal, setShowLogsModal] = useState(false)
-  const [showNotes, setShowNotes] = useState(false)
 
   const crewRows = crewByCallLog[job.call_log_id] || []
   const matRows = matsByJobId[job.job_id] || []
   const proposalMaterials = proposalMaterialsByCallLog[job.call_log_id] || []
-  const logsCount = logsByCallLog[job.call_log_id] || 0
   const assignmentDates = assignmentsByJobId[job.job_id] || null
   const mobs = getJobMobilizations(job, mobsByJobId[job.job_id])
   const scheduleSummary = jobCardSchedule(job, mobsByJobId[job.job_id], assignmentDates)
@@ -703,7 +436,6 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
     const badgeClass = stage === 'staged' ? 'staged' : stage === 'ready' ? 'ready'
       : stage === 'active' ? 'active' : stage === 'on-hold' ? 'on-hold' : 'complete'
     const badgeLabel = stage === 'on-hold' ? 'ON HOLD' : stage.toUpperCase()
-    const amount = job.amount ? parseFloat(job.amount) : 0
     const stop = (fn) => (e) => { e.stopPropagation(); fn() }
     return (
       <><div className="jtp-row" onClick={() => setExpanded(true)} role="button" tabIndex={0}
@@ -716,7 +448,6 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
         <span className="jtp-cell jtp-loc">{loc}</span>
         <span className="jtp-cell jtp-date">{startStr ? fmtMD(startStr) : '—'}{timeSignal && <span className="jtp-time"> · {timeSignal}</span>}</span>
         <span className="jtp-cell jtp-crew">{crewRows.length}/{scheduleSummary.required}</span>
-        <span className="jtp-cell jtp-budget">{amount > 0 ? fmtMoney(amount) : '—'}</span>
         <span className="jtp-actions" onClick={e => e.stopPropagation()}>
           <button className="jtp-btn jtp-btn-outline" onClick={stop(() => setShowBuildSchedule(true))}>BUILD SCHEDULE →</button>
           {stage === 'active'
@@ -733,7 +464,7 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
       className={`sjc-card${compactMode ? ' sjc-card-home-expanded' : ''}`}
       style={autoOpen ? { boxShadow: '0 0 0 3px #30cfac', borderRadius: 8 } : undefined}
     >
-      <StageBanner job={job} stage={stage} crewRows={crewRows} matRows={matRows} prtMap={prtMap} today={today} />
+      <StageBanner job={job} stage={stage} crewRows={crewRows} matRows={matRows} today={today} />
 
       <div className="sjc-header">
         <span className="sjc-header-title">{getCardTitle(job, job._wtcs)}</span>
@@ -744,9 +475,7 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
 
       <div className="sjc-toggles">
         <button className={`sjc-toggle${panels.planning ? ' open' : ''}`} onClick={() => togglePanel('planning')}>PLANNING</button>
-        <button className={`sjc-toggle${panels.management ? ' open' : ''}`} onClick={() => togglePanel('management')}>MANAGEMENT</button>
         <button className={`sjc-toggle${panels.details ? ' open' : ''}`} onClick={() => togglePanel('details')}>DETAILS</button>
-        <button className={`sjc-toggle${panels.budget ? ' open' : ''}`} onClick={() => togglePanel('budget')}>BUDGET</button>
         <button className={`sjc-toggle${panels.trips ? ' open' : ''}`} onClick={() => togglePanel('trips')}>TRIPS</button>
       </div>
 
@@ -762,30 +491,19 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
           scheduleSummary={scheduleSummary}
           mobs={mobs}
           onMobsClick={() => setShowMobsModal(true)}
-        />
-      )}
-      {panels.management && (
-        <ManagementPanel
-          job={job}
-          stage={stage}
-          logsCount={logsCount}
-          prtMap={prtMap}
-          onBilledClick={() => navigate('/schedule/billing?tab=worklist')}
-          onPrtClick={() => setShowPrtModal(true)}
-          onLogsClick={() => setShowLogsModal(true)}
           onLoadoutClick={() => setShowLoadoutModal(true)}
-          onNotesClick={() => setShowNotes(prev => !prev)}
         />
       )}
-      {showNotes && (
-        <NotesPanel
-          job={job}
-          changedBy={changedBy}
-          onSaved={() => { if (onJobUpdate) onJobUpdate() }}
-        />
+      {panels.details && (
+        <>
+          <DetailsPanel job={job} crewRows={crewRows} />
+          <NotesPanel
+            job={job}
+            changedBy={changedBy}
+            onSaved={() => { if (onJobUpdate) onJobUpdate() }}
+          />
+        </>
       )}
-      {panels.details && <DetailsPanel job={job} crewRows={crewRows} />}
-      {panels.budget && <BudgetPanel job={job} />}
       {panels.trips && <TripsPanel job={job} mobs={mobs} today={ymd(today)} onUpdated={onJobUpdate} />}
 
       <div className="sjc-action">
@@ -870,20 +588,6 @@ export default function StageJobCard({ job, stage, variant = null, crewByCallLog
         <LoadOutModal
           job={job}
           onClose={() => setShowLoadoutModal(false)}
-        />
-      )}
-
-      {showPrtModal && (
-        <PRTModal
-          job={job}
-          onClose={() => setShowPrtModal(false)}
-        />
-      )}
-
-      {showLogsModal && (
-        <LogsModal
-          job={job}
-          onClose={() => setShowLogsModal(false)}
         />
       )}
     </div>

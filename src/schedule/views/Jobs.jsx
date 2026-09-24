@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import {
-  loadJobs, loadAllRows, loadPRTsForCallLogIds, isReady, loadBillingWorklist,
+  loadJobs, loadAllRows, isReady, loadBillingWorklist,
   loadMobilizationsByJobId, computeHomeDashboard, wkDates, getJobMultiWeekAlert, hasFieldSow,
   findDuplicateJobGroups,
 } from '../lib/queries'
@@ -87,8 +87,6 @@ export default function Jobs() {
   const [assignments, setAssignments] = useState([])
   const [billingWorklist, setBillingWorklist] = useState([])
   const [materials, setMaterials] = useState([])
-  const [dailyLogs, setDailyLogs] = useState([])
-  const [prtMap, setPrtMap] = useState(new Map())
   const [proposalMaterialsByCallLog, setProposalMaterialsByCallLog] = useState({})
   const [mobsByJobId, setMobsByJobId] = useState({})
   const [crew, setCrew] = useState([])
@@ -122,10 +120,6 @@ export default function Jobs() {
     return out
   }, [assignments, jobs])
 
-  const logsByCallLog = useMemo(() => dailyLogs.reduce((m, r) => {
-    m[r.job_id] = (m[r.job_id] || 0) + 1; return m
-  }, {}), [dailyLogs])
-
   const assignmentsByJobId = useMemo(() => assignments.reduce((m, a) => {
     (m[a.job_id] ||= new Set()).add(a.date); return m
   }, {}), [assignments])
@@ -149,7 +143,7 @@ export default function Jobs() {
     if (!background) setLoading(true)
     const wsStr = dates[0]
     const weStr = dates[dates.length - 1]
-    const [jobsRes, assignRes, billRes, matsRes, logsRes, crewRes, csRes] = await Promise.all([
+    const [jobsRes, assignRes, billRes, matsRes, crewRes, csRes] = await Promise.all([
       loadJobs({ withWTCs: true }),
       // Paginated: the assignments table is >1000 rows, so a plain select('*')
       // silently caps at 1000 and drops most of the current week — which zeroed
@@ -157,7 +151,6 @@ export default function Jobs() {
       loadAllRows('assignments', '*', { orderBy: 'id' }),
       loadBillingWorklist(),
       loadAllRows('job_material_lines', 'id, job_id, status', { orderBy: 'id' }),
-      loadAllRows('daily_log_entries', 'id, job_id', { orderBy: 'id' }),
       supabase.from('crew').select('*'),
       supabase.from('crew_status').select('*').gte('date', wsStr).lte('date', weStr),
     ])
@@ -167,12 +160,11 @@ export default function Jobs() {
     setAssignments(assignRes.data || [])
     setBillingWorklist(billRes.data || [])
     setMaterials(matsRes.data || [])
-    setDailyLogs(logsRes.data || [])
     setCrew(crewRes.data || [])
     const csMap = {}
     for (const c of (csRes.data || [])) csMap[c.crew_name + '|' + c.date] = c.status
     setCrewStatusMap(csMap)
-    setSyncWarning(assignRes.partial || matsRes.partial || logsRes.partial ? 'Counts may be stale — partial data loaded' : null)
+    setSyncWarning(assignRes.partial || matsRes.partial ? 'Counts may be stale — partial data loaded' : null)
 
     const loadedJobs = jobsRes.data || []
 
@@ -201,18 +193,6 @@ export default function Jobs() {
       setMobsByJobId(mobs)
     } else {
       setMobsByJobId({})
-    }
-
-    const activeCallLogIds = loadedJobs
-      .filter(j => j.status === 'In Progress' || j.status === 'Ongoing')
-      .map(j => j.call_log_id)
-      .filter(Boolean)
-    if (activeCallLogIds.length > 0) {
-      const prtRes = await loadPRTsForCallLogIds(activeCallLogIds)
-      if (thisLoad !== loadIdRef.current) return
-      setPrtMap(prtRes.data)
-    } else {
-      setPrtMap(new Map())
     }
 
     setLoading(false)
@@ -408,11 +388,9 @@ export default function Jobs() {
         jobs={jobs}
         crewByCallLog={crewByCallLog}
         matsByJobId={matsByJobId}
-        logsByCallLog={logsByCallLog}
         assignmentsByJobId={assignmentsByJobId}
         proposalMaterialsByCallLog={proposalMaterialsByCallLog}
         mobsByJobId={mobsByJobId}
-        prtMap={prtMap}
         today={today}
         initialStage={initialStage}
         focusJobId={searchParams.get('job')}
