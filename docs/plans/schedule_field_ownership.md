@@ -184,3 +184,27 @@ Recorded after Plan Audit round 1. The round-1 manifest above stays as written. 
 - F2. The Budget tab still comes off the Schedule job card. It is the only bid-cost breakdown, and Actual / Δ are placeholders, not live execution actuals. Removal is intentional. This slice does not create a replacement Budget screen.
 - F3. The existing `NotesPanel` moves into Details before Management is removed. The read-only Details row is not the editor.
 - F4. The removed card dollar is `jobs.amount`. Finance Contract keeps its own authoritative total. Removal is intentional.
+
+## Audit manifest — round 2
+
+Plan Audit, round 2, against `bff636f`, compared with current `main` (`680a600`). Scope sections above are unchanged. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
+
+### Round-1 findings
+
+- F1. Daily Logs is resolved. `DailyLogs.jsx` on `main` still uses `fetchFieldLogs` (7 days, active-stage list, stat strip, chips). The revision tells `?job=` to read that call log inside those 7 days, including Complete, and to keep the unfiltered list on the active-stage set. That matches this screen.
+- F1. Time Clock is not resolved. See R2-F1.
+- F2. Resolved. The Budget tab is described as the frozen bid, Actual / Δ as placeholders, and the removal as intentional with no replacement screen. `BudgetPanel` on `main` still matches that description.
+- F3. Resolved. The revision moves the existing `NotesPanel` onto Details before Management is removed. On `main` the editor is still opened only from the Management NOTES tile (`StageJobCard.jsx` 349, 533, 777).
+- F4. Resolved. The removed figure is `jobs.amount`. Contract stays `authoritativeTotal`. The revision does not make them the same number.
+
+### R2-F1 — High. The Time Clock steps describe a screen that is gone
+
+`/field/timeclock` on `main` is the office Time Clock (`src/field/views/TimeClock.jsx`). It loads `fetchTimeClockReview` (`src/field/lib/queries.js`), which reads `time_punches` for a date range. The comment on that read says identity comes from the punches, not from the active Schedule job list. `fetchFieldPunches` is still defined and still stage-gated, and nothing calls it.
+
+The screen already filters by `time_punches.job_id`, which is `call_log.id` (`filterTimeClockRows` in `src/field/lib/timeClock.js`). The range defaults to today (`pacificToday`) and can be changed. There is no stat strip and no chip row. The count line is `shownPunches`.
+
+The revision still says unfiltered Time Clock stays on `fetchActiveFieldJobs`, punches stay today, and filtered stat and chip counts match the job. Following that replaces the office range, the review hours, and the punch corrections with the retired today-list, or it narrows the live screen back to the active-stage set.
+
+A second trap if `?job=` is written into the existing dropdown state: `jobOptions` is only jobs that already have punches in the loaded range, and an id that is not in that list is cleared (`TimeClock.jsx`, the effect that calls `setJobId("")`). The table then shows every job in the range. That is the full list, which this plan says not to show.
+
+Revision: leave `fetchTimeClockReview` and the From / To controls in place. Do not route this screen through `fetchFieldPunches` or `fetchActiveFieldJobs`. `?job=<callLogId>` selects that call log on the current office screen. A call log with no punches in the open range stays empty and does not fall through to all jobs. Do not require a stat strip or chips on Time Clock. Daily Logs stays as this revision already says.
