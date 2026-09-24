@@ -1,0 +1,36 @@
+---
+description: Feature work follows the locked development protocol. Name the current phase from recorded gate results before editing.
+alwaysApply: true
+---
+
+# Development protocol
+
+For feature work, follow `docs/DEVELOPMENT_PROTOCOL.md`. This rule adds that phase order. It does not replace `confirm-intent.mdc`, `approved-handoff.mdc`, or `session-wrap.mdc`.
+
+Feature work is a new or changed product behavior with a plan in `docs/plans/` or an approved `docs/agent-handoffs/ACTIVE.md`, or work the user named as a feature. A single change already locked under `confirm-intent.mdc` stays on that rule and does not restart Planning. App changes still do not merge until `session-wrap.mdc` is satisfied.
+
+## Before you edit
+
+1. Read `docs/DEVELOPMENT_PROTOCOL.md`.
+2. Name one line: `Phase: <name> — <which gate result is missing>`.
+3. The current phase is the earliest phase in the locked order whose gate result is not recorded in the plan, `docs/agent-handoffs/BUILD-REPORT.md`, a `docs/handoffs/SC_Handoff_v*.txt`, or `docs/AUDIT_LOG.md`. Chat-only verdicts do not count.
+4. Do only that phase's writes.
+
+Locked order: Planning → Plan Audit → Build → Build vs Plan → Code Review → Security Review → Smoke Test → Vercel Preview → Chris Acceptance → Merge/Closeout.
+
+## RESULT-FIRST
+
+Lead with the phase result (artifact path or verdict), then the evidence. Code existing, a green local build, or a finished subtask is not the gate. Completion claims follow `CLAUDE.md` Workflow Rule 10.
+
+## Independent reviews
+
+Build, Build vs Plan, Code Review, and Security Review are separate phases. One verdict does not satisfy another. The author of one of those four results does not write either of the other three for the same slice. Reviewers do not edit application code or apply findings. Findings return to Build.
+
+Do not weaken `.claude/commands/audit.md`, `.claude/skills/security-audit/SKILL.md`, or `CLAUDE_RLS.md`. Security Review uses them. It does not shorten the weekly full audit and does not replace the RLS 6-gate deploy pattern.
+
+## How the other rules fit
+
+- `confirm-intent.mdc` still locks ambiguous or out-of-scope product edits. During Build, `approved-handoff.mdc` still overrides routine confirmation for work inside an approved ACTIVE.md.
+- `approved-handoff.mdc` is not permission to skip Plan Audit or any later gate, and it is not merge approval. Its build-complete standard is the Build gate only.
+- `session-wrap.mdc` is Merge/Closeout. Do not start it until Chris Acceptance is recorded for an app slice. Bugbot in that close-out is not Code Review or Security Review. Docs/rules-only slices still skip Vercel preview; feature work does not.
+- `.claude/commands/pre-ship.md` remains the make-it-live checklist. It reports. His wrap / merge / go is the confirmation that checklist waits for.
