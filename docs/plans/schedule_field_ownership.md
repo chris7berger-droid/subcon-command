@@ -225,3 +225,11 @@ Recorded after Plan Audit round 2. The round-1 manifest, Revision 2, and the rou
 Recorded after Plan Audit round 2. The round-1 manifest, Revision 2, the round-2 manifest, and Revision 3 stay as written. This revision names the two Time Clock systems. **NOT CONVERGED. Not build-ready.**
 
 - R2-F1. Office Time Clock is the desktop function at `/field/timeclock`: `fetchTimeClockReview`, From/To, review hours, office corrections, and the existing UI. Mobile Time Clock is crew punching on the phone. This slice does not redesign or expand either. Do not use `fetchFieldPunches` or `fetchActiveFieldJobs` for `/field/timeclock`. `?job=<callLogId>` filters Office Time Clock to that call log. No punches in the selected range shows an empty result for that job and does not fall back to all jobs. No stat strip or chip requirement for Office Time Clock. Daily Logs stays as Revision 2 already says.
+
+## Audit manifest — round 3
+
+Plan Audit, round 3, against `233acc7`, compared with current `main` (`abad440`). Scope sections above are unchanged. **CONVERGED. BUILD-READY.**
+
+R2-F1 is resolved. Office Time Clock stays `fetchTimeClockReview` with From/To, review hours, and office corrections. `?job=<callLogId>` filters `time_punches.job_id` through the existing screen and must stay empty instead of falling back to all jobs. `fetchFieldPunches` and `fetchActiveFieldJobs` stay off this screen. No stat strip or chips. Mobile Time Clock is out of the slice. On `main`, `/field/timeclock` still loads `fetchTimeClockReview`, `filterTimeClockRows` still keys the job on `time_punches.job_id`, and a fresh visit still opens today through today without reading a date range from the URL.
+
+No remaining material gap. Daily Logs `?job=`, the bid-tab removal, the `NotesPanel` move, and `jobs.amount` versus Contract stay as the earlier rounds closed them.
