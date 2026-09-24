@@ -2,7 +2,7 @@
 
 Planning artifact. Locked 2026-09-24. Schedule Command owns planning and readiness. Field Command owns execution and what actually happened. No new tables, migrations, or data paths. One new view.
 
-Revision 2, after Plan Audit round 1. Resolves F1–F4 below. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
+Revision 3, after Plan Audit round 2. Resolves R2-F1. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
 
 ## Ownership boundary
 
@@ -48,7 +48,7 @@ Field Jobs (`/field/jobs`) gets one new per-job detail. That detail is the only 
 - Title: display job number and name, the same fields the Jobs list already shows.
 - Production reports live on this page, not on Today and not on a second screen. Reuse `PRTModal` inline (`embedded`, no overlay). It already calls `loadPRTsForJob(call_log_id)` and compares reports to that job’s SOW. Pass the job from `loadJobWithWTCs` so `_wtcs` is present. Wrap with `.schedule-root` the way Load-Outs wraps `LoadOutModal`.
 - Daily Logs is one link to `/field/dailylogs?job=<callLogId>`. The detail does not host a second log list.
-- Time Clock is one link to `/field/timeclock?job=<callLogId>`. The detail does not host a second punch list.
+- Time Clock is one link to `/field/timeclock?job=<callLogId>`. That filters the existing office Time Clock to that call log. The detail does not host a second punch list. Do not rebuild that screen.
 - Load-Out status on the detail is loaded of total from `job_material_checks` for that call log, counted the same way `fetchLoadOutJobs` counts (checked vs total). Open calls `loadJobWithWTCs` and `LoadOutModal`, the same door `/field/loadouts` uses.
 - Unknown `jobId`: the existing empty state, plus the back link. No writes.
 - Jobs list: the Job # cell links to `/field/jobs/<jobPk>`. Leave `PlainTable` as it is. No new Field nav item.
@@ -61,20 +61,23 @@ Today (`/field/today`) stays a today/status screen and keeps only today’s PRT 
 
 `jobId` is `jobs.job_id` (the Jobs list `jobPk`). Child rows stay keyed by call log: `daily_log_entries.job_id`, `time_punches.job_id`, and `daily_production_reports.job_id` are `call_log.id`. Do not put the call log id in this path. `loadJobWithWTCs(jobId)` already returns both.
 
-`/field/jobs` lists every non-deleted, non-merged schedule job, including Complete. Unfiltered `fetchFieldLogs` and `fetchFieldPunches` do not. They start from `fetchActiveFieldJobs`, which keeps only call logs whose stage is in `ACTIVE_FIELD_STAGE_KEYS`. Complete is outside that set.
+`/field/jobs` lists every non-deleted, non-merged schedule job, including Complete. Unfiltered Daily Logs does not. `fetchFieldLogs` starts from `fetchActiveFieldJobs`, which keeps only call logs whose stage is in `ACTIVE_FIELD_STAGE_KEYS`. Complete is outside that set.
 
-When `?job=<callLogId>` is present, read that call log inside the existing date window. Include Complete jobs and any other job outside the active-stage set. Do not filter the active-stage result and then drop the job. Logs stay the last 7 days. Punches stay today.
+When Daily Logs has `?job=<callLogId>`, read that call log inside the existing 7-day window. Include Complete jobs and any other job outside the active-stage set. Do not filter the active-stage result and then drop the job. Unfiltered Daily Logs stays on `fetchActiveFieldJobs`. Do not widen that list.
 
-Unfiltered Daily Logs and Time Clock stay on `fetchActiveFieldJobs`. Do not widen that list.
+Daily Logs stat strip and chip counts are computed from the rows on screen. With `?job=`, they match that job. Without it, they match the current list.
 
-Stat strip and chip counts are computed from the rows on screen. With `?job=`, they match that job. Without it, they match the current list.
+A Daily Logs `?job=` that has no rows inside the 7 days uses the existing empty state, not the unfiltered list. Empty means nothing in that window, not that the stage gate excluded the job.
 
-A `?job=` that has no rows inside the window uses the existing empty state, not the unfiltered list. Empty means nothing in that window, not that the stage gate excluded the job.
+`/field/timeclock` stays the current office Time Clock. Keep `fetchTimeClockReview`, the From/To date range, review hours, office corrections, and the existing UI. Do not use `fetchFieldPunches` or `fetchActiveFieldJobs` for this screen. Do not replace the range, the review hours, or the corrections.
+
+`/field/timeclock?job=<callLogId>` filters that existing screen to that call log (`time_punches.job_id`, already what `filterTimeClockRows` uses). Keep the selected From/To range. If that job has no punches in the selected range, show an empty result for that job. Do not clear the filter and fall back to all jobs. An id that is missing from the punches already loaded for the range must stay filtered, not be cleared the way the job dropdown clears an id that is not in `jobOptions`. No stat strip or chip requirement for Time Clock.
 
 ## Reuse
 
 - `loadJobWithWTCs`, `loadPRTsForJob`, `PRTModal`
-- `fetchFieldLogs`, `fetchFieldPunches` for the unfiltered screens. The `?job=` read uses the same tables and the same date windows, without the active-stage gate.
+- `fetchFieldLogs` for unfiltered Daily Logs. The Daily Logs `?job=` read uses the same table and the same 7-day window, without the active-stage gate.
+- Office Time Clock: `fetchTimeClockReview`, `filterTimeClockRows`, From/To, review hours, and the existing correction UI. Do not call `fetchFieldPunches` or `fetchActiveFieldJobs` from `/field/timeclock`.
 - `LoadOutModal` and the Load-Outs open path
 - `job_material_checks` checked/total rule inside `fetchLoadOutJobs`
 - The existing `NotesPanel` and `updateJobField` for `jobs.notes`, placed on Details
@@ -85,8 +88,8 @@ Modify:
 - `src/field/FieldLayout.jsx`
 - `src/field/views/Jobs.jsx`
 - `src/field/views/DailyLogs.jsx`
-- `src/field/views/TimeClock.jsx`
-- `src/field/lib/queries.js`
+- `src/field/views/TimeClock.jsx` — apply `?job=` on the existing office screen. Do not replace `fetchTimeClockReview`.
+- `src/field/lib/queries.js` — Daily Logs `?job=` read. Do not point Time Clock at `fetchFieldPunches`.
 - `src/schedule/components/PRTModal.jsx`
 - `src/schedule/components/StageJobCard.jsx`
 - `src/schedule/views/Jobs.jsx` — drop the `daily_log_entries` load and the `loadPRTsForCallLogIds` load that only fed the card. Home keeps its own PRT read.
@@ -105,15 +108,15 @@ Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are 
 
 1. Route and job-detail shell (`loadJobWithWTCs`, identity, back link).
 2. Inline PRT history.
-3. `?job=` on Daily Logs and Time Clock, including jobs outside the active-stage set, and the two links. Filtered stat and chip counts use the filtered rows.
+3. Daily Logs `?job=`, including jobs outside the active-stage set, and its link. Filtered Daily Logs stat and chip counts use the filtered rows. Time Clock `?job=` filters the existing office screen to that call log and does not fall back to all jobs. No Time Clock stat strip or chips.
 4. Load-out status and the existing modal.
 5. Move the existing `NotesPanel` into Details. Then remove Management, the Budget tab, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount`. Then delete `LogsModal` and the card-only Schedule fetches.
 
 ## Acceptance criteria
 
 - `/field/jobs/:jobId` opens one job. PRT history is on that page and matches `loadPRTsForJob` for its call log. Today still shows only today’s PRT flag.
-- Daily Logs and Time Clock with `?job=` show that call log’s rows inside the windows they already use, including a Complete job and any other job outside `ACTIVE_FIELD_STAGE_KEYS`. A Complete job with a log in the last 7 days, or a punch today, shows that row. Empty means nothing in the window. Without `?job=`, both screens match current behavior.
-- With `?job=`, the stat strip and chip counts match the filtered job. Without it, they match the unfiltered list.
+- Daily Logs with `?job=` shows that call log’s rows inside the existing 7 days, including a Complete job and any other job outside `ACTIVE_FIELD_STAGE_KEYS`. Empty means nothing in those 7 days. Without `?job=`, Daily Logs matches current behavior. With `?job=`, its stat strip and chip counts match the filtered job. Without it, they match the unfiltered list.
+- `/field/timeclock` still uses `fetchTimeClockReview`, From/To, review hours, office corrections, and the existing UI. `?job=<callLogId>` filters that screen to that call log. A job with no punches in the selected range shows an empty result for that job and does not fall back to all jobs. Time Clock has no stat-strip or chip requirement. Without `?job=`, Time Clock matches the current office screen.
 - Load-Out on the detail shows loaded of total and opens the same `LoadOutModal` as `/field/loadouts`.
 - Schedule card still has SOW, crew, materials, days, trips, mobilizations, readiness, and Load-Out under Planning. `NotesPanel` is on Details and notes still save after Management is gone. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount` are gone. No replacement Budget screen exists. Finance Contract still uses its own authoritative total.
 - No new table, grant, or migration. Home’s production figure still loads on its own.
@@ -123,12 +126,12 @@ Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are 
 - A second Field screen for PRT history, Daily Logs, Time Clock, or Load-Out.
 - Changing Today into a report archive, or changing its PRT flag.
 - A Field budget screen, a replacement Schedule Budget screen, or relocating `job_wtcs.bid_breakdown` in this slice.
-- A week timesheet, or a manager punch-correction flow.
+- Replacing the office Time Clock, removing From/To, review hours, or office corrections, adding a Time Clock stat strip or chips, or loading `/field/timeclock` through `fetchFieldPunches` or `fetchActiveFieldJobs`.
 - Retargeting Home’s production KPI.
 - Changing Finance / Billing, Sales proposals, Sales invoices, or Call Log attachments, including making Contract equal `jobs.amount`.
 - A new notes editor. Billing notes stay where they are.
 - New tables, grants, or migrations.
-- Widening unfiltered Daily Logs or Time Clock beyond the active-stage set.
+- Widening unfiltered Daily Logs beyond the active-stage set.
 - A new Field nav item, or a change to `PlainTable`.
 - Wiring the unwired FILES stub onto the Schedule card.
 
@@ -208,3 +211,9 @@ The revision still says unfiltered Time Clock stays on `fetchActiveFieldJobs`, p
 A second trap if `?job=` is written into the existing dropdown state: `jobOptions` is only jobs that already have punches in the loaded range, and an id that is not in that list is cleared (`TimeClock.jsx`, the effect that calls `setJobId("")`). The table then shows every job in the range. That is the full list, which this plan says not to show.
 
 Revision: leave `fetchTimeClockReview` and the From / To controls in place. Do not route this screen through `fetchFieldPunches` or `fetchActiveFieldJobs`. `?job=<callLogId>` selects that call log on the current office screen. A call log with no punches in the open range stays empty and does not fall through to all jobs. Do not require a stat strip or chips on Time Clock. Daily Logs stays as this revision already says.
+
+## Revision 3
+
+Recorded after Plan Audit round 2. The round-1 manifest, Revision 2, and the round-2 manifest stay as written. This revision changes the Time Clock scope. **NOT CONVERGED. Not build-ready.**
+
+- R2-F1. `/field/timeclock` stays the office Time Clock: `fetchTimeClockReview`, From/To, review hours, office corrections, and the existing UI. Do not use `fetchFieldPunches` or `fetchActiveFieldJobs` for that screen. `?job=<callLogId>` filters that screen to that call log. No punches in the selected range shows an empty result for that job and does not fall back to all jobs. No stat strip or chip requirement for Time Clock. Daily Logs stays as Revision 2 already says.
