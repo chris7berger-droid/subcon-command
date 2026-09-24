@@ -11,9 +11,11 @@ Isolated saving still works there. The hosted preview uses the normal
 login and cannot save.
 
 PREVIEW
-Vercel preview of this branch. VITE_TIME_CLOCK_ISOLATED is unset on
-Production, Preview, and Development. Writes stay off. The preview URL
-is recorded after the deployment is Ready.
+Ready. Branch alias, production writes disabled:
+https://sales-command-git-feat-time-8e2aa7-chris7berger-droids-projects.vercel.app/field/timeclock
+Deployment of db7cf2b was Ready before this handoff note. Vercel
+Production, Preview, and Development do not define
+VITE_TIME_CLOCK_ISOLATED. The preview uses the normal login.
 
 WHAT CHRIS SHOULD REVIEW
 Sign in on the preview and open /field/timeclock. The shift table,
