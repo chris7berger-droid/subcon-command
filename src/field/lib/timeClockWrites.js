@@ -1,12 +1,10 @@
 // Office saves use the signed-in desktop session and apply_time_punch_correction.
-// TIME_CLOCK_WRITES_AVAILABLE stays false until that migration is on the shared
-// database and Chris turns office saves on. The disposable local database is
-// the only place saving works before that. A hosted page never takes the
-// isolated test sign-in.
+// The server requires an active Admin or Manager and sets the actor from
+// auth.uid(). A hosted page never takes the isolated test sign-in.
 
 import { isolatedTimeClockEnabled } from "./timeClockIsolated.js";
 
-export const TIME_CLOCK_WRITES_AVAILABLE = false;
+export const TIME_CLOCK_WRITES_AVAILABLE = true;
 
 export const TIME_CLOCK_WRITES_REASON = "Saving is unavailable.";
 

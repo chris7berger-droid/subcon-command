@@ -619,9 +619,9 @@ assert.match(csv, /"'=cmd\|""Ada"""/);
 assert.match(csv, /"'\+roof"/);
 assert.equal(csv.includes("8.00"), true);
 assert.doesNotMatch(csv, /regular_hours","8/);
-assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
+assert.equal(TIME_CLOCK_WRITES_AVAILABLE, true);
 assert.equal(TIME_CLOCK_WRITES_REASON, "Saving is unavailable.");
-assert.equal(timeClockWritesAvailable(), false);
+assert.equal(timeClockWritesAvailable(), true);
 const loadedPunch = {
   id: "punch-1",
   employeeId: "emp-1",
@@ -722,7 +722,7 @@ assert.equal(isolatedTimeClockEnabledFrom({
   VITE_TIME_CLOCK_ISOLATED: "1",
   VITE_SUPABASE_URL: "http://127.0.0.1:54321",
 }, "127.0.0.1"), true);
-assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
+assert.equal(TIME_CLOCK_WRITES_AVAILABLE, true);
 
 assert.equal(mondayOf("2026-09-24"), "2026-09-21");
 assert.equal(sundayOf("2026-09-24"), "2026-09-27");
@@ -813,4 +813,4 @@ assert.equal(storedOrphan.rows[0].regularHours, "");
 assert.equal(storedOrphan.rows[0].statusLabel, STATUS_WEEK_INCOMPLETE);
 
 console.log("PASS Time Clock: inclusive range, historical and missing joins, duplicate ids, null vs zero hours, unfamiliar types, full pages, query failure, and stale ranges.");
-console.log("PASS Time Clock hours: lunch, overnight, missing events, drive, filters, CSV, and unavailable writes.");
+console.log("PASS Time Clock hours: lunch, overnight, missing events, drive, filters, CSV, and office writes.");
