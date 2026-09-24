@@ -1,14 +1,13 @@
 // Review-only shift hours. Screen and CSV both use this module.
 // Nothing here writes hours_regular, hours_ot, or hours_drive.
 
-import { pacificDate } from "./timeClock.js";
+import { mondayOf, pacificDate, sundayOf } from "./timeClock.js";
 
 export const LUNCH_DEDUCTION_MS = 30 * 60 * 1000;
+export const WEEKLY_REGULAR_MS = 40 * 60 * 60 * 1000;
 
-export const STATUS_CLASSIFICATION_PENDING = "Classification pending";
-export const STATUS_INCOMPLETE = "Incomplete shift";
-export const STATUS_AMBIGUOUS = "Ambiguous sequence";
-export const STATUS_DRIVE_ONLY = "Drive only — pay status pending";
+export const STATUS_INCOMPLETE = "Missing clock-out";
+export const STATUS_WEEK_INCOMPLETE = "Week has a missing punch";
 
 function eventMs(row) {
   if (!row?.punchTimeIso) return null;
@@ -30,7 +29,7 @@ function byTime(a, b) {
 }
 
 function blankClassifications() {
-  return { regularHours: "", otHours: "", doubleTimeHours: "" };
+  return { regularHours: "", otHours: "", holidayHours: "" };
 }
 
 function baseRow(event) {
@@ -67,11 +66,11 @@ function startShift(event, ms) {
   };
 }
 
-function markAmbiguous(shift) {
+function markAmbiguous(shift, label) {
+  if (!shift.spoiled && label) shift.statusLabel = label;
   shift.spoiled = true;
   shift.workMs = null;
   shift.status = "ambiguous";
-  shift.statusLabel = STATUS_AMBIGUOUS;
 }
 
 function sameJob(shift, event) {
@@ -81,26 +80,30 @@ function sameJob(shift, event) {
 function closeShift(shift, event, outMs) {
   shift.punches.push(event);
   shift.endMs = outMs;
-  if (shift.spoiled || !sameJob(shift, event)) {
-    markAmbiguous(shift);
+  if (shift.spoiled) {
+    markAmbiguous(shift, shift.statusLabel);
+    return;
+  }
+  if (!sameJob(shift, event)) {
+    markAmbiguous(shift, "Clock-out is on a different job");
     return;
   }
   const span = outMs - shift.startMs;
   if (!Number.isFinite(span) || span < 0) {
-    markAmbiguous(shift);
+    markAmbiguous(shift, "Clock-out is before clock-in");
     return;
   }
   let deduct = 0;
   if (shift.lunchStart) {
     const lunchMs = eventMs(shift.lunchStart);
     if (lunchMs == null || lunchMs < shift.startMs || lunchMs > outMs || !sameJob(shift, shift.lunchStart)) {
-      markAmbiguous(shift);
+      markAmbiguous(shift, "Lunch is outside the shift");
       return;
     }
     if (shift.lunchEnd) {
       const endMs = eventMs(shift.lunchEnd);
       if (endMs == null || endMs < lunchMs || endMs > outMs || !sameJob(shift, shift.lunchEnd)) {
-        markAmbiguous(shift);
+        markAmbiguous(shift, "Lunch end is outside the shift");
         return;
       }
     }
@@ -108,12 +111,12 @@ function closeShift(shift, event, outMs) {
   }
   const work = span - deduct;
   if (work < 0) {
-    markAmbiguous(shift);
+    markAmbiguous(shift, "Lunch is longer than the shift");
     return;
   }
   shift.workMs = work;
-  shift.status = "classification_pending";
-  shift.statusLabel = STATUS_CLASSIFICATION_PENDING;
+  shift.status = "ready";
+  shift.statusLabel = "";
 }
 
 function employeeKey(row) {
@@ -128,7 +131,7 @@ function walkEmployee(events) {
 
   function parkShift() {
     if (!open) return;
-    if (open.spoiled) markAmbiguous(open);
+    if (open.spoiled) markAmbiguous(open, open.statusLabel);
     else {
       open.workMs = null;
       open.status = "incomplete";
@@ -153,12 +156,13 @@ function walkEmployee(events) {
     if (type === "clock_in") {
       const overlapped = !!open;
       if (open) {
-        markAmbiguous(open);
+        markAmbiguous(open, "Another shift is still open");
         shifts.push(open);
         open = null;
       }
       open = startShift(event, ms);
-      if (!open.startDay || overlapped) markAmbiguous(open);
+      if (!open.startDay) markAmbiguous(open, "Missing punch time");
+      else if (overlapped) markAmbiguous(open, "Opened while another shift was open");
     } else if (type === "clock_out") {
       if (!open) continue;
       closeShift(open, event, ms);
@@ -168,7 +172,7 @@ function walkEmployee(events) {
       if (!open || open.lunchStart || !sameJob(open, event)) {
         if (open) {
           open.punches.push(event);
-          markAmbiguous(open);
+          markAmbiguous(open, !sameJob(open, event) ? "Lunch is on a different job" : "Another lunch is already open");
           shifts.push(open);
           open = null;
         }
@@ -179,8 +183,13 @@ function walkEmployee(events) {
     } else if (type === "lunch_end") {
       if (!open || !open.lunchStart || open.lunchEnd || !sameJob(open, event)) {
         if (open) {
+          const label = !open.lunchStart
+            ? "Lunch end without a lunch start"
+            : !sameJob(open, event)
+              ? "Lunch end is on a different job"
+              : "Another lunch end is already recorded";
           open.punches.push(event);
-          markAmbiguous(open);
+          markAmbiguous(open, label);
           shifts.push(open);
           open = null;
         }
@@ -190,7 +199,10 @@ function walkEmployee(events) {
       }
     } else if (type === "drive_start") {
       const overlapped = !!drive;
-      if (drive) parkDrive();
+      if (drive) {
+        drive.reason = "Another drive is still open";
+        parkDrive();
+      }
       drive = {
         ...baseRow(event),
         kind: "drive",
@@ -212,6 +224,7 @@ function walkEmployee(events) {
       if (!drive.startDay || duration < 0 || drive.overlapped) {
         drive.coherent = false;
         drive.durationMs = null;
+        drive.reason = drive.overlapped ? "Another drive is still open" : "Drive end is before drive start";
       } else {
         drive.durationMs = duration;
       }
@@ -219,7 +232,7 @@ function walkEmployee(events) {
       drive = null;
     } else if (open) {
       open.punches.push(event);
-      markAmbiguous(open);
+      markAmbiguous(open, "Unrecognized punch in the shift");
       shifts.push(open);
       open = null;
     }
@@ -260,7 +273,7 @@ function attachDrives(shifts, drives) {
       } else {
         match.driveMs = null;
         match.driveSpoiled = true;
-        match.driveFlag = "Incomplete drive";
+        match.driveFlag = drive.reason || "Missing drive end";
       }
     } else if (drive.coherent && drive.durationMs != null && drive.startDay) {
       loose.push({
@@ -269,7 +282,7 @@ function attachDrives(shifts, drives) {
         workMs: null,
         driveMs: drive.durationMs,
         status: "drive_only",
-        statusLabel: STATUS_DRIVE_ONLY,
+        statusLabel: "",
       });
     } else if (drive.startDay) {
       loose.push({
@@ -277,13 +290,22 @@ function attachDrives(shifts, drives) {
         punches: drive.punches.slice().sort(byTime),
         workMs: null,
         driveMs: null,
-        driveFlag: "Incomplete drive",
+        driveFlag: drive.reason || "Missing drive end",
         status: "ambiguous",
-        statusLabel: STATUS_AMBIGUOUS,
+        statusLabel: drive.reason || "Missing drive end",
       });
     }
   }
   return loose;
+}
+
+function loosePunchLabel(type) {
+  if (type === "clock_out") return "Clock-out without a clock-in";
+  if (type === "lunch_start") return "Lunch without a clock-in";
+  if (type === "lunch_end") return "Lunch end without a clock-in";
+  if (type === "drive_end") return "Drive end without a drive start";
+  if (type === "clock_in") return "Missing clock-out";
+  return "Punch is not part of a shift";
 }
 
 function unassignedRow(event) {
@@ -297,8 +319,56 @@ function unassignedRow(event) {
     startDay: day,
     punches: [event],
     status: "ambiguous",
-    statusLabel: STATUS_AMBIGUOUS,
+    statusLabel: loosePunchLabel(typeOf(event)),
   };
+}
+
+function isClassifiable(row) {
+  if (row.driveFlag || row.driveSpoiled) return false;
+  if (row.kind === "drive" || row.status === "drive_only") return row.driveMs != null;
+  if (row.workMs == null) return false;
+  return row.status === "ready";
+}
+
+function paidMs(row) {
+  if (row.kind === "drive" || row.status === "drive_only") return row.driveMs || 0;
+  return (row.workMs || 0) + (row.driveMs || 0);
+}
+
+function classifyWeeks(rows, weekFrom, weekTo) {
+  const groups = new Map();
+  for (const row of rows) {
+    const stored = row.punches?.[0]?.storedPunchDate || "";
+    const day = row.startDay >= weekFrom && row.startDay <= weekTo
+      ? row.startDay
+      : (stored >= weekFrom && stored <= weekTo ? stored : "");
+    if (!day) continue;
+    const key = `${row.employeeId}|${mondayOf(day)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  }
+  for (const group of groups.values()) {
+    if (group.some((row) => !isClassifiable(row))) {
+      for (const row of group) {
+        row.regularHours = "";
+        row.otHours = "";
+        row.holidayHours = "";
+        if (isClassifiable(row)) row.statusLabel = STATUS_WEEK_INCOMPLETE;
+      }
+      continue;
+    }
+    group.sort((a, b) => (a.startMs || 0) - (b.startMs || 0) || String(a.key).localeCompare(String(b.key)));
+    let regularLeft = WEEKLY_REGULAR_MS;
+    for (const row of group) {
+      const paid = paidMs(row);
+      const regular = Math.min(regularLeft, paid);
+      regularLeft -= regular;
+      row.regularHours = formatDurationHours(regular);
+      row.otHours = formatDurationHours(paid - regular);
+      row.holidayHours = "";
+      if (!row.statusLabel) row.statusLabel = "";
+    }
+  }
 }
 
 function inDisplayRange(day, from, to) {
@@ -324,19 +394,27 @@ export function reviewTimePunches(rows, { from, to } = {}) {
     const loose = attachDrives(walked.shifts, walked.drives);
     built.push(...walked.shifts, ...loose);
   }
-  const displayed = built.filter((row) => inDisplayRange(row.startDay, from, to));
+  const weekFrom = mondayOf(from);
+  const weekTo = sundayOf(to);
   const covered = new Set();
-  for (const row of displayed) {
+  for (const row of built) {
     for (const punch of row.punches || []) covered.add(punch.id);
   }
+  const weekPunches = [];
   for (const row of rows || []) {
     if (!row?.id || covered.has(row.id)) continue;
     const stored = row.storedPunchDate;
-    if (!inDisplayRange(stored, from, to)) continue;
+    if (!inDisplayRange(stored, weekFrom, weekTo)) continue;
     const extra = unassignedRow(row);
-    displayed.push(extra);
+    weekPunches.push(extra);
     covered.add(row.id);
   }
+  const weekRows = built.filter((row) => inDisplayRange(row.startDay, weekFrom, weekTo)).concat(weekPunches);
+  classifyWeeks(weekRows, weekFrom, weekTo);
+  const displayed = weekRows.filter((row) => {
+    if (row.kind === "unassigned") return inDisplayRange(row.punches?.[0]?.storedPunchDate, from, to);
+    return inDisplayRange(row.startDay, from, to);
+  });
   displayed.sort(
     (a, b) =>
       String(a.employee || "").localeCompare(String(b.employee || ""), undefined, { numeric: true }) ||

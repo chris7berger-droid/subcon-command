@@ -1,4 +1,4 @@
-// Review CSV. Same shift rows as the screen. Classifications stay blank.
+// Review CSV. Same shift rows and the same regular/OT split as the screen.
 
 import { formatDurationHours } from "./timeClockHours.js";
 
@@ -10,11 +10,11 @@ export const REVIEW_CSV_HEADERS = [
   "job_number",
   "job_name",
   "customer",
-  "calculated_work_hours",
-  "drive_duration",
+  "work_hours",
+  "drive_hours",
   "regular_hours",
-  "ot_hours",
-  "double_time_hours",
+  "overtime_hours",
+  "holiday_hours",
   "status",
 ];
 
@@ -37,9 +37,9 @@ export function reviewShiftCsvFields(shift) {
     shift?.customer || "",
     formatDurationHours(shift?.workMs),
     formatDurationHours(shift?.driveMs),
-    "",
-    "",
-    "",
+    shift?.regularHours || "",
+    shift?.otHours || "",
+    shift?.holidayHours || "",
     shift?.statusLabel || "",
   ];
 }

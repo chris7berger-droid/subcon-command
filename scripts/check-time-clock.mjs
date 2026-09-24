@@ -7,13 +7,20 @@ import {
   TIME_PUNCH_ORDER,
   TIME_PUNCH_SELECT,
   assertPunchDateRange,
+  cleanJobName,
   contextBounds,
+  employeeChoices,
   createPunchRequestGuard,
   filterTimeClockRows,
   formatStoredHours,
   initialPunchLoad,
   loadTimeClockPunches,
+  mondayOf,
+  pacificLocalToIso,
+  pacificTimeValue,
   pacificToday,
+  reviewFetchBounds,
+  sundayOf,
   punchFilterOptions,
   punchesInRange,
   punchTypeLabel,
@@ -23,10 +30,8 @@ import {
 } from "../src/field/lib/timeClock.js";
 import { csvCell, reviewRowsToCsv, reviewShiftCsvFields } from "../src/field/lib/timeClockCsv.js";
 import {
-  STATUS_AMBIGUOUS,
-  STATUS_CLASSIFICATION_PENDING,
-  STATUS_DRIVE_ONLY,
   STATUS_INCOMPLETE,
+  STATUS_WEEK_INCOMPLETE,
   formatDurationHours,
   reviewTimePunches,
 } from "../src/field/lib/timeClockHours.js";
@@ -336,7 +341,10 @@ assert.equal(view.includes("TIME_CLOCK_WRITES_REASON"), true);
 assert.equal(view.includes("TIME_CLOCK_WRITES_AVAILABLE"), true);
 assert.equal(queries.includes("export function fetchTimeClockPunches"), true);
 assert.equal(queries.includes("export async function fetchTimeClockReview"), true);
-assert.equal(queries.includes("contextBounds"), true);
+assert.equal(queries.includes("reviewFetchBounds"), true);
+assert.equal(view.includes("Add punch"), true);
+assert.equal(view.includes("Edit punch"), true);
+assert.equal(view.includes("queued phone"), false);
 assert.equal(queries.includes("export async function fetchTodayRows"), true);
 assert.equal(queries.includes("async function fetchActiveFieldJobs"), true);
 const todayBlock = queries.slice(queries.indexOf("export async function fetchTodayRows"), queries.indexOf("export async function fetchFieldJobs"));
@@ -417,11 +425,11 @@ const day = reviewTimePunches(
   { from: "2026-09-23", to: "2026-09-23" }
 );
 assert.equal(day.rows.length, 1);
-assert.equal(day.rows[0].statusLabel, STATUS_CLASSIFICATION_PENDING);
+assert.equal(day.rows[0].statusLabel, "");
 assert.equal(formatDurationHours(day.rows[0].workMs), "8.00");
-assert.equal(day.rows[0].regularHours, "");
-assert.equal(day.rows[0].otHours, "");
-assert.equal(day.rows[0].doubleTimeHours, "");
+assert.equal(day.rows[0].regularHours, "8.00");
+assert.equal(day.rows[0].otHours, "0.00");
+assert.equal(day.rows[0].holidayHours, "");
 assert.equal(day.rows[0].punches.find((row) => row.id === "in").hoursRegular, "0");
 assert.equal(day.rows[0].punches.find((row) => row.id === "ls").hoursRegular, "");
 assert.equal(day.rows[0].punches.find((row) => row.id === "out").hoursOt, "0");
@@ -445,7 +453,7 @@ const tooShort = reviewTimePunches(
   ],
   { from: "2026-09-23", to: "2026-09-23" }
 );
-assert.equal(tooShort.rows[0].statusLabel, STATUS_AMBIGUOUS);
+assert.equal(tooShort.rows[0].statusLabel, "Lunch is longer than the shift");
 assert.equal(formatDurationHours(tooShort.rows[0].workMs), "");
 
 const overnight = reviewTimePunches(
@@ -465,9 +473,7 @@ const nextMorning = reviewTimePunches(
   ],
   { from: "2026-09-23", to: "2026-09-23" }
 );
-assert.equal(nextMorning.rows.length, 1);
-assert.equal(nextMorning.rows[0].kind, "unassigned");
-assert.equal(formatDurationHours(nextMorning.rows[0].workMs), "");
+assert.equal(nextMorning.rows.length, 0);
 
 const openShift = reviewTimePunches(
   [punch({ id: "open", punchType: "clock_in", punchTimeIso: "2026-09-23T15:00:00.000Z", storedPunchDate: "2026-09-23" })],
@@ -499,7 +505,12 @@ const withDrive = reviewTimePunches(
 assert.equal(withDrive.rows.length, 1);
 assert.equal(formatDurationHours(withDrive.rows[0].workMs), "8.00");
 assert.equal(formatDurationHours(withDrive.rows[0].driveMs), "0.75");
-assert.equal(withDrive.rows[0].statusLabel, STATUS_CLASSIFICATION_PENDING);
+assert.equal(withDrive.rows[0].regularHours, "8.75");
+assert.equal(withDrive.rows[0].otHours, "0.00");
+assert.equal(
+  (Number(withDrive.rows[0].regularHours) + Number(withDrive.rows[0].otHours)).toFixed(2),
+  (Number(formatDurationHours(withDrive.rows[0].workMs)) + Number(formatDurationHours(withDrive.rows[0].driveMs))).toFixed(2)
+);
 
 const driveOnly = reviewTimePunches(
   [
@@ -508,9 +519,11 @@ const driveOnly = reviewTimePunches(
   ],
   { from: "2026-09-23", to: "2026-09-23" }
 );
-assert.equal(driveOnly.rows[0].statusLabel, STATUS_DRIVE_ONLY);
+assert.equal(driveOnly.rows[0].statusLabel, "");
 assert.equal(formatDurationHours(driveOnly.rows[0].workMs), "");
 assert.equal(formatDurationHours(driveOnly.rows[0].driveMs), "0.75");
+assert.equal(driveOnly.rows[0].regularHours, "0.75");
+assert.equal(driveOnly.rows[0].otHours, "0.00");
 
 const twoJobs = reviewTimePunches(
   [
@@ -528,10 +541,10 @@ assert.equal(formatDurationHours(twoJobs.rows.find((row) => row.jobId === "11").
 
 const csvFields = reviewShiftCsvFields(day.rows[0]);
 assert.equal(csvFields[7], "8.00");
-assert.equal(csvFields[9], "");
-assert.equal(csvFields[10], "");
+assert.equal(csvFields[9], "8.00");
+assert.equal(csvFields[10], "0.00");
 assert.equal(csvFields[11], "");
-assert.equal(csvFields[12], STATUS_CLASSIFICATION_PENDING);
+assert.equal(csvFields[12], "");
 const formulaName = punch({
   id: "f-in",
   punchType: "clock_in",
@@ -556,7 +569,95 @@ assert.match(csv, /"'\+roof"/);
 assert.equal(csv.includes("8.00"), true);
 assert.doesNotMatch(csv, /regular_hours","8/);
 assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
-assert.equal(TIME_CLOCK_WRITES_REASON.includes("unavailable"), true);
+assert.equal(TIME_CLOCK_WRITES_REASON, "Saving is unavailable.");
+
+assert.equal(mondayOf("2026-09-24"), "2026-09-21");
+assert.equal(sundayOf("2026-09-24"), "2026-09-27");
+assert.equal(mondayOf("2026-09-27"), "2026-09-21");
+assert.equal(reviewFetchBounds("2026-09-25", "2026-09-25").weekFrom, "2026-09-21");
+assert.equal(reviewFetchBounds("2026-09-25", "2026-09-25").from, "2026-09-19");
+assert.equal(pacificLocalToIso("2026-09-23", "08:00"), "2026-09-23T15:00:00.000Z");
+assert.equal(pacificTimeValue("2026-09-23T15:00:00.000Z"), "08:00");
+assert.equal(cleanJobName("7215", "7215 — STY 4"), "STY 4");
+assert.deepEqual(
+  employeeChoices(
+    [{ id: "e-new", name: "Bea", active: true }, { id: "e-off", name: "Gone", active: false }],
+    [{ employeeId: "e1", employee: "Ada" }]
+  ).map((option) => option.id),
+  ["e1", "e-new"]
+);
+
+function weekPunch(id, type, iso, day, jobId = "10") {
+  return punch({
+    id,
+    punchType: type,
+    punchTimeIso: iso,
+    storedPunchDate: day,
+    jobId,
+    jobNumber: jobId === "11" ? "200" : "100",
+    jobName: jobId === "11" ? "Roof" : "Deck",
+  });
+}
+const week = reviewTimePunches(
+  [
+    weekPunch("m-in", "clock_in", "2026-09-21T15:00:00.000Z", "2026-09-21"),
+    weekPunch("m-out", "clock_out", "2026-09-22T01:00:00.000Z", "2026-09-21"),
+    weekPunch("t-in", "clock_in", "2026-09-22T15:00:00.000Z", "2026-09-22"),
+    weekPunch("t-out", "clock_out", "2026-09-23T01:00:00.000Z", "2026-09-22"),
+    weekPunch("w-in", "clock_in", "2026-09-23T15:00:00.000Z", "2026-09-23"),
+    weekPunch("w-out", "clock_out", "2026-09-24T01:00:00.000Z", "2026-09-23"),
+    weekPunch("h-in", "clock_in", "2026-09-24T15:00:00.000Z", "2026-09-24"),
+    weekPunch("h-out", "clock_out", "2026-09-25T01:00:00.000Z", "2026-09-24"),
+    weekPunch("f-in", "clock_in", "2026-09-25T15:00:00.000Z", "2026-09-25"),
+    weekPunch("f-out", "clock_out", "2026-09-25T17:00:00.000Z", "2026-09-25"),
+  ],
+  { from: "2026-09-25", to: "2026-09-25" }
+);
+assert.equal(week.rows.length, 1);
+assert.equal(formatDurationHours(week.rows[0].workMs), "2.00");
+assert.equal(week.rows[0].regularHours, "0.00");
+assert.equal(week.rows[0].otHours, "2.00");
+const filteredWeek = filterTimeClockRows(week.rows, { jobId: "10" });
+assert.equal(filteredWeek[0].otHours, "2.00");
+
+const blockedWeek = reviewTimePunches(
+  [
+    weekPunch("b-out", "clock_out", "2026-09-21T23:00:00.000Z", "2026-09-21"),
+    weekPunch("b2-in", "clock_in", "2026-09-22T15:00:00.000Z", "2026-09-22"),
+    weekPunch("b2-out", "clock_out", "2026-09-22T23:00:00.000Z", "2026-09-22"),
+  ],
+  { from: "2026-09-22", to: "2026-09-22" }
+);
+assert.equal(formatDurationHours(blockedWeek.rows[0].workMs), "8.00");
+assert.equal(blockedWeek.rows[0].regularHours, "");
+assert.equal(blockedWeek.rows[0].otHours, "");
+assert.equal(blockedWeek.rows[0].statusLabel, STATUS_WEEK_INCOMPLETE);
+
+const paidDrive = reviewTimePunches(
+  [
+    weekPunch("pd1", "drive_start", "2026-09-21T14:00:00.000Z", "2026-09-21"),
+    weekPunch("pd2", "drive_end", "2026-09-21T17:00:00.000Z", "2026-09-21"),
+    weekPunch("pd3", "clock_in", "2026-09-21T17:00:00.000Z", "2026-09-21"),
+    weekPunch("pd4", "clock_out", "2026-09-23T07:00:00.000Z", "2026-09-23"),
+  ],
+  { from: "2026-09-21", to: "2026-09-21" }
+);
+assert.equal(formatDurationHours(paidDrive.rows[0].workMs), "38.00");
+assert.equal(formatDurationHours(paidDrive.rows[0].driveMs), "3.00");
+assert.equal(paidDrive.rows[0].regularHours, "40.00");
+assert.equal(paidDrive.rows[0].otHours, "1.00");
+assert.equal(paidDrive.rows[0].holidayHours, "");
+
+const storedOrphan = reviewTimePunches(
+  [
+    weekPunch("so-out", "clock_out", "2026-09-20T06:00:00.000Z", "2026-09-21"),
+    weekPunch("so-in", "clock_in", "2026-09-22T15:00:00.000Z", "2026-09-22"),
+    weekPunch("so-end", "clock_out", "2026-09-22T23:00:00.000Z", "2026-09-22"),
+  ],
+  { from: "2026-09-22", to: "2026-09-22" }
+);
+assert.equal(storedOrphan.rows[0].regularHours, "");
+assert.equal(storedOrphan.rows[0].statusLabel, STATUS_WEEK_INCOMPLETE);
 
 console.log("PASS Time Clock: inclusive range, historical and missing joins, duplicate ids, null vs zero hours, unfamiliar types, full pages, query failure, and stale ranges.");
 console.log("PASS Time Clock hours: lunch, overnight, missing events, drive, filters, CSV, and unavailable writes.");

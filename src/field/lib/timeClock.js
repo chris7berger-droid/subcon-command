@@ -67,6 +67,18 @@ export function pacificToday(now = new Date()) {
 
 export const TIME_CLOCK_CONTEXT_DAYS = 2;
 
+export function mondayOf(iso) {
+  if (!isIsoDate(iso)) throw new Error("Enter real calendar dates.");
+  const [, yearText, monthText, dayText] = iso.match(ISO_DAY);
+  const date = new Date(Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText)));
+  const delta = date.getUTCDay() === 0 ? -6 : 1 - date.getUTCDay();
+  return addIsoDays(iso, delta);
+}
+
+export function sundayOf(iso) {
+  return addIsoDays(mondayOf(iso), 6);
+}
+
 export function addIsoDays(iso, days) {
   if (!isIsoDate(iso) || !Number.isInteger(days)) {
     throw new Error("Enter real calendar dates.");
@@ -90,6 +102,91 @@ export function contextBounds(from, to) {
     displayFrom: range.from,
     displayTo: range.to,
   };
+}
+
+// The payroll week is Monday through Sunday. Load that whole week, plus the
+// overnight boundary, before regular and overtime are assigned.
+export function reviewFetchBounds(from, to) {
+  const range = assertPunchDateRange(from, to);
+  const weekFrom = mondayOf(range.from);
+  const weekTo = sundayOf(range.to);
+  return {
+    from: addIsoDays(weekFrom, -TIME_CLOCK_CONTEXT_DAYS),
+    to: addIsoDays(weekTo, TIME_CLOCK_CONTEXT_DAYS),
+    displayFrom: range.from,
+    displayTo: range.to,
+    weekFrom,
+    weekTo,
+  };
+}
+
+export function pacificTimeValue(iso) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    hourCycle: "h23",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value;
+  const minute = parts.find((part) => part.type === "minute")?.value;
+  if (!hour || !minute) return "";
+  return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+}
+
+export function pacificLocalToIso(date, time) {
+  if (!isIsoDate(date) || !/^\d{2}:\d{2}$/.test(time || "")) return null;
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  let utc = Date.UTC(year, month - 1, day, hour, minute);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const parts = formatter.formatToParts(new Date(utc));
+    const pick = (type) => Number(parts.find((part) => part.type === type)?.value);
+    const asUtc = Date.UTC(pick("year"), pick("month") - 1, pick("day"), pick("hour"), pick("minute"));
+    const want = Date.UTC(year, month - 1, day, hour, minute);
+    if (asUtc === want) return new Date(utc).toISOString();
+    utc += want - asUtc;
+  }
+  return null;
+}
+
+export function cleanJobName(number, name) {
+  const cleanName = trimmed(name);
+  const cleanNumber = trimmed(number);
+  if (!cleanName) return "";
+  if (cleanNumber && cleanName === cleanNumber) return "";
+  if (!cleanNumber) return cleanName;
+  const escaped = cleanNumber.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const stripped = cleanName.replace(new RegExp(`^${escaped}\\s*[—–-]\\s*`), "");
+  return stripped;
+}
+
+export function employeeChoices(members, punchRows) {
+  const byId = new Map();
+  for (const member of members || []) {
+    const id = idString(member?.id);
+    if (!id || member?.active === false) continue;
+    byId.set(id, { id, label: trimmed(member?.name) || id });
+  }
+  for (const row of punchRows || []) {
+    const id = idString(row?.employeeId);
+    if (!id || byId.has(id)) continue;
+    byId.set(id, { id, label: trimmed(row?.employee) || id });
+  }
+  return [...byId.values()].sort(
+    (a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }) || a.id.localeCompare(b.id)
+  );
 }
 
 export function punchesInRange(rows, from, to) {
@@ -182,7 +279,9 @@ function jobNameValue(callLog) {
 }
 
 function jobLabel(callLog, jobId) {
-  const parts = [jobNumberValue(callLog), jobNameValue(callLog)].filter(Boolean);
+  const number = jobNumberValue(callLog);
+  const name = cleanJobName(number, jobNameValue(callLog));
+  const parts = [number, name].filter(Boolean);
   if (parts.length) return parts.join(" — ");
   return idString(jobId) || idString(callLog?.id) || MISSING_JOB;
 }
@@ -213,7 +312,7 @@ export function shapeTimePunch(row) {
     employee: employeeLabel(member?.name, row?.employee_id),
     jobId: idString(row?.job_id),
     jobNumber: number || (name ? "" : rawJobId),
-    jobName: name || (number || rawJobId ? "" : MISSING_JOB),
+    jobName: cleanJobName(number, name) || (number || rawJobId ? "" : MISSING_JOB),
     job: jobLabel(callLog, row?.job_id),
     customerId: idString(callLog?.customer_id),
     customer: customerLabel(callLog),

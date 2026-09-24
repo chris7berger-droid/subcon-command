@@ -7,5 +7,4 @@
 
 export const TIME_CLOCK_WRITES_AVAILABLE = false;
 
-export const TIME_CLOCK_WRITES_REASON =
-  "Add, edit, and void are unavailable. A queued phone upload can still overwrite an office change or restore a voided punch. The phone sends punches in a batch, and a skipped void comes back as a failed upload that the phone retries, which can block new punches. Ignoring that upload also does not update the copy on the phone. This preview reads production data, and the correction migration is not applied.";
+export const TIME_CLOCK_WRITES_REASON = "Saving is unavailable.";

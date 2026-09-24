@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { C, F } from "../../lib/tokens";
 import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
-import { fetchTimeClockReview } from "../lib/queries";
+import { fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
 import { reviewRowsToCsv } from "../lib/timeClockCsv";
 import { formatDurationHours, reviewTimePunches } from "../lib/timeClockHours";
 import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON } from "../lib/timeClockWrites";
 import {
   assertPunchDateRange,
+  cleanJobName,
   createPunchRequestGuard,
+  employeeChoices,
   filterTimeClockRows,
   formatWorkDate,
   initialPunchLoad,
+  pacificDate,
+  pacificLocalToIso,
+  pacificTimeValue,
   pacificToday,
   punchFilterOptions,
   punchTypeLabel,
@@ -68,6 +73,9 @@ export default function TimeClock() {
   const [employeeId, setEmployeeId] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [selectedKey, setSelectedKey] = useState("");
+  const [selectedPunchId, setSelectedPunchId] = useState("");
+  const [editorMode, setEditorMode] = useState("");
+  const [employees, setEmployees] = useState([]);
   const [load, setLoad] = useState(initialPunchLoad);
   const requests = useRef(createPunchRequestGuard());
   const activeKey = rangeKey(from, to);
@@ -117,11 +125,25 @@ export default function TimeClock() {
     void loadRange(from, to);
   }, [from, to, loadRange]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchTimeClockEmployees()
+      .then((list) => {
+        if (!cancelled) setEmployees(list);
+      })
+      .catch(() => {
+        if (!cancelled) setEmployees([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const published = load.publishedRangeKey === activeKey && !load.loading && !load.error;
   const rows = published ? load.rows : EMPTY_ROWS;
   const contextRows = published ? load.contextRows || EMPTY_ROWS : EMPTY_ROWS;
   const review = useMemo(() => reviewTimePunches(contextRows, { from, to }), [contextRows, from, to]);
-  const employeeOptions = useMemo(() => punchFilterOptions(rows, "employeeId", "employee"), [rows]);
+  const employeeOptions = useMemo(() => employeeChoices(employees, rows), [employees, rows]);
   const jobOptions = useMemo(() => punchFilterOptions(rows, "jobId", "job"), [rows]);
   const customerOptions = useMemo(() => punchFilterOptions(rows, "customerId", "customer"), [rows]);
   const selectedEmployeeId = employeeOptions.some((option) => option.id === employeeId) ? employeeId : "";
@@ -164,22 +186,14 @@ export default function TimeClock() {
       }
       right={
         <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => { setEditorMode("add"); setSelectedPunchId(""); }} style={tealButton}>
+            Add punch
+          </button>
           <button
             type="button"
             onClick={exportCsv}
             disabled={!published}
-            style={{
-              padding: "7px 12px",
-              borderRadius: 7,
-              border: "none",
-              background: C.teal,
-              color: C.dark,
-              fontFamily: F.ui,
-              fontSize: 12.5,
-              fontWeight: 700,
-              cursor: published ? "pointer" : "not-allowed",
-              opacity: published ? 1 : 0.55,
-            }}
+            style={{ ...tealButton, cursor: published ? "pointer" : "not-allowed", opacity: published ? 1 : 0.55 }}
           >
             Export CSV
           </button>
@@ -256,6 +270,18 @@ export default function TimeClock() {
             { key: "jobName", label: "Job name" },
             { key: "customer", label: "Customer" },
             {
+              key: "regularHours",
+              label: "Regular hours",
+              align: "right",
+              render: (row) => row.regularHours,
+            },
+            {
+              key: "otHours",
+              label: "Overtime hours",
+              align: "right",
+              render: (row) => row.otHours,
+            },
+            {
               key: "workMs",
               label: "Work hours",
               align: "right",
@@ -268,9 +294,15 @@ export default function TimeClock() {
               render: (row) => hoursCell(row.driveMs),
             },
             {
+              key: "holidayHours",
+              label: "Holiday hours",
+              align: "right",
+              render: (row) => row.holidayHours,
+            },
+            {
               key: "statusLabel",
               label: "Status",
-              render: (row) => <StatusChip tone={row.status === "classification_pending" ? "teal" : "muted"}>{row.statusLabel}</StatusChip>,
+              render: (row) => (row.statusLabel ? <StatusChip tone="muted">{row.statusLabel}</StatusChip> : ""),
             },
             {
               key: "open",
@@ -298,13 +330,31 @@ export default function TimeClock() {
           ]}
         />
       )}
-      {selected ? <DayDetail shift={selected} /> : null}
-      <EditorNotice />
+      {selected ? (
+        <DayDetail
+          shift={selected}
+          selectedPunchId={selectedPunchId}
+          onEdit={(punch) => {
+            setSelectedPunchId(punch.id);
+            setEditorMode("edit");
+          }}
+        />
+      ) : null}
+      {editorMode ? (
+        <PunchEditor
+          key={`${editorMode}:${selectedPunchId}`}
+          mode={editorMode}
+          employees={employeeOptions}
+          punch={editorMode === "edit" ? (selected?.punches || []).find((punch) => punch.id === selectedPunchId) : null}
+          defaultDate={from}
+          onClose={() => setEditorMode("")}
+        />
+      ) : null}
     </FieldScreen>
   );
 }
 
-function DayDetail({ shift }) {
+function DayDetail({ shift, selectedPunchId, onEdit }) {
   const punches = (shift.punches || []).slice().sort((a, b) => String(a.punchTimeIso || "").localeCompare(String(b.punchTimeIso || "")) || String(a.id).localeCompare(String(b.id)));
   return (
     <section style={{ marginTop: 16 }}>
@@ -312,11 +362,8 @@ function DayDetail({ shift }) {
         {shift.employee || "Employee"} · {shift.startDay ? formatWorkDate(shift.startDay) : "Day"}
       </div>
       <div style={{ fontSize: 12.5, color: C.textBody, fontFamily: F.ui, marginBottom: 8, lineHeight: 1.45 }}>
-        Work hours {hoursCell(shift.workMs) || "—"} · Drive {hoursCell(shift.driveMs) || "—"}
-        {shift.driveFlag ? ` · ${shift.driveFlag}` : ""}
-        {" · "}
-        {shift.statusLabel}
-        {". Regular, OT, and double time stay blank."}
+        Regular {shift.regularHours || "—"} · Overtime {shift.otHours || "—"} · Work {hoursCell(shift.workMs) || "—"} · Drive {hoursCell(shift.driveMs) || "—"}
+        {shift.statusLabel ? ` · ${shift.statusLabel}` : ""}
       </div>
       <PlainTable
         compact
@@ -336,51 +383,189 @@ function DayDetail({ shift }) {
           { key: "hoursRegular", label: "Stored regular", align: "right", render: (row) => row.hoursRegular },
           { key: "hoursOt", label: "Stored OT", align: "right", render: (row) => row.hoursOt },
           { key: "hoursDrive", label: "Stored drive", align: "right", render: (row) => row.hoursDrive },
+          {
+            key: "edit",
+            label: "",
+            render: (row) => (
+              <button type="button" onClick={() => onEdit(row)} style={row.id === selectedPunchId ? selectedButton : quietButton}>
+                Edit punch
+              </button>
+            ),
+          },
         ]}
       />
     </section>
   );
 }
 
-function EditorNotice() {
+const PUNCH_TYPES = [
+  ["clock_in", "Clock in"],
+  ["clock_out", "Clock out"],
+  ["lunch_start", "Lunch start"],
+  ["lunch_end", "Lunch end"],
+  ["drive_start", "Drive start"],
+  ["drive_end", "Drive end"],
+];
+
+function PunchEditor({ mode, employees, punch, defaultDate, onClose }) {
+  const [employeeId, setEmployeeId] = useState(punch?.employeeId || "");
+  const [jobId, setJobId] = useState(punch?.jobId || "");
+  const [jobLabel, setJobLabel] = useState(punch ? [punch.jobNumber, punch.jobName].filter(Boolean).join(" ") : "");
+  const [jobQuery, setJobQuery] = useState("");
+  const [jobHits, setJobHits] = useState({ query: "", rows: [] });
+  const [punchType, setPunchType] = useState(punch?.punchType || "clock_in");
+  const [date, setDate] = useState(pacificDate(punch?.punchTimeIso) || punch?.storedPunchDate || defaultDate);
+  const [time, setTime] = useState(pacificTimeValue(punch?.punchTimeIso) || "08:00");
+  const [reason, setReason] = useState("");
+  const [message, setMessage] = useState("");
+  const jobSearch = jobQuery.trim();
+  const visibleJobs = jobHits.query === jobSearch && jobSearch.length >= 2 ? jobHits.rows : [];
+
+  useEffect(() => {
+    if (jobSearch.length < 2) return undefined;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      searchTimeClockJobs(jobSearch)
+        .then((hits) => {
+          if (!cancelled) setJobHits({ query: jobSearch, rows: hits });
+        })
+        .catch(() => {
+          if (!cancelled) setJobHits({ query: jobSearch, rows: [] });
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [jobSearch]);
+
+  function chooseJob(hit) {
+    const number = hit.display_job_number || (hit.job_number == null ? "" : String(hit.job_number));
+    const name = cleanJobName(number, hit.job_name);
+    setJobId(String(hit.id));
+    setJobLabel([number, name].filter(Boolean).join(" "));
+    setJobQuery("");
+  }
+
+  function submit(action) {
+    if (!reason.trim()) {
+      setMessage("A reason is required.");
+      return;
+    }
+    if (action !== "void" && (!employeeId || !jobId || !date || !time || !punchType)) {
+      setMessage("Employee, job, punch, date, and time are required.");
+      return;
+    }
+    if (action !== "void" && !pacificLocalToIso(date, time)) {
+      setMessage("Enter a real date and time.");
+      return;
+    }
+    if (!TIME_CLOCK_WRITES_AVAILABLE) {
+      setMessage(TIME_CLOCK_WRITES_REASON);
+      return;
+    }
+  }
+
   return (
-    <section
-      style={{
-        marginTop: 16,
-        padding: "12px 14px",
-        borderRadius: 10,
-        background: C.linenCard,
-        border: `1px solid ${C.borderStrong}`,
-      }}
-    >
-      <div style={{ fontFamily: F.display, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", color: C.textHead, marginBottom: 6 }}>
-        Punch editor
+    <section style={{ marginTop: 16, padding: "12px 14px", borderRadius: 10, background: C.linenCard, border: `1px solid ${C.borderStrong}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+        <div style={{ fontFamily: F.display, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", color: C.textHead }}>
+          {mode === "edit" ? "Edit punch" : "Add punch"}
+        </div>
+        <button type="button" onClick={onClose} style={quietButton}>Close</button>
       </div>
-      <p style={{ margin: "0 0 10px", fontSize: 13, lineHeight: 1.45, color: C.textBody, fontFamily: F.body }}>{TIME_CLOCK_WRITES_REASON}</p>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-        <button type="button" disabled={!TIME_CLOCK_WRITES_AVAILABLE} style={disabledButton}>Add</button>
-        <button type="button" disabled={!TIME_CLOCK_WRITES_AVAILABLE} style={disabledButton}>Edit</button>
-        <button type="button" disabled={!TIME_CLOCK_WRITES_AVAILABLE} style={disabledButton}>Void</button>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <label style={{ display: "flex", flexDirection: "column" }}>
+          <span style={FILTER_LABEL}>Employee</span>
+          <select aria-label="Editor employee" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} style={{ ...FILTER_INPUT, width: 200 }}>
+            <option value="">Select</option>
+            {employees.map((option) => (
+              <option key={option.id} value={option.id}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column" }}>
+          <span style={FILTER_LABEL}>Job</span>
+          <input
+            aria-label="Job search"
+            value={jobQuery}
+            placeholder={jobLabel || "Search job"}
+            onChange={(e) => setJobQuery(e.target.value)}
+            style={{ ...FILTER_INPUT, width: 220 }}
+          />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column" }}>
+          <span style={FILTER_LABEL}>Punch</span>
+          <select aria-label="Punch type" value={punchType} onChange={(e) => setPunchType(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }}>
+            {PUNCH_TYPES.map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column" }}>
+          <span style={FILTER_LABEL}>Date</span>
+          <input aria-label="Punch date" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...FILTER_INPUT, width: 150 }} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column" }}>
+          <span style={FILTER_LABEL}>Time</span>
+          <input aria-label="Punch time" type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...FILTER_INPUT, width: 130 }} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", minWidth: 220, flex: 1 }}>
+          <span style={FILTER_LABEL}>Reason</span>
+          <input aria-label="Reason" value={reason} onChange={(e) => setReason(e.target.value)} style={{ ...FILTER_INPUT, width: "100%" }} />
+        </label>
       </div>
-      <label style={{ display: "flex", flexDirection: "column", maxWidth: 420 }}>
-        <span style={FILTER_LABEL}>Reason</span>
-        <input aria-label="Reason" disabled placeholder="Required when corrections are enabled" style={{ ...FILTER_INPUT, width: "100%" }} />
-      </label>
-      <div style={{ marginTop: 10, fontSize: 12.5, color: C.textFaint, fontFamily: F.ui }}>
-        Audit history will show the actor, reason, and before/after values. Nothing has been written.
+      {visibleJobs.length > 0 ? (
+        <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {visibleJobs.map((hit) => {
+            const number = hit.display_job_number || (hit.job_number == null ? "" : String(hit.job_number));
+            const name = cleanJobName(number, hit.job_name);
+            return (
+              <button key={hit.id} type="button" onClick={() => chooseJob(hit)} style={quietButton}>
+                {[number, name].filter(Boolean).join(" ")}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+      {jobLabel ? <div style={{ marginTop: 8, fontSize: 12.5, color: C.textFaint, fontFamily: F.ui }}>{jobLabel}</div> : null}
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button type="button" onClick={() => submit(mode === "edit" ? "edit" : "add")} style={tealButton}>
+          {mode === "edit" ? "Save punch" : "Save punch"}
+        </button>
+        {mode === "edit" ? (
+          <button type="button" onClick={() => submit("void")} style={quietButton}>Void punch</button>
+        ) : null}
       </div>
+      {message ? <div style={{ marginTop: 8, fontSize: 13, color: C.red, fontFamily: F.body }}>{message}</div> : null}
     </section>
   );
 }
 
-const disabledButton = {
-  padding: "6px 12px",
+const tealButton = {
+  padding: "7px 12px",
   borderRadius: 7,
-  border: `1px solid ${C.borderStrong}`,
-  background: C.linenDeep,
-  color: C.textFaint,
+  border: "none",
+  background: C.teal,
+  color: C.dark,
   fontFamily: F.ui,
   fontSize: 12.5,
   fontWeight: 700,
-  cursor: "not-allowed",
+  cursor: "pointer",
+};
+const quietButton = {
+  padding: "4px 8px",
+  borderRadius: 6,
+  border: `1px solid ${C.dark}`,
+  background: C.linenDeep,
+  color: C.dark,
+  fontFamily: F.ui,
+  fontSize: 11.5,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+const selectedButton = {
+  ...quietButton,
+  background: C.dark,
+  color: C.teal,
 };
