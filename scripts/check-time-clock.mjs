@@ -704,8 +704,25 @@ assert.equal(isolatedTimeClockEnabledFrom({
 }), false);
 assert.equal(isolatedTimeClockEnabledFrom({
   VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "https://pbgvgjjuhnpsumnowuym.supabase.co",
+}, "127.0.0.1"), false);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+}, "sales-command-preview.vercel.app"), false);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+}, "www.scmybiz.com"), false);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
   VITE_SUPABASE_URL: "http://127.0.0.1:54321",
 }), true);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+}, "127.0.0.1"), true);
+assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
 
 assert.equal(mondayOf("2026-09-24"), "2026-09-21");
 assert.equal(sundayOf("2026-09-24"), "2026-09-27");

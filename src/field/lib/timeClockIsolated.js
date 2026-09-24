@@ -5,18 +5,26 @@ export const ISOLATED_JWT_SECRET = "isolated-time-clock-not-production-secret";
 export const ISOLATED_ADMIN_AUTH_ID = "33333333-3333-3333-3333-333333333333";
 export const ISOLATED_ADMIN_MEMBER_ID = "22222222-2222-2222-2222-222222222222";
 
-export function isolatedTimeClockEnabledFrom(env) {
+function localHost(host) {
+  return host === "127.0.0.1" || host === "localhost";
+}
+
+export function isolatedTimeClockEnabledFrom(env, pageHost = "") {
   if (env?.VITE_TIME_CLOCK_ISOLATED !== "1") return false;
+  let dataHost = "";
   try {
-    const host = new URL(env.VITE_SUPABASE_URL || "").hostname;
-    return host === "127.0.0.1" || host === "localhost";
+    dataHost = new URL(env.VITE_SUPABASE_URL || "").hostname;
   } catch {
     return false;
   }
+  if (!localHost(dataHost)) return false;
+  if (pageHost && !localHost(pageHost)) return false;
+  return true;
 }
 
 export function isolatedTimeClockEnabled() {
-  return isolatedTimeClockEnabledFrom(import.meta.env);
+  const pageHost = typeof window === "undefined" ? "" : window.location.hostname;
+  return isolatedTimeClockEnabledFrom(import.meta.env, pageHost);
 }
 
 export function isolatedOfficeMember() {
