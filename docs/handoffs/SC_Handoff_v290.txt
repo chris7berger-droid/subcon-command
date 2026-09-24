@@ -1,0 +1,106 @@
+SC Handoff v290 — Desktop Time Clock weekly hours — 2026-09-24
+
+SESSION SUMMARY
+The Time Clock screen now shows regular hours, overtime hours, and work
+hours from one calculator, shared with the CSV. Add punch and Edit punch
+are on the screen. Saving stays off. The phone upload path was not run
+through PostgREST and PowerSync because that service is not present.
+No merge, no production migration, and no production writes.
+
+IMPLEMENTED
+Regular hours are the first 40 actual worked hours in the Monday–Sunday
+week that contains the shift’s Pacific start day. Overtime is the worked
+time above 40. Driving is paid and counts toward the 40, once. The drive
+column stays a breakdown and is not added again. A closed shift with a
+lunch start still deducts exactly 30 unpaid minutes. A late or missing
+lunch end does not change that deduction.
+
+Classification uses the employee’s whole week and every job before the
+date, job, or customer filter. A Friday-only view of a week that already
+has 40 hours shows the extra hours as overtime. Filtering to one job does
+not reclassify those hours.
+
+An incomplete or ambiguous record keeps a specific explanation, such as
+“Missing clock-out”, “Clock-out without a clock-in”, or “Lunch is longer
+than the shift”. If any record in that employee-week cannot be classified,
+regular and overtime stay blank on the whole week and a complete row says
+“Week has a missing punch”. Missing hours are not treated as zero.
+
+Holiday benefit hours are a separate column and stay blank. No holiday
+calendar or eligibility list exists, and that does not block ordinary
+weekly regular and overtime. No holiday punches are invented, and no
+extra double-time multiplier is applied.
+
+The employee dropdown lists active team members, including people with no
+punches in the selected range, plus anyone who already has a punch in the
+loaded week. Job number and job name are separate. A job name that repeats
+the number is shown once. The editor asks for employee, job, punch, date,
+time, and a reason. Save and void stop at “Saving is unavailable.”
+
+TESTED
+node scripts/check-time-clock.mjs — prior range checks, plus a 40-hour week
+with Friday overtime, paid driving counted once (38 work + 3 drive = 40
+regular and 1 overtime), a job filter that leaves that overtime unchanged,
+an incomplete week that blanks regular and overtime without blanking the
+complete shift’s work hours, an orphan stored in the week that blocks
+classification, holiday hours blank, and writes still unavailable.
+Focused eslint on the Time Clock files passed. npm run build passed
+(existing bundle-size warning).
+
+NOT RUN
+The existing isolated check is Postgres only:
+command-suite-db scripts/check-time-punch-office-guard.sh.
+No PostgREST process and no PowerSync service are running against that
+database. The five-step upload (old edit, old void restore, new punch,
+normal completion, local convergence) was not executed. No HTTP responses
+were recorded. The installed phone client was not changed. A new mobile
+install is not a demonstrated requirement. Add, edit, and void stay
+disconnected. Audit history, non-admin rejection, and stale editor saves
+remain proven only inside that throwaway Postgres script.
+
+NOT TESTED ON THE SIGNED-IN SCREEN
+The preview is behind Vercel deployment protection and the app login.
+The signed-in Time Clock was not clicked through. No production punches
+were inserted.
+
+PREVIEW
+GitHub reports the Vercel preview deployment completed.
+https://sales-command-fj1tffeaj-chris7berger-droids-projects.vercel.app/field/timeclock
+App commit ecc70d0 on feat/time-clock-range-read.
+This is an isolated preview of production data with writes disabled.
+It is not production readiness and it is not merged.
+
+MIGRATION STATUS
+command-suite-db branch feat/time-punch-office-guard remains 2670449.
+Migration 20260924120000_time_punch_office_guard.sql is not applied.
+main in that repo was not moved.
+
+NOT TOUCHED
+Mobile Field Command. Production data. Production www.scmybiz.com.
+No ps_crud deletion, reconciliation-id suppression, or local rewrite.
+No merge.
+
+NEXT SESSION
+Chris reviews the preview signed in. Widen From/To to see existing punches;
+the default range is today. Do not turn on saving until the upload path is
+shown through PostgREST and PowerSync, or until Chris accepts a different
+verification. Do not apply the migration or merge before that review.
+Holiday dates and employee eligibility are still unset.
+
+FILES TO KNOW
+src/field/views/TimeClock.jsx
+src/field/lib/timeClock.js
+src/field/lib/timeClockHours.js
+src/field/lib/timeClockCsv.js
+src/field/lib/timeClockWrites.js
+src/field/lib/queries.js
+scripts/check-time-clock.mjs
+command-suite-db supabase/migrations/20260924120000_time_punch_office_guard.sql
+command-suite-db scripts/check-time-punch-office-guard.sh
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Feature commit ecc70d0, pushed. This handoff commit follows on the same branch.
+main is unchanged.
+command-suite-db branch feat/time-punch-office-guard at 2670449, already on origin.
+Migration not applied.

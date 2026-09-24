@@ -1,0 +1,97 @@
+SC Handoff v295 — Desktop Time Clock release candidate — 2026-09-24
+
+SESSION SUMMARY
+The accepted Time Clock screen is the release candidate. Office saves
+are wired through the signed-in desktop session and stay off. The
+database guard is ready for approval and is not applied. No merge.
+
+LOCAL URL
+http://127.0.0.1:5201/field/timeclock
+Isolated saving still works there. The hosted preview uses the normal
+login and cannot save.
+
+PREVIEW
+Ready. Branch alias, production writes disabled:
+https://sales-command-git-feat-time-8e2aa7-chris7berger-droids-projects.vercel.app/field/timeclock
+Deployment of db7cf2b was Ready before this handoff note. Vercel
+Production, Preview, and Development do not define
+VITE_TIME_CLOCK_ISOLATED. The preview uses the normal login.
+
+WHAT CHRIS SHOULD REVIEW
+Sign in on the preview and open /field/timeclock. The shift table,
+confirmation dialog, status explanations, and Added by / Changed by /
+Voided by line are the accepted screen. Confirm reports that saving is
+unavailable. It does not write. This is not a production accept.
+
+DESKTOP WRITE SWITCH
+apply_time_punch_correction is called with the signed-in Supabase
+session. TIME_CLOCK_WRITES_AVAILABLE is false, so the hosted app returns
+before that call. The isolated test sign-in turns on only when the flag
+is 1, the database host is 127.0.0.1 or localhost, and the page host is
+the same. A Vercel host or www.scmybiz.com does not qualify. A token
+signed with the isolated test secret gets 401 from the production API.
+
+DATABASE
+File: supabase/migrations/20260924120000_time_punch_office_guard.sql
+Content commit: c49fc4a on feat/time-punch-office-guard.
+supabase migration list on 2026-09-24: every other local migration is
+already on the remote ledger. 20260924120000 is the only pending one.
+No unrelated migration would apply with it.
+Fallback, not applied: supabase/rollbacks/20260924120000_revert_time_punch_office_writes.sql
+It revokes execute on the office function. It does not drop audit rows,
+void records, or the upload guard.
+
+CHECKS
+node scripts/check-time-clock.mjs — PASS.
+npx eslint on the isolated and write files — PASS.
+npm run build — PASS, existing bundle-size warning.
+Throwaway database time_punch_assert, then dropped. The live isolated
+database was not rebuilt. Assert PASS:
+  sales rep rejected, no audit row
+  blank reason rejected
+  other-office job rejected
+  office clock-in left the job Scheduled and wrote no GPS
+  actor id was the signed-in admin
+  mobile clock-in still moved its job to In Progress
+  a later mobile time update did not overwrite the office time
+  weather still saved, stored hours stayed
+  stale editor save raised “This punch changed before it was saved.”
+  and wrote no audit
+  void kept the audit row
+  reinsert of the voided id inserted 0 rows
+  a new punch in that same transaction inserted
+Synchronization evidence from handoff v291 is unchanged. The uploader
+was not edited. The assert client is not the installed phone.
+
+ACTIVATION, AFTER CHRIS ACCEPTS THE PREVIEW
+1. Leave VITE_TIME_CLOCK_ISOLATED unset.
+2. On command-suite-db branch feat/time-punch-office-guard, run
+   supabase migration list again. Apply only if 20260924120000 is still
+   the only local migration missing from the remote ledger.
+3. Chris approves npm run db:push in command-suite-db. Do not push from
+   a branch that has gained other migration files.
+4. Desktop writes stay off after that push. A later commit may set
+   TIME_CLOCK_WRITES_AVAILABLE to true, then needs its own Ready preview
+   and Chris’s accept before release. The server still requires an
+   active Admin or Manager and sets the actor from auth.uid().
+5. If office writes must stop after the migration: run the rollback
+   revoke above. Do not drop the audit, the void table, or the upload
+   guard after corrections have been saved.
+
+BLOCKER BEFORE db:push
+The SQL skip of a voided punch id does not restore the punch, and a new
+punch in the same transaction is kept. PostgREST can still report the
+skipped insert as a failed request. The installed phone treats that as
+a failed batch and retries, which can block a later punch. The phone
+was not changed. Do not apply the migration until Chris accepts that
+limit or the phone upload is shown to continue.
+
+NOT TOUCHED
+Production data, including the test punches on job 10176.
+Mobile Field Command. No phone build. No merge. No db:push.
+
+GIT STATE
+sales-command branch feat/time-clock-range-read, prior tip 2abf829.
+command-suite-db branch feat/time-punch-office-guard.
+Migration content remains c49fc4a. The rollback commit follows.
+main is unchanged in both repos.

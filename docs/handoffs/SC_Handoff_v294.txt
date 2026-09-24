@@ -1,0 +1,60 @@
+SC Handoff v294 — Desktop Time Clock correction author — 2026-09-24
+
+SESSION SUMMARY
+The confirmation dialog names the signed-in user separately from the
+employee on the punch. Saved correction history shows that author, the
+Pacific save time, the reason, before and after, and the actor id.
+The audit function is unchanged. No merge and no production migration.
+
+LOCAL URL
+http://127.0.0.1:5201/field/timeclock
+Office Admin is signed in. From/To 2026-09-21 through 2026-09-22 shows
+the fixture plus one new Crew clock-in. Restart commands are in handoff
+v291. Do not set VITE_TIME_CLOCK_ISOLATED on Vercel.
+
+AUTHOR
+The dialog says Added by, Changed by, or Voided by, then the signed-in
+name. Employee stays the person whose punch is affected. The author is
+text, not an input. The browser does not send an actor id.
+apply_time_punch_correction still takes the actor from team_members
+where auth_id = auth.uid(). Its arguments have no actor parameter.
+
+HISTORY
+Correction history lists saved rows for the selected punch dates.
+Each row shows the author name, the actual created_at in Pacific, the
+reason, before and after punch values, and the stored actor id.
+A missing audit table stays blank, so a production preview without the
+migration does not show an error.
+
+VERIFIED
+node scripts/check-time-clock.mjs — PASS.
+npx eslint on the Time Clock files — PASS.
+The isolated function arguments contain auth.uid() and no p_actor.
+Browser: Office Admin added a clock-in for Crew, job 200 Roof,
+Sep 22, 2026 9:00 AM PT, reason “Office recorded Crew clock-in.”
+The dialog said Added by Office Admin and Employee Crew.
+History showed that save at Sep 24, 2026 2:10 PM PT with actor
+22222222-2222-2222-2222-222222222222.
+The audit row’s actor is Office Admin and the punch employee is Crew.
+One audit row was written.
+
+ISOLATED GRANT
+The disposable database needed USAGE on schema auth and EXECUTE on
+auth.uid() for the existing audit select policy. That grant is in
+scripts/time-clock-isolated/init/30-isolated-grants.sql and was applied
+to the running disposable database. It is not a production migration.
+
+MIGRATION STATUS
+command-suite-db feat/time-punch-office-guard remains c49fc4a.
+Migration 20260924120000_time_punch_office_guard.sql is not applied.
+
+NOT TOUCHED
+Mobile Field Command. Production data. Production www.scmybiz.com.
+Hosted Field PowerSync. Hours calculation. The shift table layout.
+No merge.
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Prior tip 721af6f. This commit adds the author line and history.
+main is unchanged.
+command-suite-db feat/time-punch-office-guard at c49fc4a, migration not applied.

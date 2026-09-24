@@ -1,0 +1,72 @@
+SC Handoff v296 — Desktop Time Clock production release — 2026-09-24
+
+SESSION SUMMARY
+Office Time Clock saves are live. An active Admin or Manager can add,
+edit, and void a punch from the desktop. The server records that person
+from the signed-in session. The accepted screen is unchanged.
+
+STATUS
+LIVE
+https://www.scmybiz.com/field/timeclock
+Production deployment of 8cb71d4 is Ready.
+Vercel aliases include https://www.scmybiz.com.
+
+WHAT USERS CAN DO
+Sign in with a normal Sales Command account and open Time Clock.
+An active Admin or Manager can confirm an add, edit, or void. The
+dialog names that signed-in person separately from the employee.
+The correction and its audit row are one transaction. A stale save
+returns “This punch changed before it was saved.” and is not
+resubmitted. Other roles still cannot save.
+
+VOID REPLAY
+The isolated void-replay used the phone uploader’s request and error
+handling. field-command/src/lib/connector.js and the isolated check
+both call @supabase/postgrest-js 2.103.0 upsert without .select(),
+and both continue the batch only when that call has no error. The
+recorded result was HTTP 201 with an empty body for the voided id,
+then the unrelated punch, then a local queue of zero. The void stayed
+absent and the office time stayed. That blocker was stale. The phone
+was not edited or built.
+
+DATABASE
+Applied through command-suite-db npm run db:push.
+File: supabase/migrations/20260924120000_time_punch_office_guard.sql
+Ledger version 20260924120000, name time_punch_office_guard.
+It was the only local migration missing from the remote ledger.
+No other migration was pending.
+The function uses auth.uid(), rejects a stale save with P0001, takes
+no actor argument, and authenticated can execute it.
+Audit tables time_punch_audit and time_punch_voids exist.
+command-suite-db main is b93d3a0.
+
+Job 10176 still has 15 punches. time_punches still has 32 rows.
+No production punch was created or edited for this release.
+
+FALLBACK
+supabase/rollbacks/20260924120000_revert_time_punch_office_writes.sql
+Revokes execute on apply_time_punch_correction. It does not drop
+audit history, void records, or the upload guard. Do not drop those
+after corrections have been saved. Restoring office saves later is
+GRANT EXECUTE to authenticated.
+
+CHECKS
+node scripts/check-time-clock.mjs — PASS.
+eslint on the write files — PASS.
+npm run build — PASS.
+Bugbot on the save-enablement — no bugs.
+Hosted isolated sign-in stays off. VITE_TIME_CLOCK_ISOLATED is unset
+on Vercel. Production /field/timeclock opens the normal Sign In page.
+The production bundle still requires the isolated flag, a localhost
+database, and a localhost page together.
+
+NOT TOUCHED
+Mobile Field Command. No phone build. No queue change.
+The accepted Time Clock layout.
+
+GIT STATE
+sales-command main is 8cb71d4, pushed. This handoff follows.
+feat/time-clock-range-read is merged and removed after this commit.
+command-suite-db main is b93d3a0, pushed.
+feat/time-punch-office-guard is merged.
+Safe to close after this handoff is on origin/main.

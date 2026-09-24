@@ -1,0 +1,83 @@
+SC Handoff v293 — Desktop Time Clock confirmation and status — 2026-09-24
+
+SESSION SUMMARY
+The shift table layout is unchanged. Review changes now opens a
+confirmation dialog before anything is saved. Status labels stay the
+same, and each badge explains its own condition. Saving is still only
+the isolated local database. No merge and no production migration.
+
+LOCAL URL
+http://127.0.0.1:5201/field/timeclock
+Office Admin is signed in against the disposable database. From/To
+2026-09-21 through 2026-09-22 shows the fixture. Restart commands are
+in handoff v291. Do not set VITE_TIME_CLOCK_ISOLATED on Vercel.
+
+CONFIRMATION
+Form, then Review changes, then the dialog, then Confirm. There is no
+third step. The dialog says one of:
+  You're about to add a time record.
+  You're about to change an existing time record.
+  You're about to void this time record.
+It shows employee, job, punch type, full Pacific date and time, and
+reason. An edit shows original → proposed. Void shows the loaded punch,
+not unsaved draft edits. Back returns to the draft. Cancel closes the
+editor. Neither writes. Confirm add, Confirm changes, or Confirm void
+submits the reviewed values once. A second click cannot start another
+save. A stale save still returns P0001, stays disabled, and is not
+resubmitted.
+
+STATUS
+Badge text is unchanged: Overlapping clock-ins, Missing clock-out,
+In progress, and the other existing labels. Hover, keyboard focus, and
+click or tap open a popover. The popover is drawn on the page, outside
+the scrolling table, so the table does not clip it. Escape, a click
+outside, or leaving the badge closes it. A click pins it.
+The September 21 Crew rows read:
+On September 21, Crew clocked into Job 100 — Deck at 8:30 AM, then
+Job 200 — Roof at 11:00 AM Pacific. No clock-out for Job 100 is
+recorded between those punches. Review the punches to check for a
+missing clock-out or duplicate clock-in.
+That sentence comes from the recorded punches. Review punches still
+opens the related shift.
+
+VERIFIED
+node scripts/check-time-clock.mjs — PASS.
+npx eslint on the Time Clock files — PASS.
+npm run build — PASS, existing bundle-size warning.
+Browser on the local URL: the overlap popover showed the Crew sentence
+above and was not clipped. Add confirmation showed Crew, 100 Deck,
+Clock in, Sep 21, 2026 8:00 AM PT, and the reason, with Back, Cancel,
+and Confirm add. Edit confirmation showed Office Admin clock-out
+Sep 22, 2026 5:00 PM PT → Sep 22, 2026 5:30 PM PT, with Confirm changes.
+Void confirmation showed the loaded 5:00 PM punch and Confirm void.
+Back and Cancel wrote nothing. Punch count stayed 4 and audit count
+stayed 6. Review punches · 200 Sep 21, 2026 still opens the other shift.
+
+SYNCHRONIZATION
+Reused from v291. The uploader and PowerSync client were not changed.
+
+MIGRATION STATUS
+command-suite-db feat/time-punch-office-guard remains c49fc4a.
+Migration 20260924120000_time_punch_office_guard.sql is not applied.
+
+NOT TOUCHED
+Mobile Field Command. Production data. Production www.scmybiz.com.
+Hosted Field PowerSync. Hours calculation. No merge.
+
+STEPS REMAINING FOR PRODUCTION RELEASE
+1. Chris reviews this local screen. That is not a production accept.
+2. Leave VITE_TIME_CLOCK_ISOLATED unset on Vercel.
+3. After Chris accepts the local save, apply the migration from
+   command-suite-db c49fc4a with that repo’s db:push.
+4. After the migration is on the shared database, a later desktop change
+   must allow saving against the real Supabase URL. Saving is on only
+   for 127.0.0.1 or localhost with the isolated flag.
+5. No mobile edit is required by these checks.
+6. Merge feat/time-clock-range-read only after a Ready Vercel preview
+   and Chris accepts that preview.
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Prior tip a069469. This commit adds the dialog and status popover.
+main is unchanged.
+command-suite-db feat/time-punch-office-guard at c49fc4a, migration not applied.

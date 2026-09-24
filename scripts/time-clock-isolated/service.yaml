@@ -1,0 +1,28 @@
+# Disposable local PowerSync. The shared secret is a fixture, not a production key.
+replication:
+  connections:
+    - type: postgresql
+      uri: postgresql://powersync_role:powersync_isolated@postgres:5432/postgres
+      sslmode: disable
+
+storage:
+  type: postgresql
+  uri: postgresql://powersync_storage_user:powersync_storage_isolated@powersync-storage:5432/powersync_storage
+  sslmode: disable
+
+port: 8080
+
+sync_config:
+  path: /config/sync-config.yaml
+
+client_auth:
+  supabase: false
+  audience:
+    - http://127.0.0.1:8080
+    - http://localhost:8080
+  jwks:
+    keys:
+      - kty: oct
+        alg: HS256
+        kid: dev-key-1
+        k: aXNvbGF0ZWQtdGltZS1jbG9jay1ub3QtcHJvZHVjdGlvbi1zZWNyZXQ

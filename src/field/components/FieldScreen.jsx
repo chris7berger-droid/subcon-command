@@ -246,12 +246,16 @@ export function PlainTable({ columns, rows, empty = "Nothing to show.", keyField
                   padding: compact ? "9px 12px" : "11px 15px",
                   fontWeight: 700,
                   fontSize: 10.5,
-                  color: "rgba(255,255,255,0.45)",
+                  color: c.emphasis ? C.teal : "rgba(255,255,255,0.45)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
                   borderBottom: `1px solid ${C.darkBorder}`,
                   fontFamily: F.ui,
                   whiteSpace: "nowrap",
+                  minWidth: c.minWidth,
+                  ...(c.pin
+                    ? { position: "sticky", left: 0, zIndex: 2, background: C.dark, boxShadow: "2px 0 0 rgba(28,24,20,0.35)" }
+                    : null),
                 }}
               >
                 {c.label}
@@ -260,13 +264,17 @@ export function PlainTable({ columns, rows, empty = "Nothing to show.", keyField
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
+          {rows.map((row, i) => {
+            const zebra = i % 2 === 0 ? C.linenLight : C.linen;
+            const extra = rowStyle ? rowStyle(row, i) : null;
+            const rowBackground = extra?.background || zebra;
+            return (
             <tr
               key={keyField ? row[keyField] : i}
               style={{
                 borderBottom: `1px solid ${C.border}`,
-                background: i % 2 === 0 ? C.linenLight : C.linen,
-                ...(rowStyle ? rowStyle(row, i) : null),
+                background: rowBackground,
+                ...extra,
               }}
             >
               {columns.map((c) => (
@@ -275,17 +283,26 @@ export function PlainTable({ columns, rows, empty = "Nothing to show.", keyField
                   style={{
                     textAlign: c.align || "left",
                     padding: pad,
-                    color: C.textBody,
-                    verticalAlign: "middle",
-                    fontSize: 13.5,
+                    color: c.emphasis ? C.textHead : C.textBody,
+                    verticalAlign: c.wrap ? "top" : "middle",
+                    fontSize: c.emphasis ? 15 : 13.5,
+                    fontWeight: c.emphasis ? 700 : 400,
                     fontFamily: F.ui,
+                    minWidth: c.minWidth,
+                    whiteSpace: c.wrap ? "normal" : "nowrap",
+                    maxWidth: c.wrap ? 220 : undefined,
+                    lineHeight: c.wrap ? 1.35 : undefined,
+                    ...(c.pin
+                      ? { position: "sticky", left: 0, zIndex: 1, background: rowBackground, boxShadow: "2px 0 0 rgba(28,24,20,0.12)" }
+                      : null),
                   }}
                 >
                   {c.render ? c.render(row) : row[c.key] ?? <span style={{ color: C.textFaint }}>—</span>}
                 </td>
               ))}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

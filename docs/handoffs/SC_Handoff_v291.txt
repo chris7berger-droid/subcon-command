@@ -1,0 +1,100 @@
+SC Handoff v291 — Desktop Time Clock isolated save — 2026-09-24
+
+SESSION SUMMARY
+Saving works on a disposable local database. Desktop Add, Edit, and Void
+call apply_time_punch_correction. The existing uploader, run here with a
+version-matched web client, kept an office edit, left a void deleted,
+accepted a new punch in the same batch, and emptied the local queue.
+Production-connected previews still cannot save. No merge, no production
+migration, and no mobile change.
+
+LOCAL URL
+http://127.0.0.1:5201/field/timeclock
+Office Admin is signed in. The database is the isolated stack, not
+production. Widen From/To to 2026-09-21 through 2026-09-22 to see the
+fixture. A browser edit of the Office Admin clock-out from 4:00 PM to
+6:00 PM PT reloaded as 10.00 regular, 0.00 overtime, and 10.00 work.
+The CSV for that row matches those three numbers.
+
+The Vite process and the Docker stack are running on this machine. If
+they are stopped, start them again from sales-command:
+
+  node scripts/time-clock-isolated/run.mjs
+  VITE_SUPABASE_URL=http://127.0.0.1:54321 \
+  VITE_SUPABASE_ANON_KEY=<anon JWT signed with the local fixture secret> \
+  VITE_TIME_CLOCK_ISOLATED=1 \
+  npx vite --port 5201 --strictPort --host 127.0.0.1
+
+The run script rebuilds the database, so a restart replaces the browser
+edit with the fixture. Do not set VITE_TIME_CLOCK_ISOLATED on Vercel.
+
+SYNCHRONIZATION CHECKS — PASSED
+Test client: @powersync/web 1.37.1, @powersync/common 1.51.0,
+@supabase/supabase-js 2.103.0. The phone remains
+@powersync/react-native 1.33.1 on the same common 1.51.0. This run did
+not use the installed phone or the hosted Field PowerSync instance.
+
+Recorded HTTP, in order:
+- Sales-rep correction: 403, code 42501, “Active Admin or Manager access is required.”
+- Office edit: 200, punch A.
+- Office void: 200, punch B.
+- Older upload of A: 200, empty body. Server time stayed 2026-09-21 15:30:00+00.
+- Upload of voided B: 201, empty body. The row stayed absent. One void audit row.
+- New punch C in the same batch: 201, empty body. Present at 2026-09-21 18:00:00+00.
+- Local database after sync: A at 15:30, B absent, C present, hasSynced true, ps_crud count 0.
+- Office add clock-in and clock-out: 200 each. Screen and CSV both 8.00 work, 8.00 regular, 0.00 overtime.
+- Stale editor save: 400, code P0001, “This punch changed before it was saved.”
+- Job 1 stayed Scheduled after the office clock-in. Job 2 moved to In Progress from uploaded punch C.
+
+No manual ps_crud deletion and no reconciliation-id suppression.
+
+The stale rejection uses P0001. The first isolated run used 40001.
+PostgREST retried that serialization failure and nginx returned 504.
+That is a server error-code change, not a mobile change.
+
+SAVING CHECKS — PASSED
+node scripts/time-clock-isolated/run.mjs — PASS.
+command-suite-db scripts/check-time-punch-office-guard.sh — PASS in throwaway Postgres.
+Browser save, reload, corrected hours, and matching CSV — passed on the local URL.
+Audit history for the browser edit is in time_punch_audit.
+A sales-rep token cannot call the correction.
+
+MIGRATION STATUS
+command-suite-db feat/time-punch-office-guard at c49fc4a.
+Migration 20260924120000_time_punch_office_guard.sql is not applied to
+the shared database. main in that repo was not moved.
+
+NOT TOUCHED
+Mobile Field Command. Production data. Production www.scmybiz.com.
+Hosted Field PowerSync. No merge.
+
+STEPS REMAINING FOR PRODUCTION RELEASE
+1. Chris reviews the local URL above. That review is not a production accept.
+2. Leave VITE_TIME_CLOCK_ISOLATED unset on Vercel. The production-connected
+   preview of this branch still cannot save.
+3. After Chris accepts the local save, apply the migration from
+   command-suite-db c49fc4a with that repo’s db:push. Do not apply it before that.
+4. After the migration is on the shared database, a later desktop change
+   must allow saving against the real Supabase URL. Today saving is on
+   only when VITE_TIME_CLOCK_ISOLATED=1 and the Supabase host is
+   127.0.0.1 or localhost. TIME_CLOCK_WRITES_AVAILABLE stays false.
+5. No mobile edit is required by the checks above. Do not build the phone
+   unless a later failure on the installed client shows one.
+6. Merge feat/time-clock-range-read only after a Ready Vercel preview and
+   Chris accepts that preview. This session did not merge.
+
+FILES TO KNOW
+src/field/lib/timeClockWrites.js
+src/field/lib/timeClockIsolated.js
+src/field/views/TimeClock.jsx
+src/lib/supabase.js
+scripts/time-clock-isolated/run.mjs
+scripts/time-clock-isolated/docker-compose.yml
+command-suite-db supabase/migrations/20260924120000_time_punch_office_guard.sql
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Save wiring commit 8c86717. This handoff commit follows on the same branch.
+main is unchanged.
+command-suite-db branch feat/time-punch-office-guard at c49fc4a.
+Migration not applied.

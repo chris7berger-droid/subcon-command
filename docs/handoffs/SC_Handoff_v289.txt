@@ -1,0 +1,119 @@
+SC Handoff v289 — Desktop Time Clock review hours and CSV — 2026-09-24
+
+SESSION SUMMARY
+Office Time Clock can review recorded punches, open an employee’s day, and
+export the same review as CSV. Calculated work hours and a separate drive
+duration are on the screen. Regular, OT, and double time stay blank.
+Add, edit, and void are visible and unavailable. No merge, no production
+deploy, and no production migration.
+
+IMPLEMENTED
+The existing range reader is unchanged in behavior: inclusive stored
+punch_date, both dates required, Pacific today as the default, id filters,
+missing joins kept, pages ordered through punch id, and a newer range ignoring
+an older response. The query also reads two days on either side so an
+overnight clock-out can close a shift. Displayed punches stay inside the
+selected punch_date range.
+
+The table is employee-first. Job number and job name are separate columns.
+The large punch-count card is a compact count. Opening a day shows that
+shift’s punches in time order, the stored punch_date, and the full Pacific
+timestamp. Stored regular, OT, and drive stay as stored: zero stays visible,
+null stays blank. Calculated hours are not written back.
+
+One calculator feeds the screen and the CSV. A shift belongs to the Pacific
+date of its clock-in. A closed shift with a lunch start deducts exactly 30
+unpaid minutes. A late or missing lunch_end does not change that deduction
+and does not invent a punch. A deduction that would go negative is flagged
+and left blank. Overlaps, unfamiliar events inside a shift, and a missing
+clock-out are flagged and left blank. Drive duration is separate. Its pay
+and overtime treatment are not confirmed. Status for a calculated shift is
+“Classification pending”. The CSV leaves regular, OT, and double time blank.
+Text cells are quoted, and a leading = + - or @ is prefixed so a spreadsheet
+does not execute it.
+
+UNAVAILABLE
+Add, edit, and void do not save. The preview reads production data. The
+correction migration is not applied, and the screen does not call it.
+
+The migration can, in Postgres, keep an office edit from being overwritten,
+skip a voided id, let a different new punch insert, keep a mobile clock-in
+moving Scheduled or Parked to In Progress, and keep an office clock-in from
+doing that. A skipped void insert returns no row. The phone treats a failed
+upload as a failed batch and retries it, which can block a new punch. A
+successful no-op also does not update the copy stored on the phone. Those
+two phone behaviors are the dependency. Writes stay off until both are
+handled and Chris approves the migration.
+
+Workweek start, premium rules, drive pay, provider templates, Buildertrend
+import, pay rates, and work-type allocation are not in this build.
+
+MIGRATION STATUS
+command-suite-db branch feat/time-punch-office-guard, commit 2670449.
+File supabase/migrations/20260924120000_time_punch_office_guard.sql.
+Tested in throwaway Postgres with scripts/check-time-punch-office-guard.sh.
+Not applied to Command Suite DB. Not pushed. Not merged. main in that repo
+is still 69142cc.
+
+Audit tables are outside PowerSync. The function requires an active Admin
+or Manager, takes the actor from auth.uid(), requires a reason, and rejects
+a stale editor save. Audit and the live change are one transaction. Void
+removes the live row and keeps the audit row. Office-created punches do not
+set GPS.
+
+TESTED
+node scripts/check-time-clock.mjs — existing range checks plus lunch, a late
+lunch, a missing lunch_end, a too-short lunch, an overnight boundary, an
+open shift, an overlap, drive kept out of work hours, a job filter that does
+not change the other shift, zero versus blank stored hours, CSV quoting and
+formula protection, and writes remaining unavailable.
+scripts/check-time-punch-office-guard.sh — permissions, blank reason,
+other-tenant rejection, office clock-in does not advance the job, mobile
+clock-in does, office edit then the old upload, weather still updates,
+stored hours stay, stale editor save writes nothing, void then the old id
+plus a new punch in one transaction.
+Focused eslint on the Time Clock files passed. npm run build passed
+(existing bundle-size warning).
+
+NOT TESTED ON THE SIGNED-IN SCREEN
+The Ready preview is behind Vercel deployment protection and the app login.
+The signed-in Time Clock was not clicked through. No production punches were
+inserted.
+
+PREVIEW
+Ready, preview only. Deployment dpl_FecjfKwMTh2jUTktwjNtdo5gMVvj.
+https://sales-command-ecge1z8uf-chris7berger-droids-projects.vercel.app/field/timeclock
+Branch alias:
+https://sales-command-git-feat-time-8e2aa7-chris7berger-droids-projects.vercel.app/field/timeclock
+App commit 26e26d6. This handoff commit follows and does not change the app.
+
+NOT TOUCHED
+Mobile Field Command (still main a39cad3, clean). Production data.
+fetchTodayRows, fetchActiveFieldJobs, shared fetchAll, shared useAsync.
+No merge. Production www.scmybiz.com was not deployed by this branch.
+
+NEXT SESSION
+Chris reviews the preview signed in. The default range is today, so widen
+From/To to 2026-04-09 through 2026-09-20 to see the existing punches.
+Do not turn on Add, edit, or void, and do not apply
+20260924120000_time_punch_office_guard.sql, until the phone upload path can
+skip a voided id without retrying the batch and a device is shown to adopt
+the office row. Merge is not authorized.
+
+FILES TO KNOW
+src/field/views/TimeClock.jsx
+src/field/lib/timeClock.js
+src/field/lib/timeClockHours.js
+src/field/lib/timeClockCsv.js
+src/field/lib/timeClockWrites.js
+src/field/lib/queries.js
+scripts/check-time-clock.mjs
+command-suite-db supabase/migrations/20260924120000_time_punch_office_guard.sql
+command-suite-db scripts/check-time-punch-office-guard.sh
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Feature commit 26e26d6, pushed. Handoff commit follows on the same branch.
+main is unchanged.
+command-suite-db branch feat/time-punch-office-guard at 2670449, local only.
+That repo’s main is 69142cc. Migration not applied.

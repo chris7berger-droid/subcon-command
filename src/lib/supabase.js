@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { PostgrestClient } from "@supabase/postgrest-js";
+import { isolatedAdminToken, isolatedTimeClockEnabled } from "../field/lib/timeClockIsolated.js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -8,7 +9,18 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables");
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const isolated = isolatedTimeClockEnabled();
+
+export const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  isolated
+    ? {
+        accessToken: isolatedAdminToken,
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      }
+    : undefined
+);
 
 // Archive schema access via raw PostgREST client (no second GoTrueClient).
 // We keep the current session's access token in a closure and rebuild the
@@ -16,8 +28,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // `anon`. archive.get_user_tenant_id() depends on auth.uid() resolving to
 // the calling user — without a real JWT the RLS policies deny everything.
 let _accessToken = null;
-supabase.auth.getSession().then(({ data }) => { _accessToken = data.session?.access_token || null; });
-supabase.auth.onAuthStateChange((_evt, session) => { _accessToken = session?.access_token || null; });
+if (!isolated) {
+  supabase.auth.getSession().then(({ data }) => { _accessToken = data.session?.access_token || null; });
+  supabase.auth.onAuthStateChange((_evt, session) => { _accessToken = session?.access_token || null; });
+}
 
 function makeArchiveClient() {
   return new PostgrestClient(`${SUPABASE_URL}/rest/v1`, {

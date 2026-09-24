@@ -5,6 +5,7 @@ import { jobFormStatus } from "./lateForm";
 import { buildCrewCommandView } from "./crewBoard";
 import { loadJobs } from "../../schedule/lib/queries";
 import { buildFieldJobs } from "./fieldJobs.js";
+import { assertPunchDateRange, loadTimeClockPunches, punchesInRange, reviewFetchBounds } from "./timeClock.js";
 
 // Field-web reads. All child tables (time_punches, job_crew, daily_log_entries,
 // daily_production_reports, job_material_checks) anchor job_id on CALL_LOG.id
@@ -469,4 +470,57 @@ export async function fetchFieldLogs({ today = tod(), days = 7 } = {}) {
       at: e.created_at,
     }))
     .sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+}
+
+// Office Time Clock: punches in an inclusive punch_date range. Identity comes
+// from time_punches, not from the active Schedule job list.
+export function fetchTimeClockPunches({ from, to } = {}) {
+  return loadTimeClockPunches(supabase, { from, to });
+}
+
+// Load the Monday–Sunday weeks covering the range, plus overnight closers.
+// Displayed punches stay inside the selected punch_date range.
+export async function fetchTimeClockReview({ from, to } = {}) {
+  const range = assertPunchDateRange(from, to);
+  const window = reviewFetchBounds(range.from, range.to);
+  const contextRows = await loadTimeClockPunches(supabase, { from: window.from, to: window.to });
+  return {
+    punches: punchesInRange(contextRows, range.from, range.to),
+    contextRows,
+    from: range.from,
+    to: range.to,
+    weekFrom: window.weekFrom,
+    weekTo: window.weekTo,
+  };
+}
+
+export async function fetchTimeClockAudit() {
+  const { data, error } = await supabase
+    .from("time_punch_audit")
+    .select("id, punch_id, action, reason, actor_id, before_row, after_row, created_at")
+    .order("created_at", { ascending: false });
+  if (error) {
+    const missing = error.code === "PGRST205" || error.code === "42P01" || /time_punch_audit/i.test(error.message || "");
+    if (missing) return [];
+    throw new Error(error.message || "Correction history failed");
+  }
+  return data || [];
+}
+
+export async function fetchTimeClockEmployees() {
+  const { data, error } = await supabase.from("team_members").select("id, name, active").order("name");
+  if (error) throw new Error(error.message || "Employee list failed");
+  return data || [];
+}
+
+export async function searchTimeClockJobs(text) {
+  const query = String(text || "").trim().replace(/[%_,]/g, "");
+  if (query.length < 2) return [];
+  const { data, error } = await supabase
+    .from("call_log")
+    .select("id, display_job_number, job_number, job_name, customer_name")
+    .or(`display_job_number.ilike.%${query}%,job_name.ilike.%${query}%`)
+    .limit(15);
+  if (error) throw new Error(error.message || "Job search failed");
+  return data || [];
 }
