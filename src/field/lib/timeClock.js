@@ -1,6 +1,7 @@
 // Office Time Clock read. Punches are identified from time_punches itself.
 // job_id → call_log.id, employee_id → team_members.id. Related rows are
-// left-resolved for labels only. No duration, lunch, overtime, or paid-hours math.
+// left-resolved for labels only. Calculated hours live in timeClockHours.js
+// and are never written back onto these rows.
 
 export const MISSING_EMPLOYEE = "Missing employee";
 export const MISSING_JOB = "Missing job";
@@ -15,6 +16,7 @@ export const TIME_PUNCH_SELECT = [
   "punch_type",
   "hours_regular",
   "hours_ot",
+  "hours_drive",
   "job_id",
   "employee_id",
   "team_members:employee_id(id,name)",
@@ -63,6 +65,41 @@ export function pacificToday(now = new Date()) {
   }).format(now);
 }
 
+export const TIME_CLOCK_CONTEXT_DAYS = 2;
+
+export function addIsoDays(iso, days) {
+  if (!isIsoDate(iso) || !Number.isInteger(days)) {
+    throw new Error("Enter real calendar dates.");
+  }
+  const [, yearText, monthText, dayText] = iso.match(ISO_DAY);
+  const date = new Date(Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText) + days));
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Overnight closers are stored on the next punch_date. Read two days around
+// the selected range so those events can close a shift without being displayed
+// as their own range.
+export function contextBounds(from, to) {
+  const range = assertPunchDateRange(from, to);
+  return {
+    from: addIsoDays(range.from, -TIME_CLOCK_CONTEXT_DAYS),
+    to: addIsoDays(range.to, TIME_CLOCK_CONTEXT_DAYS),
+    displayFrom: range.from,
+    displayTo: range.to,
+  };
+}
+
+export function punchesInRange(rows, from, to) {
+  const range = assertPunchDateRange(from, to);
+  return (rows || []).filter((row) => {
+    const stored = row?.storedPunchDate;
+    return isIsoDate(stored) && stored >= range.from && stored <= range.to;
+  });
+}
+
 export function formatWorkDate(value) {
   if (!isIsoDate(value)) return value ? String(value) : "—";
   const [, , monthText, dayText] = value.match(ISO_DAY);
@@ -87,6 +124,17 @@ export function formatPacificPunch(iso) {
       minute: "2-digit",
     }).format(date),
   };
+}
+
+export function pacificDate(iso) {
+  const parts = formatPacificPunch(iso);
+  return isIsoDate(parts.date) ? parts.date : null;
+}
+
+export function formatPacificStamp(iso) {
+  const parts = formatPacificPunch(iso);
+  if (!isIsoDate(parts.date)) return "—";
+  return `${formatWorkDate(parts.date)} ${parts.time} PT`;
 }
 
 export function formatStoredHours(value) {
@@ -125,10 +173,16 @@ function employeeLabel(name, employeeId) {
   return idString(employeeId) || MISSING_EMPLOYEE;
 }
 
+function jobNumberValue(callLog) {
+  return trimmed(callLog?.display_job_number) || (callLog?.job_number == null || callLog?.job_number === "" ? "" : String(callLog.job_number));
+}
+
+function jobNameValue(callLog) {
+  return trimmed(callLog?.job_name);
+}
+
 function jobLabel(callLog, jobId) {
-  const number = trimmed(callLog?.display_job_number) || (callLog?.job_number == null ? "" : String(callLog.job_number));
-  const name = trimmed(callLog?.job_name);
-  const parts = [number, name].filter(Boolean);
+  const parts = [jobNumberValue(callLog), jobNameValue(callLog)].filter(Boolean);
   if (parts.length) return parts.join(" — ");
   return idString(jobId) || idString(callLog?.id) || MISSING_JOB;
 }
@@ -143,20 +197,30 @@ export function shapeTimePunch(row) {
   const callLog = row?.call_log || null;
   const member = row?.team_members || null;
   const pacific = formatPacificPunch(row?.punch_time);
+  const storedPunchDate = isIsoDate(row?.punch_date) ? row.punch_date : null;
+  const number = jobNumberValue(callLog);
+  const name = jobNameValue(callLog);
+  const rawJobId = idString(row?.job_id) || idString(callLog?.id) || "";
   return {
     id: row?.id,
     workDate: formatWorkDate(row?.punch_date),
+    storedPunchDate,
     punchDate: isIsoDate(pacific.date) ? formatWorkDate(pacific.date) : pacific.date,
     punchTime: pacific.time,
+    punchTimeIso: typeof row?.punch_time === "string" && row.punch_time ? row.punch_time : null,
+    pacificStamp: formatPacificStamp(row?.punch_time),
     employeeId: idString(row?.employee_id),
     employee: employeeLabel(member?.name, row?.employee_id),
     jobId: idString(row?.job_id),
+    jobNumber: number || (name ? "" : rawJobId),
+    jobName: name || (number || rawJobId ? "" : MISSING_JOB),
     job: jobLabel(callLog, row?.job_id),
     customerId: idString(callLog?.customer_id),
     customer: customerLabel(callLog),
     punchType: row?.punch_type ?? "",
     hoursRegular: formatStoredHours(row?.hours_regular),
     hoursOt: formatStoredHours(row?.hours_ot),
+    hoursDrive: formatStoredHours(row?.hours_drive),
   };
 }
 
@@ -228,6 +292,7 @@ export const initialPunchLoad = {
   requestId: 0,
   rangeKey: "",
   rows: [],
+  contextRows: [],
   error: null,
   loading: false,
   publishedRangeKey: null,
@@ -240,6 +305,7 @@ export function reducePunchLoad(state, action) {
       requestId: action.requestId,
       rangeKey: action.rangeKey,
       rows: [],
+      contextRows: [],
       error: null,
       loading: true,
       publishedRangeKey: null,
@@ -252,6 +318,7 @@ export function reducePunchLoad(state, action) {
       loading: false,
       error: null,
       rows: action.rows,
+      contextRows: Array.isArray(action.contextRows) ? action.contextRows : [],
       publishedRangeKey: state.rangeKey,
     };
   }
@@ -261,6 +328,7 @@ export function reducePunchLoad(state, action) {
       loading: false,
       error: action.error || "Time punch query failed",
       rows: [],
+      contextRows: [],
       publishedRangeKey: null,
     };
   }

@@ -5,7 +5,7 @@ import { jobFormStatus } from "./lateForm";
 import { buildCrewCommandView } from "./crewBoard";
 import { loadJobs } from "../../schedule/lib/queries";
 import { buildFieldJobs } from "./fieldJobs.js";
-import { loadTimeClockPunches } from "./timeClock.js";
+import { assertPunchDateRange, contextBounds, loadTimeClockPunches, punchesInRange } from "./timeClock.js";
 
 // Field-web reads. All child tables (time_punches, job_crew, daily_log_entries,
 // daily_production_reports, job_material_checks) anchor job_id on CALL_LOG.id
@@ -476,4 +476,18 @@ export async function fetchFieldLogs({ today = tod(), days = 7 } = {}) {
 // from time_punches, not from the active Schedule job list.
 export function fetchTimeClockPunches({ from, to } = {}) {
   return loadTimeClockPunches(supabase, { from, to });
+}
+
+// Same punch reader, plus the days around the range so an overnight clock-out
+// can close a shift. Displayed punches stay inside the selected punch_date range.
+export async function fetchTimeClockReview({ from, to } = {}) {
+  const range = assertPunchDateRange(from, to);
+  const window = contextBounds(range.from, range.to);
+  const contextRows = await loadTimeClockPunches(supabase, { from: window.from, to: window.to });
+  return {
+    punches: punchesInRange(contextRows, range.from, range.to),
+    contextRows,
+    from: range.from,
+    to: range.to,
+  };
 }
