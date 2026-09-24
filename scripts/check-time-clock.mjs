@@ -351,6 +351,9 @@ assert.equal(queries.includes("reviewFetchBounds"), true);
 assert.equal(view.includes("Add punch"), true);
 assert.equal(view.includes("Edit punch"), true);
 assert.equal(view.includes("Review changes"), true);
+assert.equal(view.includes("You're about to add a time record."), true);
+assert.equal(view.includes("You're about to change an existing time record."), true);
+assert.equal(view.includes("You're about to void this time record."), true);
 assert.equal(view.includes("Confirm add"), true);
 assert.equal(view.includes("Confirm changes"), true);
 assert.equal(view.includes("Confirm void"), true);
@@ -510,8 +513,8 @@ assert.equal(punchClockLabel("2026-09-23T15:00:00.000Z", "2026-09-23"), "8:00 AM
 
 const overlap = reviewTimePunches(
   [
-    punch({ id: "o1", punchType: "clock_in", punchTimeIso: "2026-09-23T15:00:00.000Z", storedPunchDate: "2026-09-23", jobNumber: "100", jobName: "Deck" }),
-    punch({ id: "o2", punchType: "clock_in", punchTimeIso: "2026-09-23T16:00:00.000Z", storedPunchDate: "2026-09-23", jobId: "11", jobNumber: "200", jobName: "Roof" }),
+    punch({ id: "o1", punchType: "clock_in", punchTimeIso: "2026-09-23T15:00:00.000Z", storedPunchDate: "2026-09-23", employee: "Crew", jobNumber: "100", jobName: "Deck" }),
+    punch({ id: "o2", punchType: "clock_in", punchTimeIso: "2026-09-23T16:00:00.000Z", storedPunchDate: "2026-09-23", employee: "Crew", jobId: "11", jobNumber: "200", jobName: "Roof" }),
     punch({ id: "o3", punchType: "clock_out", punchTimeIso: "2026-09-24T00:00:00.000Z", storedPunchDate: "2026-09-23" }),
   ],
   { from: "2026-09-23", to: "2026-09-23" }
@@ -519,8 +522,10 @@ const overlap = reviewTimePunches(
 assert.equal(overlap.rows.length, 2);
 assert.equal(overlap.rows.every((row) => row.workMs == null), true);
 assert.equal(overlap.rows.every((row) => row.statusLabel === STATUS_OVERLAP), true);
-assert.match(overlap.rows[0].statusDetail, /100 Deck started at 8:00 AM on Sep 23, 2026/);
-assert.match(overlap.rows[0].statusDetail, /200 Roof started at 9:00 AM on Sep 23, 2026 before 100 Deck was closed/);
+assert.equal(
+  overlap.rows[0].statusDetail,
+  "On September 23, Crew clocked into Job 100 — Deck at 8:00 AM, then Job 200 — Roof at 9:00 AM Pacific. No clock-out for Job 100 is recorded between those punches. Review the punches to check for a missing clock-out or duplicate clock-in."
+);
 assert.equal(recordedPunch(overlap.rows.find((row) => row.jobId === "10"), "clock_out"), null);
 assert.equal(overlap.rows[0].key === overlap.rows[1].key, false);
 

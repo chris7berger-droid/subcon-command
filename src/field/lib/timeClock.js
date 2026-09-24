@@ -32,6 +32,7 @@ export const TIME_PUNCH_ORDER = [
 
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const LONG_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export function isIsoDate(value) {
   if (typeof value !== "string" || !ISO_DAY.test(value)) return false;
@@ -208,6 +209,12 @@ export function formatShiftDate(value) {
   if (!isIsoDate(value)) return value ? String(value) : "";
   const [, , monthText, dayText] = value.match(ISO_DAY);
   return `${MONTHS[Number(monthText) - 1]} ${Number(dayText)}`;
+}
+
+export function formatLongDate(value) {
+  if (!isIsoDate(value)) return "";
+  const [, , monthText, dayText] = value.match(ISO_DAY);
+  return `${LONG_MONTHS[Number(monthText) - 1]} ${Number(dayText)}`;
 }
 
 export function punchClockLabel(iso, shiftDay, { full = false } = {}) {

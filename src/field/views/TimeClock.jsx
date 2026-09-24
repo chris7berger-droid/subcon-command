@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { C, F } from "../../lib/tokens";
 import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
 import { fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
@@ -111,7 +112,7 @@ function shiftColumns(tableView, selectedKey, setSelectedKey) {
       key: "statusLabel",
       label: "Status",
       minWidth: 160,
-      render: (row) => (row.statusLabel ? <StatusChip tone={statusTone(row.statusLabel)}>{row.statusLabel}</StatusChip> : ""),
+      render: (row) => (row.statusLabel ? <StatusExplain label={row.statusLabel} detail={row.statusDetail} tone={statusTone(row.statusLabel)} /> : ""),
     },
     {
       key: "actions",
@@ -435,6 +436,7 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
   const [pending, setPending] = useState(null);
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState(false);
+  const savingRef = useRef(false);
   const jobSearch = jobQuery.trim();
   const visibleJobs = jobHits.query === jobSearch && jobSearch.length >= 2 ? jobHits.rows : [];
   const loaded = punch || null;
@@ -512,11 +514,12 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
   }
 
   async function confirm() {
-    if (!pending || saving || conflict) return;
+    if (!pending || savingRef.current || conflict) return;
     if (!timeClockWritesAvailable()) {
       setMessage(TIME_CLOCK_WRITES_REASON);
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     const args = timePunchCorrectionArgs({ action: pending.action, draft: pending.draft, loaded });
     const { error } = await applyTimePunchCorrection(args);
@@ -527,6 +530,7 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
         setConflict(true);
         setMessage("This punch changed before it was saved. Reload the punches and review the correction again.");
       } else {
+        savingRef.current = false;
         setMessage(error.message || "The punch was not saved.");
       }
       return;
@@ -540,15 +544,11 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
     <section style={{ marginTop: 16, padding: "12px 14px", borderRadius: 10, background: C.linenCard, border: `1px solid ${C.borderStrong}` }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
         <div style={{ fontFamily: F.display, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", color: C.textHead }}>
-          {pending ? "Review changes" : mode === "edit" ? "Edit punch" : "Add punch"}
+          {mode === "edit" ? "Edit punch" : "Add punch"}
         </div>
         <button type="button" onClick={onClose} style={quietButton}>Cancel</button>
       </div>
-      {pending ? (
-        <ReviewSummary pending={pending} loaded={loaded} />
-      ) : (
-        <>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
             <label style={{ display: "flex", flexDirection: "column" }}>
               <span style={FILTER_LABEL}>Employee</span>
               <select aria-label="Editor employee" value={employeeId} onChange={(e) => changeDraft(() => setEmployeeId(e.target.value))} style={{ ...FILTER_INPUT, width: 200 }}>
@@ -603,31 +603,37 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
             </div>
           ) : null}
           {jobLabel ? <div style={{ marginTop: 8, fontSize: 12.5, color: C.textFaint, fontFamily: F.ui }}>{jobLabel}</div> : null}
-        </>
-      )}
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        {pending ? (
-          <>
-            <button type="button" onClick={() => { setPending(null); setMessage(""); }} style={quietButton}>Back</button>
-            <button type="button" onClick={() => void confirm()} disabled={saving || conflict} style={{ ...tealButton, opacity: saving || conflict ? 0.55 : 1, cursor: saving || conflict ? "not-allowed" : "pointer" }}>
-              {saving ? "Saving…" : confirmLabel}
-            </button>
-          </>
-        ) : (
-          <>
-            <button type="button" onClick={() => review(mode === "edit" ? "edit" : "add")} style={tealButton}>Review changes</button>
-            {mode === "edit" ? (
-              <button type="button" onClick={() => review("void")} style={quietButton}>Review void</button>
-            ) : null}
-          </>
-        )}
+        <button type="button" onClick={() => review(mode === "edit" ? "edit" : "add")} style={tealButton}>Review changes</button>
+        {mode === "edit" ? (
+          <button type="button" onClick={() => review("void")} style={quietButton}>Review void</button>
+        ) : null}
       </div>
-      {message ? <div style={{ marginTop: 8, fontSize: 13, color: C.red, fontFamily: F.body }}>{message}</div> : null}
+      {message && !pending ? <div style={{ marginTop: 8, fontSize: 13, color: C.red, fontFamily: F.body }}>{message}</div> : null}
+      {pending ? (
+        <ReviewSummary
+          pending={pending}
+          loaded={loaded}
+          saving={saving}
+          conflict={conflict}
+          confirmLabel={confirmLabel}
+          message={message}
+          onBack={() => { savingRef.current = false; setPending(null); setMessage(""); setConflict(false); }}
+          onCancel={onClose}
+          onConfirm={() => void confirm()}
+        />
+      ) : null}
     </section>
   );
 }
 
-function ReviewSummary({ pending, loaded }) {
+const CONFIRM_WARNING = {
+  add: "You're about to add a time record.",
+  edit: "You're about to change an existing time record.",
+  void: "You're about to void this time record.",
+};
+
+function ReviewSummary({ pending, loaded, onBack, onConfirm, onCancel, saving, conflict, confirmLabel, message }) {
   const draft = pending.draft;
   const proposedStamp = pending.action === "void"
     ? formatPacificStamp(loaded?.punchTimeIso)
@@ -657,15 +663,201 @@ function ReviewSummary({ pending, loaded }) {
           ["When", `${originalStamp} → ${proposedStamp}`],
           ["Reason", draft.reason],
         ];
-  return (
-    <div style={{ display: "grid", gap: 6, maxWidth: 640 }}>
-      {rows.map(([label, value]) => (
-        <div key={label} style={{ fontSize: 13.5, color: C.textBody, fontFamily: F.body, lineHeight: 1.4 }}>
-          <span style={{ ...FILTER_LABEL, display: "inline", marginRight: 8 }}>{label}</span>
-          {value}
+  const titleId = "time-clock-confirm-title";
+  return createPortal(
+    <div
+      role="presentation"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 40,
+        background: "rgba(28,24,20,0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        style={{
+          width: "min(560px, 100%)",
+          background: C.linenCard,
+          border: `2px solid ${C.dark}`,
+          borderRadius: 12,
+          padding: "18px 18px 16px",
+          boxShadow: "0 16px 40px rgba(28,24,20,0.28)",
+        }}
+      >
+        <h2 id={titleId} style={{ margin: "0 0 14px", fontFamily: F.body, fontSize: 20, lineHeight: 1.35, fontWeight: 700, color: C.textHead }}>
+          {CONFIRM_WARNING[pending.action] || CONFIRM_WARNING.edit}
+        </h2>
+        <div style={{ display: "grid", gap: 8 }}>
+          {rows.map(([label, value]) => (
+            <div key={label} style={{ fontSize: 15, color: C.textBody, fontFamily: F.body, lineHeight: 1.4 }}>
+              <span style={{ ...FILTER_LABEL, display: "inline", marginRight: 8 }}>{label}</span>
+              {value}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+        {message ? (
+          <div style={{ marginTop: 12, fontSize: 14, color: C.red, fontFamily: F.body, lineHeight: 1.4 }}>{message}</div>
+        ) : null}
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          <button type="button" onClick={onBack} style={quietButton}>Back</button>
+          <button type="button" onClick={onCancel} style={quietButton}>Cancel</button>
+          <button type="button" onClick={onConfirm} disabled={saving || conflict} style={{ ...tealButton, opacity: saving || conflict ? 0.55 : 1, cursor: saving || conflict ? "not-allowed" : "pointer" }}>
+            {saving ? "Saving…" : confirmLabel}
+          </button>
+        </div>
+      </section>
+    </div>,
+    document.body
+  );
+}
+
+function StatusExplain({ label, detail, tone }) {
+  const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [place, setPlace] = useState(null);
+  const triggerRef = useRef(null);
+  const popRef = useRef(null);
+  const hideTimer = useRef(null);
+  const describedBy = useId();
+  const text = detail || label;
+
+  function clearHide() {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }
+
+  function hideSoon() {
+    if (pinned) return;
+    clearHide();
+    hideTimer.current = setTimeout(() => setOpen(false), 180);
+  }
+
+  const position = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const width = Math.min(360, window.innerWidth - 16);
+    const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+    const popHeight = popRef.current?.offsetHeight || 120;
+    const below = rect.bottom + 8;
+    const flip = below + popHeight > window.innerHeight - 8;
+    const top = flip ? Math.max(8, rect.top - popHeight - 8) : below;
+    setPlace((current) => (
+      current && current.left === left && current.top === top && current.width === width
+        ? current
+        : { left, width, top }
+    ));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function onScroll() { position(); }
+    function onKey(event) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setPinned(false);
+      }
+    }
+    function onPointer(event) {
+      const target = event.target;
+      if (triggerRef.current?.contains(target) || popRef.current?.contains(target)) return;
+      setOpen(false);
+      setPinned(false);
+    }
+    document.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onPointer);
+      clearHide();
+    };
+  }, [open, position]);
+
+  function show() {
+    clearHide();
+    position();
+    setOpen(true);
+  }
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-describedby={open ? describedBy : undefined}
+        onMouseEnter={show}
+        onMouseLeave={hideSoon}
+        onFocus={show}
+        onBlur={(event) => {
+          if (popRef.current?.contains(event.relatedTarget)) return;
+          setPinned(false);
+          setOpen(false);
+        }}
+        onClick={() => {
+          clearHide();
+          const next = !(open && pinned);
+          setPinned(next);
+          setOpen(next);
+        }}
+        style={{
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+          font: "inherit",
+        }}
+      >
+        <StatusChip tone={tone}>{label}</StatusChip>
+      </button>
+      {open ? createPortal(
+        <div
+          ref={(node) => {
+            popRef.current = node;
+            if (node) position();
+          }}
+          id={describedBy}
+          role="tooltip"
+          style={{
+            position: "fixed",
+            left: place?.left ?? -9999,
+            top: place?.top ?? -9999,
+            width: place?.width ?? 360,
+            zIndex: 50,
+            background: C.linenCard,
+            color: C.textHead,
+            border: `1.5px solid ${C.dark}`,
+            borderRadius: 10,
+            padding: "12px 14px",
+            boxShadow: "0 10px 28px rgba(28,24,20,0.22)",
+            fontFamily: F.body,
+            fontSize: 14.5,
+            lineHeight: 1.45,
+            textAlign: "left",
+            whiteSpace: "normal",
+            maxHeight: "calc(100vh - 16px)",
+            overflowY: "auto",
+          }}
+          onMouseEnter={clearHide}
+          onMouseLeave={hideSoon}
+        >
+          {text}
+        </div>,
+        document.body
+      ) : null}
+    </>
   );
 }
 

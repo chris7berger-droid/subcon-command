@@ -1,7 +1,7 @@
 // Review-only shift hours. Screen and CSV both use this module.
 // Nothing here writes hours_regular, hours_ot, or hours_drive.
 
-import { formatPacificPunch, formatWorkDate, mondayOf, pacificDate, sundayOf } from "./timeClock.js";
+import { formatLongDate, formatPacificPunch, formatWorkDate, mondayOf, pacificDate, sundayOf } from "./timeClock.js";
 
 export const LUNCH_DEDUCTION_MS = 30 * 60 * 1000;
 export const WEEKLY_REGULAR_MS = 40 * 60 * 60 * 1000;
@@ -403,12 +403,45 @@ function startedAt(row) {
   return recordedWhen(punchOfType(row, "clock_in") || row?.punches?.[0]) || "an unknown time";
 }
 
+function jobTitle(row, withName) {
+  const number = row?.jobNumber || "";
+  const name = row?.jobName || "";
+  if (number && name && withName) return `Job ${number} — ${name}`;
+  if (number) return `Job ${number}`;
+  if (name) return name;
+  return "";
+}
+
+function clockInParts(row) {
+  const punch = punchOfType(row, "clock_in");
+  if (!punch?.punchTimeIso) return null;
+  const parts = formatPacificPunch(punch.punchTimeIso);
+  if (!parts?.time || parts.time === "—" || !parts.date) return null;
+  return { time: parts.time, date: parts.date };
+}
+
 function overlapSentence(a, b) {
   const first = (a.startMs || 0) <= (b.startMs || 0) ? a : b;
   const second = first === a ? b : a;
-  const firstJob = jobPhrase(first);
-  const secondJob = jobPhrase(second);
-  return `${STATUS_OVERLAP}: ${firstJob} started at ${startedAt(first)}; ${secondJob} started at ${startedAt(second)} before ${firstJob} was closed.`;
+  const who = first.employee || second.employee || "";
+  const firstTime = clockInParts(first);
+  const secondTime = clockInParts(second);
+  const firstJob = jobTitle(first, true);
+  const secondJob = jobTitle(second, true);
+  const firstJobShort = jobTitle(first, false);
+  if (!who || !firstTime || !secondTime || !firstJob || !secondJob || !firstJobShort) {
+    const fallbackFirst = jobPhrase(first);
+    const fallbackSecond = jobPhrase(second);
+    return `${STATUS_OVERLAP}: ${fallbackFirst} started at ${startedAt(first)}; ${fallbackSecond} started at ${startedAt(second)} before ${fallbackFirst} was closed.`;
+  }
+  const sameDay = firstTime.date === secondTime.date;
+  const opened = sameDay
+    ? `On ${formatLongDate(firstTime.date)}, ${who} clocked into ${firstJob} at ${firstTime.time}, then ${secondJob} at ${secondTime.time} Pacific.`
+    : `On ${formatLongDate(firstTime.date)}, ${who} clocked into ${firstJob} at ${firstTime.time} Pacific, then on ${formatLongDate(secondTime.date)} into ${secondJob} at ${secondTime.time} Pacific.`;
+  const between = punchOfType(first, "clock_out")
+    ? ""
+    : ` No clock-out for ${firstJobShort} is recorded between those punches.`;
+  return `${opened}${between} Review the punches to check for a missing clock-out or duplicate clock-in.`;
 }
 
 function explainRow(row, byKey, today) {
