@@ -25,7 +25,7 @@ If he says keep going, do not nag. Still run the close-out later if he wraps, or
 
 ## Close-out (in order)
 
-1. **One Bugbot pass** before merge. Fix only findings that would break **this slice**. Do not loop on edge cases or deferred backlog.
+1. **One Bugbot pass** before merge for application/code changes. Docs/rules-only changes do not require Bugbot unless specifically requested. Fix only findings that would break **this slice**. Do not loop on edge cases or deferred backlog.
 2. **Commit** leftover work on the slice branch. Do not leave a dirty tree. Push that branch (never force) if a PR/preview is needed.
 3. **Vercel preview + Chris accept** before merge when the slice changes the app (UI, layout, routing, client state, rendered data). Preview must be Ready. Walk the affected flow. Do not merge until Chris accepts. If there is no preview or he has not accepted, **stop**: leave the PR open, keep the feature branch, write the handoff, say waiting on preview accept. Docs/rules-only slices skip this step.
 4. **Merge** to `main` (PR merge or fast-forward when possible). Check out `main`.

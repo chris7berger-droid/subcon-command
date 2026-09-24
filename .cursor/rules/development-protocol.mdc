@@ -34,5 +34,5 @@ Do not weaken `.claude/commands/audit.md`, `.claude/skills/security-audit/SKILL.
 
 - `confirm-intent.mdc` still locks ambiguous or out-of-scope product edits. During Build, `approved-handoff.mdc` still overrides routine confirmation for work inside an approved ACTIVE.md.
 - `approved-handoff.mdc` is not permission to skip Plan Audit or any later gate, and it is not merge approval. Its build-complete standard is the Build gate only.
-- `session-wrap.mdc` is Merge/Closeout. Do not start it until Chris Acceptance is recorded for an app slice. Bugbot in that close-out is not Code Review or Security Review. Docs/rules-only slices still skip Vercel preview; feature work does not.
+- `session-wrap.mdc` is Merge/Closeout. Do not start it until Chris Acceptance is recorded for an app slice. Bugbot is required before merge for application/code changes. Docs/rules-only changes do not require Bugbot unless specifically requested. It is not Code Review or Security Review. Docs/rules-only slices still skip Vercel preview; feature work does not.
 - `.claude/commands/pre-ship.md` remains the make-it-live checklist. It reports. His wrap / merge / go is the confirmation that checklist waits for.
