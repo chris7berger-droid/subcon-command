@@ -56,6 +56,8 @@ BEGIN
 END $$;
 GRANT anon, authenticated TO authenticator;
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT USAGE ON SCHEMA auth TO authenticated;
+GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.time_punches TO authenticated;
 GRANT SELECT ON public.team_members, public.call_log, public.tenant_config TO authenticated;

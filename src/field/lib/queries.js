@@ -494,6 +494,19 @@ export async function fetchTimeClockReview({ from, to } = {}) {
   };
 }
 
+export async function fetchTimeClockAudit() {
+  const { data, error } = await supabase
+    .from("time_punch_audit")
+    .select("id, punch_id, action, reason, actor_id, before_row, after_row, created_at")
+    .order("created_at", { ascending: false });
+  if (error) {
+    const missing = error.code === "PGRST205" || error.code === "42P01" || /time_punch_audit/i.test(error.message || "");
+    if (missing) return [];
+    throw new Error(error.message || "Correction history failed");
+  }
+  return data || [];
+}
+
 export async function fetchTimeClockEmployees() {
   const { data, error } = await supabase.from("team_members").select("id, name, active").order("name");
   if (error) throw new Error(error.message || "Employee list failed");

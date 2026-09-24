@@ -2,14 +2,17 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom";
 import { C, F } from "../../lib/tokens";
 import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
-import { fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
+import { fetchTimeClockAudit, fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
 import { reviewRowsToCsv } from "../lib/timeClockCsv";
 import { formatDurationHours, reviewTimePunches, STATUS_IN_PROGRESS } from "../lib/timeClockHours";
 import { applyTimePunchCorrection, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable, timePunchCorrectionArgs } from "../lib/timeClockWrites";
 import {
   assertPunchDateRange,
   cleanJobName,
+  CORRECTION_AUTHOR_LABEL,
+  correctionsInRange,
   createPunchRequestGuard,
+  describeCorrection,
   employeeChoices,
   filterTimeClockRows,
   formatPacificStamp,
@@ -132,7 +135,7 @@ function shiftColumns(tableView, selectedKey, setSelectedKey) {
   return columns;
 }
 
-export default function TimeClock() {
+export default function TimeClock({ teamMember }) {
   const today = useMemo(() => pacificToday(), []);
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
@@ -144,6 +147,8 @@ export default function TimeClock() {
   const [editorMode, setEditorMode] = useState("");
   const [tableView, setTableView] = useState("quick");
   const [employees, setEmployees] = useState([]);
+  const [history, setHistory] = useState({ rows: [], error: "" });
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [load, setLoad] = useState(initialPunchLoad);
   const requests = useRef(createPunchRequestGuard());
   const activeKey = rangeKey(from, to);
@@ -206,6 +211,20 @@ export default function TimeClock() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTimeClockAudit()
+      .then((list) => {
+        if (!cancelled) setHistory({ rows: list, error: "" });
+      })
+      .catch((err) => {
+        if (!cancelled) setHistory({ rows: [], error: err?.message || "Correction history failed" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [historyRevision, from, to]);
 
   const published = load.publishedRangeKey === activeKey && !load.loading && !load.error;
   const rows = published ? load.rows : EMPTY_ROWS;
@@ -354,12 +373,20 @@ export default function TimeClock() {
           punch={editorMode === "edit" ? (selected?.punches || []).find((punch) => punch.id === selectedPunchId) : null}
           defaultDate={from}
           onClose={() => setEditorMode("")}
+          authorName={teamMember?.name || ""}
           onSaved={async () => {
             setEditorMode("");
+            setHistoryRevision((value) => value + 1);
             await loadRange(from, to);
           }}
         />
       ) : null}
+      <CorrectionHistory
+        entries={correctionsInRange(history.rows, from, to)}
+        error={history.error}
+        members={employees}
+        punches={rows}
+      />
     </FieldScreen>
   );
 }
@@ -413,6 +440,39 @@ function DayDetail({ shift, related, selectedPunchId, onEdit, onOpenKey }) {
   );
 }
 
+function CorrectionHistory({ entries, error, members, punches }) {
+  if (!error && entries.length === 0) return null;
+  const memberName = (id) => members.find((member) => member.id === id)?.name || "";
+  const jobLabel = (id) => {
+    const hit = punches.find((punch) => String(punch.jobId) === String(id));
+    if (!hit) return id == null || id === "" ? "" : `Job ${id}`;
+    return [hit.jobNumber, hit.jobName].filter(Boolean).join(" — ") || `Job ${id}`;
+  };
+  return (
+    <section style={{ marginTop: 16, padding: "12px 14px", borderRadius: 10, background: C.linenCard, border: `1px solid ${C.borderStrong}` }}>
+      <div style={{ fontFamily: F.display, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", color: C.textHead, marginBottom: 10 }}>
+        Correction history
+      </div>
+      {error ? <ErrorNote>{error}</ErrorNote> : null}
+      <div style={{ display: "grid", gap: 12 }}>
+        {entries.map((entry) => {
+          const described = describeCorrection(entry, { memberName, jobLabel });
+          return (
+            <div key={entry.id} style={{ fontFamily: F.body, fontSize: 14, lineHeight: 1.45, color: C.textBody }}>
+              <div style={{ fontWeight: 700, color: C.textHead }}>{described.authorLine}</div>
+              <div>{described.savedAt}</div>
+              <div>Reason {described.reason}</div>
+              <div>Actor {described.actorId}</div>
+              <div>Before {described.before || "—"}</div>
+              <div>After {described.after || "—"}</div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 const PUNCH_TYPES = [
   ["clock_in", "Clock in"],
   ["clock_out", "Clock out"],
@@ -422,7 +482,7 @@ const PUNCH_TYPES = [
   ["drive_end", "Drive end"],
 ];
 
-function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) {
+function PunchEditor({ mode, employees, punch, defaultDate, authorName, onClose, onSaved }) {
   const [employeeId, setEmployeeId] = useState(punch?.employeeId || "");
   const [jobId, setJobId] = useState(punch?.jobId || "");
   const [jobLabel, setJobLabel] = useState(punch ? [punch.jobNumber, punch.jobName].filter(Boolean).join(" ") : "");
@@ -617,6 +677,7 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) 
           saving={saving}
           conflict={conflict}
           confirmLabel={confirmLabel}
+          authorName={authorName}
           message={message}
           onBack={() => { savingRef.current = false; setPending(null); setMessage(""); setConflict(false); }}
           onCancel={onClose}
@@ -633,7 +694,7 @@ const CONFIRM_WARNING = {
   void: "You're about to void this time record.",
 };
 
-function ReviewSummary({ pending, loaded, onBack, onConfirm, onCancel, saving, conflict, confirmLabel, message }) {
+function ReviewSummary({ pending, loaded, authorName, onBack, onConfirm, onCancel, saving, conflict, confirmLabel, message }) {
   const draft = pending.draft;
   const proposedStamp = pending.action === "void"
     ? formatPacificStamp(loaded?.punchTimeIso)
@@ -691,9 +752,12 @@ function ReviewSummary({ pending, loaded, onBack, onConfirm, onCancel, saving, c
           boxShadow: "0 16px 40px rgba(28,24,20,0.28)",
         }}
       >
-        <h2 id={titleId} style={{ margin: "0 0 14px", fontFamily: F.body, fontSize: 20, lineHeight: 1.35, fontWeight: 700, color: C.textHead }}>
+        <h2 id={titleId} style={{ margin: "0 0 8px", fontFamily: F.body, fontSize: 20, lineHeight: 1.35, fontWeight: 700, color: C.textHead }}>
           {CONFIRM_WARNING[pending.action] || CONFIRM_WARNING.edit}
         </h2>
+        <div style={{ margin: "0 0 14px", fontFamily: F.body, fontSize: 16, lineHeight: 1.4, fontWeight: 700, color: C.textHead }}>
+          {CORRECTION_AUTHOR_LABEL[pending.action] || CORRECTION_AUTHOR_LABEL.edit} {authorName}
+        </div>
         <div style={{ display: "grid", gap: 8 }}>
           {rows.map(([label, value]) => (
             <div key={label} style={{ fontSize: 15, color: C.textBody, fontFamily: F.body, lineHeight: 1.4 }}>

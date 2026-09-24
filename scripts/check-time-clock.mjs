@@ -26,6 +26,9 @@ import {
   sundayOf,
   punchFilterOptions,
   punchesInRange,
+  CORRECTION_AUTHOR_LABEL,
+  correctionsInRange,
+  describeCorrection,
   punchTypeLabel,
   readAllOrderedPages,
   reducePunchLoad,
@@ -354,6 +357,16 @@ assert.equal(view.includes("Review changes"), true);
 assert.equal(view.includes("You're about to add a time record."), true);
 assert.equal(view.includes("You're about to change an existing time record."), true);
 assert.equal(view.includes("You're about to void this time record."), true);
+assert.equal(view.includes("CORRECTION_AUTHOR_LABEL"), true);
+assert.equal(view.includes("Correction history"), true);
+assert.equal(view.includes("Actor "), true);
+assert.deepEqual(CORRECTION_AUTHOR_LABEL, {
+  add: "Added by",
+  edit: "Changed by",
+  void: "Voided by",
+});
+assert.equal(queries.includes("export async function fetchTimeClockAudit"), true);
+assert.equal(queries.includes("actor_id"), true);
 assert.equal(view.includes("Confirm add"), true);
 assert.equal(view.includes("Confirm changes"), true);
 assert.equal(view.includes("Confirm void"), true);
@@ -631,6 +644,7 @@ const edited = timePunchCorrectionArgs({
 });
 assert.equal(edited.p_punch_time, "2026-09-23T01:00:00.000Z");
 assert.equal(edited.p_expected_punch_time, "2026-09-22T23:00:00.000Z");
+assert.equal(Object.keys(edited).some((key) => key.toLowerCase().includes("actor")), false);
 const voided = timePunchCorrectionArgs({
   action: "void",
   loaded: loadedPunch,
@@ -639,6 +653,51 @@ const voided = timePunchCorrectionArgs({
 assert.equal(voided.p_punch_time, loadedPunch.punchTimeIso);
 assert.equal(voided.p_expected_punch_time, loadedPunch.punchTimeIso);
 assert.equal(voided.p_employee_id, "emp-1");
+const officeActor = "22222222-2222-2222-2222-222222222222";
+const crewEmployee = "66666666-6666-6666-6666-666666666666";
+const described = describeCorrection({
+  action: "edit",
+  actor_id: officeActor,
+  reason: "office corrected the clock-in",
+  created_at: "2026-09-24T19:35:11.898Z",
+  before_row: {
+    employee_id: crewEmployee,
+    job_id: 1,
+    punch_type: "clock_in",
+    punch_time: "2026-09-21T15:00:00+00:00",
+    punch_date: "2026-09-21",
+  },
+  after_row: {
+    employee_id: crewEmployee,
+    job_id: 1,
+    punch_type: "clock_in",
+    punch_time: "2026-09-21T15:30:00+00:00",
+    punch_date: "2026-09-21",
+  },
+}, {
+  memberName: (id) => (id === officeActor ? "Office Admin" : id === crewEmployee ? "Crew" : ""),
+  jobLabel: (id) => (String(id) === "1" ? "100 — Deck" : ""),
+});
+assert.equal(described.authorLine, "Changed by Office Admin");
+assert.equal(described.actorId, officeActor);
+assert.equal(described.savedAt, "Sep 24, 2026 12:35 PM PT");
+assert.equal(described.reason, "office corrected the clock-in");
+assert.equal(described.before, "Crew · 100 — Deck · Clock in · Sep 21, 2026 8:00 AM PT");
+assert.equal(described.after, "Crew · 100 — Deck · Clock in · Sep 21, 2026 8:30 AM PT");
+assert.equal(describeCorrection({ action: "add", actor_id: officeActor, created_at: "2026-09-24T19:35:13.991Z", reason: "missed clock-in", after_row: {} }, {
+  memberName: () => "Office Admin",
+}).authorLine, "Added by Office Admin");
+assert.equal(describeCorrection({ action: "void", actor_id: officeActor, created_at: "2026-09-24T19:35:11.903Z", reason: "office voided the duplicate" }, {
+  memberName: () => "Office Admin",
+}).authorLine, "Voided by Office Admin");
+assert.deepEqual(
+  correctionsInRange([
+    { id: "old", created_at: "2026-09-24T19:35:11Z", before_row: { punch_date: "2026-09-21" } },
+    { id: "out", created_at: "2026-09-24T19:35:12Z", after_row: { punch_date: "2026-09-23" } },
+    { id: "new", created_at: "2026-09-24T20:10:41Z", after_row: { punch_date: "2026-09-22" } },
+  ], "2026-09-21", "2026-09-22").map((entry) => entry.id),
+  ["new", "old"]
+);
 assert.equal(isolatedTimeClockEnabledFrom({
   VITE_TIME_CLOCK_ISOLATED: "1",
   VITE_SUPABASE_URL: "https://www.scmybiz.com",

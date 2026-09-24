@@ -267,6 +267,45 @@ export function formatPacificStamp(iso) {
   return `${formatWorkDate(parts.date)} ${parts.time} PT`;
 }
 
+export const CORRECTION_AUTHOR_LABEL = {
+  add: "Added by",
+  edit: "Changed by",
+  void: "Voided by",
+};
+
+export function correctionAuthorLabel(action) {
+  return CORRECTION_AUTHOR_LABEL[action] || CORRECTION_AUTHOR_LABEL.edit;
+}
+
+function correctionSnapshot(row, memberName, jobLabel) {
+  if (!row || typeof row !== "object") return "";
+  const who = memberName(row.employee_id) || "";
+  const job = jobLabel(row.job_id) || "";
+  const punch = row.punch_type ? punchTypeLabel(row.punch_type) : "";
+  const when = row.punch_time ? formatPacificStamp(row.punch_time) : "";
+  return [who, job, punch, when].filter((part) => part && part !== "—").join(" · ");
+}
+
+export function describeCorrection(entry, { memberName = () => "", jobLabel = () => "" } = {}) {
+  return {
+    authorLine: `${correctionAuthorLabel(entry?.action)} ${memberName(entry?.actor_id) || ""}`.trim(),
+    actorId: entry?.actor_id || "",
+    savedAt: formatPacificStamp(entry?.created_at),
+    reason: entry?.reason || "",
+    before: correctionSnapshot(entry?.before_row, memberName, jobLabel),
+    after: correctionSnapshot(entry?.after_row, memberName, jobLabel),
+  };
+}
+
+export function correctionsInRange(rows, from, to) {
+  return (rows || [])
+    .filter((entry) => {
+      const day = entry?.after_row?.punch_date || entry?.before_row?.punch_date || "";
+      return isIsoDate(day) && day >= from && day <= to;
+    })
+    .sort((a, b) => String(b?.created_at || "").localeCompare(String(a?.created_at || "")) || String(b?.id || "").localeCompare(String(a?.id || "")));
+}
+
 export function formatStoredHours(value) {
   if (value == null || value === "") return "";
   return String(value);
