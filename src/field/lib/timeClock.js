@@ -204,6 +204,32 @@ export function formatWorkDate(value) {
   return `${MONTHS[Number(monthText) - 1]} ${Number(dayText)}, ${year}`;
 }
 
+export function formatShiftDate(value) {
+  if (!isIsoDate(value)) return value ? String(value) : "";
+  const [, , monthText, dayText] = value.match(ISO_DAY);
+  return `${MONTHS[Number(monthText) - 1]} ${Number(dayText)}`;
+}
+
+export function punchClockLabel(iso, shiftDay, { full = false } = {}) {
+  if (!iso) return "";
+  if (full) {
+    const stamp = formatPacificStamp(iso);
+    return stamp === "—" ? "" : stamp;
+  }
+  const parts = formatPacificPunch(iso);
+  if (!isIsoDate(parts.date) || parts.time === "—") return "";
+  if (shiftDay && parts.date !== shiftDay) return `${parts.time} · ${formatShiftDate(parts.date)}`;
+  return parts.time;
+}
+
+export function recordedPunch(shift, type) {
+  const want = String(type || "").toLowerCase();
+  const matches = (shift?.punches || []).filter((punch) => String(punch?.punchType || "").toLowerCase() === want);
+  if (!matches.length) return null;
+  if (want === "clock_out" || want === "lunch_end" || want === "drive_end") return matches[matches.length - 1];
+  return matches[0];
+}
+
 export function formatPacificPunch(iso) {
   if (!iso) return { date: "—", time: "—" };
   const date = new Date(iso);
@@ -245,6 +271,10 @@ export function punchTypeLabel(type) {
   const key = raw.toLowerCase();
   if (key === "clock_in") return "Clock in";
   if (key === "clock_out") return "Clock out";
+  if (key === "lunch_start") return "Lunch out";
+  if (key === "lunch_end") return "Lunch in";
+  if (key === "drive_start") return "Drive start";
+  if (key === "drive_end") return "Drive end";
   return raw.replace(/_/g, " ");
 }
 

@@ -12,7 +12,10 @@ import {
   employeeChoices,
   createPunchRequestGuard,
   filterTimeClockRows,
+  formatShiftDate,
   formatStoredHours,
+  punchClockLabel,
+  recordedPunch,
   initialPunchLoad,
   loadTimeClockPunches,
   mondayOf,
@@ -30,13 +33,15 @@ import {
 } from "../src/field/lib/timeClock.js";
 import { csvCell, reviewRowsToCsv, reviewShiftCsvFields } from "../src/field/lib/timeClockCsv.js";
 import {
+  STATUS_IN_PROGRESS,
   STATUS_INCOMPLETE,
+  STATUS_OVERLAP,
   STATUS_WEEK_INCOMPLETE,
   formatDurationHours,
   reviewTimePunches,
 } from "../src/field/lib/timeClockHours.js";
 import { isolatedTimeClockEnabledFrom } from "../src/field/lib/timeClockIsolated.js";
-import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable } from "../src/field/lib/timeClockWrites.js";
+import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable, timePunchCorrectionArgs } from "../src/field/lib/timeClockWrites.js";
 
 assert.throws(() => assertPunchDateRange("", "2026-09-23"), /both a start date and an end date/i);
 assert.throws(() => assertPunchDateRange("2026-09-23", ""), /both a start date and an end date/i);
@@ -345,6 +350,14 @@ assert.equal(queries.includes("export async function fetchTimeClockReview"), tru
 assert.equal(queries.includes("reviewFetchBounds"), true);
 assert.equal(view.includes("Add punch"), true);
 assert.equal(view.includes("Edit punch"), true);
+assert.equal(view.includes("Review changes"), true);
+assert.equal(view.includes("Confirm add"), true);
+assert.equal(view.includes("Confirm changes"), true);
+assert.equal(view.includes("Confirm void"), true);
+assert.equal(view.includes("Review punches"), true);
+assert.equal(view.includes("Lunch out"), true);
+assert.equal(view.includes("Quick"), true);
+assert.equal(view.includes("Expanded"), true);
 assert.equal(view.includes("queued phone"), false);
 assert.equal(queries.includes("export async function fetchTodayRows"), true);
 assert.equal(queries.includes("async function fetchActiveFieldJobs"), true);
@@ -445,6 +458,8 @@ const missingLunchEnd = reviewTimePunches(
 );
 assert.equal(formatDurationHours(missingLunchEnd.rows[0].workMs), "8.00");
 assert.equal(missingLunchEnd.rows[0].punches.some((row) => row.punchType === "lunch_end"), false);
+assert.equal(recordedPunch(missingLunchEnd.rows[0], "lunch_end"), null);
+assert.equal(punchClockLabel(recordedPunch(missingLunchEnd.rows[0], "lunch_end")?.punchTimeIso, "2026-09-23"), "");
 
 const tooShort = reviewTimePunches(
   [
@@ -481,18 +496,33 @@ const openShift = reviewTimePunches(
   { from: "2026-09-23", to: "2026-09-23" }
 );
 assert.equal(openShift.rows[0].statusLabel, STATUS_INCOMPLETE);
+assert.match(openShift.rows[0].statusDetail, /No clock-out was recorded/);
 assert.equal(formatDurationHours(openShift.rows[0].workMs), "");
+const inProgress = reviewTimePunches(
+  [punch({ id: "open-now", punchType: "clock_in", punchTimeIso: "2026-09-24T15:00:00.000Z", storedPunchDate: "2026-09-24" })],
+  { from: "2026-09-24", to: "2026-09-24", today: "2026-09-24" }
+);
+assert.equal(inProgress.rows[0].statusLabel, STATUS_IN_PROGRESS);
+assert.equal(formatDurationHours(inProgress.rows[0].workMs), "");
+assert.equal(formatShiftDate("2026-09-24"), "Sep 24");
+assert.equal(punchClockLabel("2026-09-23T14:00:00.000Z", "2026-09-22"), "7:00 AM · Sep 23");
+assert.equal(punchClockLabel("2026-09-23T15:00:00.000Z", "2026-09-23"), "8:00 AM");
 
 const overlap = reviewTimePunches(
   [
-    punch({ id: "o1", punchType: "clock_in", punchTimeIso: "2026-09-23T15:00:00.000Z", storedPunchDate: "2026-09-23" }),
-    punch({ id: "o2", punchType: "clock_in", punchTimeIso: "2026-09-23T16:00:00.000Z", storedPunchDate: "2026-09-23" }),
+    punch({ id: "o1", punchType: "clock_in", punchTimeIso: "2026-09-23T15:00:00.000Z", storedPunchDate: "2026-09-23", jobNumber: "100", jobName: "Deck" }),
+    punch({ id: "o2", punchType: "clock_in", punchTimeIso: "2026-09-23T16:00:00.000Z", storedPunchDate: "2026-09-23", jobId: "11", jobNumber: "200", jobName: "Roof" }),
     punch({ id: "o3", punchType: "clock_out", punchTimeIso: "2026-09-24T00:00:00.000Z", storedPunchDate: "2026-09-23" }),
   ],
   { from: "2026-09-23", to: "2026-09-23" }
 );
 assert.equal(overlap.rows.length, 2);
 assert.equal(overlap.rows.every((row) => row.workMs == null), true);
+assert.equal(overlap.rows.every((row) => row.statusLabel === STATUS_OVERLAP), true);
+assert.match(overlap.rows[0].statusDetail, /100 Deck started at 8:00 AM on Sep 23, 2026/);
+assert.match(overlap.rows[0].statusDetail, /200 Roof started at 9:00 AM on Sep 23, 2026 before 100 Deck was closed/);
+assert.equal(recordedPunch(overlap.rows.find((row) => row.jobId === "10"), "clock_out"), null);
+assert.equal(overlap.rows[0].key === overlap.rows[1].key, false);
 
 const withDrive = reviewTimePunches(
   [
@@ -539,6 +569,8 @@ const kept = filterTimeClockRows(twoJobs.rows, { jobId: "11" });
 assert.equal(kept.length, 1);
 assert.equal(formatDurationHours(kept[0].workMs), "3.00");
 assert.equal(formatDurationHours(twoJobs.rows.find((row) => row.jobId === "11").workMs), "3.00");
+assert.equal(formatDurationHours(twoJobs.rows.find((row) => row.jobId === "10").workMs), "4.00");
+assert.equal(twoJobs.rows.find((row) => row.jobId === "10").regularHours === twoJobs.rows.find((row) => row.jobId === "11").regularHours, false);
 
 const csvFields = reviewShiftCsvFields(day.rows[0]);
 assert.equal(csvFields[7], "8.00");
@@ -572,6 +604,36 @@ assert.doesNotMatch(csv, /regular_hours","8/);
 assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
 assert.equal(TIME_CLOCK_WRITES_REASON, "Saving is unavailable.");
 assert.equal(timeClockWritesAvailable(), false);
+const loadedPunch = {
+  id: "punch-1",
+  employeeId: "emp-1",
+  jobId: "10",
+  punchType: "clock_out",
+  punchTimeIso: "2026-09-22T23:00:00.000Z",
+  storedPunchDate: "2026-09-22",
+};
+const edited = timePunchCorrectionArgs({
+  action: "edit",
+  loaded: loadedPunch,
+  draft: {
+    employeeId: "emp-1",
+    jobId: "10",
+    punchType: "clock_out",
+    stamp: "2026-09-23T01:00:00.000Z",
+    date: "2026-09-22",
+    reason: "corrected the clock-out",
+  },
+});
+assert.equal(edited.p_punch_time, "2026-09-23T01:00:00.000Z");
+assert.equal(edited.p_expected_punch_time, "2026-09-22T23:00:00.000Z");
+const voided = timePunchCorrectionArgs({
+  action: "void",
+  loaded: loadedPunch,
+  draft: { stamp: "2026-09-23T01:00:00.000Z", date: "2026-09-23", reason: "void the duplicate", employeeId: "other", jobId: "99", punchType: "clock_in" },
+});
+assert.equal(voided.p_punch_time, loadedPunch.punchTimeIso);
+assert.equal(voided.p_expected_punch_time, loadedPunch.punchTimeIso);
+assert.equal(voided.p_employee_id, "emp-1");
 assert.equal(isolatedTimeClockEnabledFrom({
   VITE_TIME_CLOCK_ISOLATED: "1",
   VITE_SUPABASE_URL: "https://www.scmybiz.com",

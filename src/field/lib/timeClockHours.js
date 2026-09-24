@@ -1,12 +1,14 @@
 // Review-only shift hours. Screen and CSV both use this module.
 // Nothing here writes hours_regular, hours_ot, or hours_drive.
 
-import { mondayOf, pacificDate, sundayOf } from "./timeClock.js";
+import { formatPacificPunch, formatWorkDate, mondayOf, pacificDate, sundayOf } from "./timeClock.js";
 
 export const LUNCH_DEDUCTION_MS = 30 * 60 * 1000;
 export const WEEKLY_REGULAR_MS = 40 * 60 * 60 * 1000;
 
 export const STATUS_INCOMPLETE = "Missing clock-out";
+export const STATUS_IN_PROGRESS = "In progress";
+export const STATUS_OVERLAP = "Overlapping clock-ins";
 export const STATUS_WEEK_INCOMPLETE = "Week has a missing punch";
 
 function eventMs(row) {
@@ -154,15 +156,21 @@ function walkEmployee(events) {
     const ms = eventMs(event);
     if (ms == null) continue;
     if (type === "clock_in") {
-      const overlapped = !!open;
+      const previous = open;
       if (open) {
-        markAmbiguous(open, "Another shift is still open");
         shifts.push(open);
         open = null;
       }
       open = startShift(event, ms);
       if (!open.startDay) markAmbiguous(open, "Missing punch time");
-      else if (overlapped) markAmbiguous(open, "Opened while another shift was open");
+      if (previous) {
+        markAmbiguous(previous, STATUS_OVERLAP);
+        markAmbiguous(open, STATUS_OVERLAP);
+        previous.statusLabel = STATUS_OVERLAP;
+        open.statusLabel = STATUS_OVERLAP;
+        previous.overlapKey = open.key;
+        open.overlapKey = previous.key;
+      }
     } else if (type === "clock_out") {
       if (!open) continue;
       closeShift(open, event, ms);
@@ -172,7 +180,7 @@ function walkEmployee(events) {
       if (!open || open.lunchStart || !sameJob(open, event)) {
         if (open) {
           open.punches.push(event);
-          markAmbiguous(open, !sameJob(open, event) ? "Lunch is on a different job" : "Another lunch is already open");
+          markAmbiguous(open, !sameJob(open, event) ? "Lunch out is on a different job" : "Another lunch out is already recorded");
           shifts.push(open);
           open = null;
         }
@@ -184,10 +192,10 @@ function walkEmployee(events) {
       if (!open || !open.lunchStart || open.lunchEnd || !sameJob(open, event)) {
         if (open) {
           const label = !open.lunchStart
-            ? "Lunch end without a lunch start"
+            ? "Lunch in without a lunch out"
             : !sameJob(open, event)
-              ? "Lunch end is on a different job"
-              : "Another lunch end is already recorded";
+              ? "Lunch in is on a different job"
+              : "Another lunch in is already recorded";
           open.punches.push(event);
           markAmbiguous(open, label);
           shifts.push(open);
@@ -301,8 +309,8 @@ function attachDrives(shifts, drives) {
 
 function loosePunchLabel(type) {
   if (type === "clock_out") return "Clock-out without a clock-in";
-  if (type === "lunch_start") return "Lunch without a clock-in";
-  if (type === "lunch_end") return "Lunch end without a clock-in";
+  if (type === "lunch_start") return "Lunch out without a clock-in";
+  if (type === "lunch_end") return "Lunch in without a clock-in";
   if (type === "drive_end") return "Drive end without a drive start";
   if (type === "clock_in") return "Missing clock-out";
   return "Punch is not part of a shift";
@@ -375,12 +383,80 @@ function inDisplayRange(day, from, to) {
   return typeof day === "string" && day >= from && day <= to;
 }
 
+function jobPhrase(row) {
+  const parts = [row?.jobNumber, row?.jobName].filter(Boolean);
+  return parts.length ? parts.join(" ") : "Unassigned job";
+}
+
+function punchOfType(row, type) {
+  return (row?.punches || []).find((punch) => String(punch?.punchType || "").toLowerCase() === type) || null;
+}
+
+function recordedWhen(punch) {
+  if (!punch?.punchTimeIso) return "";
+  const parts = formatPacificPunch(punch.punchTimeIso);
+  if (!parts?.time || parts.time === "—") return "";
+  return `${parts.time} on ${formatWorkDate(parts.date)}`;
+}
+
+function startedAt(row) {
+  return recordedWhen(punchOfType(row, "clock_in") || row?.punches?.[0]) || "an unknown time";
+}
+
+function overlapSentence(a, b) {
+  const first = (a.startMs || 0) <= (b.startMs || 0) ? a : b;
+  const second = first === a ? b : a;
+  const firstJob = jobPhrase(first);
+  const secondJob = jobPhrase(second);
+  return `${STATUS_OVERLAP}: ${firstJob} started at ${startedAt(first)}; ${secondJob} started at ${startedAt(second)} before ${firstJob} was closed.`;
+}
+
+function explainRow(row, byKey, today) {
+  const peer = row.overlapKey ? byKey.get(row.overlapKey) : null;
+  if (peer) {
+    row.statusLabel = STATUS_OVERLAP;
+    row.statusDetail = overlapSentence(row, peer);
+    row.reviewKeys = [row.key, peer.key];
+    return;
+  }
+  if (row.status === "incomplete" && row.statusLabel === STATUS_INCOMPLETE) {
+    const job = jobPhrase(row);
+    const when = startedAt(row);
+    if (today && row.startDay === today) {
+      row.statusLabel = STATUS_IN_PROGRESS;
+      row.statusDetail = `Clocked in at ${job} at ${when}. No clock-out yet.`;
+    } else {
+      row.statusDetail = `Clocked in at ${job} at ${when}. No clock-out was recorded.`;
+    }
+    return;
+  }
+  if (row.statusLabel === STATUS_WEEK_INCOMPLETE) {
+    row.statusDetail = "Regular and overtime stay blank because another punch in this week is missing or conflicting.";
+    return;
+  }
+  if (row.statusLabel === "Lunch is longer than the shift") {
+    const when = recordedWhen(punchOfType(row, "lunch_start"));
+    row.statusDetail = when
+      ? `Lunch out at ${jobPhrase(row)} was recorded at ${when}. The 30-minute deduction is longer than the shift, so hours stay blank.`
+      : row.statusLabel;
+    return;
+  }
+  if (row.statusLabel === "Clock-out without a clock-in") {
+    const when = recordedWhen(punchOfType(row, "clock_out") || row.punches?.[0]);
+    row.statusDetail = when
+      ? `Clock-out at ${jobPhrase(row)} was recorded at ${when} and has no clock-in.`
+      : row.statusLabel;
+    return;
+  }
+  if (row.statusLabel) row.statusDetail = row.statusDetail || row.statusLabel;
+}
+
 export function formatDurationHours(ms) {
   if (ms == null || !Number.isFinite(ms) || ms < 0) return "";
   return (Math.round(ms / 36000) / 100).toFixed(2);
 }
 
-export function reviewTimePunches(rows, { from, to } = {}) {
+export function reviewTimePunches(rows, { from, to, today = "" } = {}) {
   const groups = new Map();
   for (const row of rows || []) {
     const key = employeeKey(row);
@@ -422,5 +498,7 @@ export function reviewTimePunches(rows, { from, to } = {}) {
       String(a.jobNumber || "").localeCompare(String(b.jobNumber || ""), undefined, { numeric: true }) ||
       String(a.key).localeCompare(String(b.key))
   );
+  const byKey = new Map(weekRows.map((row) => [row.key, row]));
+  for (const row of displayed) explainRow(row, byKey, today);
   return { rows: displayed };
 }

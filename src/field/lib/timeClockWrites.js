@@ -11,6 +11,25 @@ export function timeClockWritesAvailable() {
   return isolatedTimeClockEnabled();
 }
 
+export function timePunchCorrectionArgs({ action, draft, loaded }) {
+  const voiding = action === "void";
+  return {
+    p_action: action,
+    p_punch_id: action === "add" ? null : loaded?.id ?? null,
+    p_employee_id: voiding ? loaded?.employeeId ?? null : draft.employeeId,
+    p_job_id: voiding ? (loaded?.jobId ? Number(loaded.jobId) : null) : Number(draft.jobId),
+    p_punch_type: voiding ? loaded?.punchType ?? null : draft.punchType,
+    p_punch_time: voiding ? loaded?.punchTimeIso ?? null : draft.stamp,
+    p_punch_date: voiding ? loaded?.storedPunchDate ?? null : draft.date,
+    p_reason: draft.reason,
+    p_expected_employee_id: loaded?.employeeId || null,
+    p_expected_job_id: loaded?.jobId ? Number(loaded.jobId) : null,
+    p_expected_punch_type: loaded?.punchType || null,
+    p_expected_punch_time: loaded?.punchTimeIso || null,
+    p_expected_punch_date: loaded?.storedPunchDate || null,
+  };
+}
+
 export async function applyTimePunchCorrection(args) {
   if (!timeClockWritesAvailable()) {
     return { data: null, error: { message: TIME_CLOCK_WRITES_REASON, code: "TIME_CLOCK_WRITES_OFF" } };
