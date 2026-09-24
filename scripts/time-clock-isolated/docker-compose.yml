@@ -1,0 +1,83 @@
+# Disposable Time Clock stack. Not production. No hosted PowerSync.
+# Postgres source + PostgREST + PowerSync, following
+# https://docs.powersync.com/intro/setup-guide (manual self-hosted).
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: postgres
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../../../command-suite-db/scripts/fixtures/time_punch_guard_fixture.sql:/docker-entrypoint-initdb.d/10-fixture.sql:ro
+      - ../../../command-suite-db/supabase/migrations/20260924120000_time_punch_office_guard.sql:/docker-entrypoint-initdb.d/20-migration.sql:ro
+      - ./init/30-isolated-grants.sql:/docker-entrypoint-initdb.d/30-isolated-grants.sql:ro
+    ports:
+      - "54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  postgrest:
+    image: public.ecr.aws/supabase/postgrest:v14.1
+    environment:
+      PGRST_DB_URI: postgres://authenticator:isolated-auth@postgres:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: '{"kty":"oct","k":"aXNvbGF0ZWQtdGltZS1jbG9jay1ub3QtcHJvZHVjdGlvbi1zZWNyZXQ","alg":"HS256","kid":"dev-key-1"}'
+      PGRST_DB_CHANNEL_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - postgrest
+    ports:
+      - "54321:8080"
+
+  powersync-storage:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: storage-isolated
+      POSTGRES_DB: powersync_storage
+    volumes:
+      - ./storage-init.sql:/docker-entrypoint-initdb.d/01-storage.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  powersync:
+    image: journeyapps/powersync-service:latest
+    command: ["start", "-r", "unified"]
+    environment:
+      POWERSYNC_CONFIG_PATH: /config/service.yaml
+    volumes:
+      - ./service.yaml:/config/service.yaml:ro
+      - ./sync-config.yaml:/config/sync-config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      powersync-storage:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

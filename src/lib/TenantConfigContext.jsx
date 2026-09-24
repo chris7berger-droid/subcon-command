@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getTenantConfig, refreshTenantConfig, DEFAULTS } from "./config";
 import { supabase } from "./supabase";
+import { isolatedTimeClockEnabled } from "../field/lib/timeClockIsolated.js";
 
 const TenantConfigContext = createContext({ ...DEFAULTS });
 
@@ -12,6 +13,7 @@ export function TenantConfigProvider({ children }) {
   // transition so the real row lands once the user is signed in.
   useEffect(() => {
     getTenantConfig().then(setConfig);
+    if (isolatedTimeClockEnabled()) return undefined;
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       getTenantConfig().then(setConfig);
     });

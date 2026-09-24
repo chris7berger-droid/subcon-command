@@ -35,7 +35,8 @@ import {
   formatDurationHours,
   reviewTimePunches,
 } from "../src/field/lib/timeClockHours.js";
-import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON } from "../src/field/lib/timeClockWrites.js";
+import { isolatedTimeClockEnabledFrom } from "../src/field/lib/timeClockIsolated.js";
+import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable } from "../src/field/lib/timeClockWrites.js";
 
 assert.throws(() => assertPunchDateRange("", "2026-09-23"), /both a start date and an end date/i);
 assert.throws(() => assertPunchDateRange("2026-09-23", ""), /both a start date and an end date/i);
@@ -338,7 +339,7 @@ assert.equal(view.includes("jobNumber"), true);
 assert.equal(view.includes(".rpc("), false);
 assert.equal(view.includes("apply_time_punch_correction"), false);
 assert.equal(view.includes("TIME_CLOCK_WRITES_REASON"), true);
-assert.equal(view.includes("TIME_CLOCK_WRITES_AVAILABLE"), true);
+assert.equal(view.includes("timeClockWritesAvailable"), true);
 assert.equal(queries.includes("export function fetchTimeClockPunches"), true);
 assert.equal(queries.includes("export async function fetchTimeClockReview"), true);
 assert.equal(queries.includes("reviewFetchBounds"), true);
@@ -570,6 +571,15 @@ assert.equal(csv.includes("8.00"), true);
 assert.doesNotMatch(csv, /regular_hours","8/);
 assert.equal(TIME_CLOCK_WRITES_AVAILABLE, false);
 assert.equal(TIME_CLOCK_WRITES_REASON, "Saving is unavailable.");
+assert.equal(timeClockWritesAvailable(), false);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "https://www.scmybiz.com",
+}), false);
+assert.equal(isolatedTimeClockEnabledFrom({
+  VITE_TIME_CLOCK_ISOLATED: "1",
+  VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+}), true);
 
 assert.equal(mondayOf("2026-09-24"), "2026-09-21");
 assert.equal(sundayOf("2026-09-24"), "2026-09-27");

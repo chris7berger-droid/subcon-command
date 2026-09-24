@@ -36,6 +36,7 @@ import { GROUPS, SUBCON_HOME, SETTINGS, groupVisible, sectionFromPath, groupFrom
 import ScheduleLayout from "./schedule/ScheduleLayout";
 import CrewPhone from "./schedule/views/CrewPhone";
 import FieldLayout from "./field/FieldLayout";
+import { isolatedOfficeMember, isolatedTimeClockEnabled, ISOLATED_ADMIN_AUTH_ID } from "./field/lib/timeClockIsolated.js";
 import ARLayout from "./ar/ARLayout";
 
 function Placeholder({ label }) {
@@ -139,8 +140,11 @@ function SalesCommandApp() {
   const [open,       setOpen]       = useState(true);
   const [showTOC,    setShowTOC]    = useState(false);
   const [subPage,    setSubPage]    = useState(null);
-  const [session,    setSession]    = useState(undefined);
-  const [teamMember, setTeamMember] = useState(undefined);
+  const isolatedOffice = isolatedTimeClockEnabled();
+  const [session,    setSession]    = useState(() => (
+    isolatedOffice ? { user: { id: ISOLATED_ADMIN_AUTH_ID, email: "office@isolated.local" } } : undefined
+  ));
+  const [teamMember, setTeamMember] = useState(() => (isolatedOffice ? isolatedOfficeMember() : undefined));
   const [bootMinElapsed, setBootMinElapsed] = useState(BOOT_LOADER_MIN_MS === 0 || isCustomerFacingRoute);
   // Read once: recovery intent is captured synchronously in index.html before
   // the Supabase client can clear the URL hash. Held in state (not re-read) so
@@ -165,6 +169,7 @@ function SalesCommandApp() {
   }, []);
 
   useEffect(() => {
+    if (isolatedTimeClockEnabled()) return undefined;
     const sub = onAuthStateChange(async (event, s) => {
       // PASSWORD_RECOVERY: only drop to login if the URL has a real recovery hash
       if (event === "PASSWORD_RECOVERY") {

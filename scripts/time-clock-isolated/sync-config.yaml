@@ -1,0 +1,8 @@
+config:
+  edition: 3
+
+streams:
+  time_punches:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM time_punches

@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { isolatedTimeClockEnabled } from "../field/lib/timeClockIsolated.js";
 
 const DEFAULTS = {
   company_name: "", tagline: "", license_number: "", phone: "", email: "",
@@ -40,7 +41,9 @@ export async function getTenantConfig() {
 
 // Signing in changes who the RLS policy sees, so anything read as anon is stale
 // by definition. Drop the cache on every auth transition.
-supabase.auth.onAuthStateChange(() => { _cache = null; });
+if (!isolatedTimeClockEnabled()) {
+  supabase.auth.onAuthStateChange(() => { _cache = null; });
+}
 
 export async function refreshTenantConfig() {
   _cache = null;

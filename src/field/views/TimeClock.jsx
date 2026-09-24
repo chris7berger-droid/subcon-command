@@ -4,7 +4,7 @@ import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../c
 import { fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
 import { reviewRowsToCsv } from "../lib/timeClockCsv";
 import { formatDurationHours, reviewTimePunches } from "../lib/timeClockHours";
-import { TIME_CLOCK_WRITES_AVAILABLE, TIME_CLOCK_WRITES_REASON } from "../lib/timeClockWrites";
+import { applyTimePunchCorrection, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable } from "../lib/timeClockWrites";
 import {
   assertPunchDateRange,
   cleanJobName,
@@ -348,6 +348,10 @@ export default function TimeClock() {
           punch={editorMode === "edit" ? (selected?.punches || []).find((punch) => punch.id === selectedPunchId) : null}
           defaultDate={from}
           onClose={() => setEditorMode("")}
+          onSaved={async () => {
+            setEditorMode("");
+            await loadRange(from, to);
+          }}
         />
       ) : null}
     </FieldScreen>
@@ -407,7 +411,7 @@ const PUNCH_TYPES = [
   ["drive_end", "Drive end"],
 ];
 
-function PunchEditor({ mode, employees, punch, defaultDate, onClose }) {
+function PunchEditor({ mode, employees, punch, defaultDate, onClose, onSaved }) {
   const [employeeId, setEmployeeId] = useState(punch?.employeeId || "");
   const [jobId, setJobId] = useState(punch?.jobId || "");
   const [jobLabel, setJobLabel] = useState(punch ? [punch.jobNumber, punch.jobName].filter(Boolean).join(" ") : "");
@@ -447,7 +451,7 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose }) {
     setJobQuery("");
   }
 
-  function submit(action) {
+  async function submit(action) {
     if (!reason.trim()) {
       setMessage("A reason is required.");
       return;
@@ -456,14 +460,35 @@ function PunchEditor({ mode, employees, punch, defaultDate, onClose }) {
       setMessage("Employee, job, punch, date, and time are required.");
       return;
     }
-    if (action !== "void" && !pacificLocalToIso(date, time)) {
+    const stamp = action === "void" ? null : pacificLocalToIso(date, time);
+    if (action !== "void" && !stamp) {
       setMessage("Enter a real date and time.");
       return;
     }
-    if (!TIME_CLOCK_WRITES_AVAILABLE) {
+    if (!timeClockWritesAvailable()) {
       setMessage(TIME_CLOCK_WRITES_REASON);
       return;
     }
+    const { error } = await applyTimePunchCorrection({
+      p_action: action,
+      p_punch_id: action === "add" ? null : punch?.id,
+      p_employee_id: action === "void" ? punch?.employeeId : employeeId,
+      p_job_id: action === "void" ? Number(punch?.jobId) : Number(jobId),
+      p_punch_type: action === "void" ? punch?.punchType : punchType,
+      p_punch_time: action === "void" ? punch?.punchTimeIso : stamp,
+      p_punch_date: action === "void" ? punch?.storedPunchDate : date,
+      p_reason: reason.trim(),
+      p_expected_employee_id: punch?.employeeId || null,
+      p_expected_job_id: punch?.jobId ? Number(punch.jobId) : null,
+      p_expected_punch_type: punch?.punchType || null,
+      p_expected_punch_time: punch?.punchTimeIso || null,
+      p_expected_punch_date: punch?.storedPunchDate || null,
+    });
+    if (error) {
+      setMessage(error.message || "The punch was not saved.");
+      return;
+    }
+    await onSaved();
   }
 
   return (
