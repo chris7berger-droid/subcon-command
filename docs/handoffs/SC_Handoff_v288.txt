@@ -1,0 +1,64 @@
+SC Handoff v288 — Development protocol — 2026-09-24
+
+SESSION SUMMARY
+Docs/rules only. Locked the feature-work phase order, then Chris approved it
+and ordered close-out. No application code. Schedule ↔ Field was not started.
+
+CHANGES SHIPPED
+docs/DEVELOPMENT_PROTOCOL.md — purpose, read/write authority, and gate for
+Planning → Plan Audit → Build → Build vs Plan → Code Review → Security Review
+→ Smoke Test → Vercel Preview → Chris Acceptance → Merge/Closeout.
+.cursor/rules/development-protocol.mdc — alwaysApply. Feature work names the
+current phase from recorded gate results and does only that phase's writes.
+.cursor/rules/session-wrap.mdc — Bugbot sentence only, matched to the rule below.
+
+DECISIONS
+Planning and Plan Audit are independent. The agent that authors or materially
+revises the plan cannot issue the Plan Audit convergence verdict for that same
+revision. Materially revises includes a planner rewriting the plan after audit
+findings. That revision needs a convergence verdict from a different agent.
+Build, Build vs Plan, Code Review, and Security Review stay separate.
+Bugbot is required before merge for application/code changes. Docs/rules-only
+changes do not require Bugbot unless specifically requested.
+Vercel preview skipped: docs/rules only, and Chris waived it.
+Existing confirm-intent, approved-handoff, and session-wrap rules stay in force.
+
+NEW/CLOSED BACKLOG ITEMS
+None. No BACKLOG row opened or closed.
+
+VERIFICATION
+Pre-ship on cursor/development-protocol-a064 before the Bugbot-rule commit:
+branch clean and even with origin, not main. Diff then was 162 lines across
+2 commits (docs + the new rule only). 0 fix: commits. No money-math files,
+no supabase/migrations directory, no edge functions, no CLAUDE_RLS.md or
+policy SQL, so the RLS 6-gate runbook does not apply. Test files in the repo:
+7; none touched. No backlog id in the commit subjects. Handoff was not written
+yet (this file). Preview walk does not apply.
+Final branch vs previous main: 3 files, 163 insertions, 1 deletion, 3 commits,
+fast-forward. Bugbot was not run. This slice is docs/rules only, and Chris
+ordered close-out without a Bugbot review.
+
+NOT TOUCHED
+Schedule ↔ Field job cards, Time Clock, application code, migrations,
+architecture.
+
+NEXT SESSION POINTERS
+Start on main. Read BACKLOG and this handoff. Feature work follows
+docs/DEVELOPMENT_PROTOCOL.md. Do not start Schedule ↔ Field until Chris asks.
+The current phase is the earliest locked phase whose gate result is not
+recorded. Chat-only verdicts do not count.
+
+FILES TO KNOW
+docs/DEVELOPMENT_PROTOCOL.md
+.cursor/rules/development-protocol.mdc
+.cursor/rules/session-wrap.mdc
+.cursor/rules/confirm-intent.mdc
+.cursor/rules/approved-handoff.mdc
+.claude/commands/pre-ship.md
+.claude/commands/audit.md
+.claude/skills/security-audit/SKILL.md
+
+GIT STATE
+PR 68 merged by fast-forward. main and origin/main were 19fd1c3 before this
+handoff commit. cursor/development-protocol-a064 deleted locally and on origin.
+This handoff is the next commit on main.
