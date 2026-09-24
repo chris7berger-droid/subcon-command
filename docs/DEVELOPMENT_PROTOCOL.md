@@ -35,6 +35,8 @@ Record each gate result where the next session can read it without the chat: the
 
 Build, Build vs Plan, Code Review, and Security Review are four phases. One verdict does not satisfy another. The author of one of those four results does not write either of the other three for the same slice. Review phases are read-only on application code, migrations, and prod. Findings go back to Build. Reviewers do not apply them.
 
+Planning and Plan Audit must also be independent. The agent that authors or materially revises the plan cannot issue the Plan Audit convergence verdict for that same revision. Materially revises includes a planner rewriting the plan after audit findings. That revision needs a convergence verdict from a different agent. Do not treat the author of the revision as the auditor of that same revision.
+
 Bugbot during Merge/Closeout is the extra pass in `.cursor/rules/session-wrap.mdc`. It is not Code Review or Security Review.
 
 ## Phases
@@ -51,7 +53,7 @@ Bugbot during Merge/Closeout is the extra pass in `.cursor/rules/session-wrap.md
 - **Purpose.** Adversarial review of the plan document. Catch silent no-ops, wrong citations, and fixes that would violate the plan. Same role as `SC_Handoff_v152-plan_audit_terminal.txt`.
 - **Read.** The plan, and the code it cites, to check the plan. `CLAUDE.md`. `CLAUDE_RLS.md` when the plan touches policy, anon, or public access.
 - **Write.** Findings and plan-revision notes. May edit the plan's audit manifest and amendments. Read-only on source, migrations, and prod. Does not build.
-- **Gate.** A recorded converged / build-ready verdict from a reviewer who did not write the plan, or findings returned to Planning. Do not build an unconverged plan. Do not lower the bar the v152 loop actually used.
+- **Gate.** A recorded converged / build-ready verdict from a different agent than the one who authored or materially revised that revision, or findings returned to Planning. Do not build an unconverged plan. Do not lower the bar the v152 loop actually used.
 
 ### Build
 

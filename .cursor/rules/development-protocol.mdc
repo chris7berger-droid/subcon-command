@@ -26,6 +26,8 @@ Lead with the phase result (artifact path or verdict), then the evidence. Code e
 
 Build, Build vs Plan, Code Review, and Security Review are separate phases. One verdict does not satisfy another. The author of one of those four results does not write either of the other three for the same slice. Reviewers do not edit application code or apply findings. Findings return to Build.
 
+Planning and Plan Audit must also be independent. The agent that authors or materially revises the plan cannot issue the Plan Audit convergence verdict for that same revision. Materially revises includes a planner rewriting the plan after audit findings. That revision needs a convergence verdict from a different agent. Do not treat the author of the revision as the auditor of that same revision.
+
 Do not weaken `.claude/commands/audit.md`, `.claude/skills/security-audit/SKILL.md`, or `CLAUDE_RLS.md`. Security Review uses them. It does not shorten the weekly full audit and does not replace the RLS 6-gate deploy pattern.
 
 ## How the other rules fit
