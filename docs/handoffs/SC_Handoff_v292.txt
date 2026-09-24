@@ -1,0 +1,84 @@
+SC Handoff v292 — Desktop Time Clock shift review — 2026-09-24
+
+SESSION SUMMARY
+The Time Clock is one shift table with Quick and Expanded views. Each
+shift stays on its own row. Add, Edit, and Void review the change, then
+confirm it once. Saving is still only the isolated local database.
+The uploader was not changed. No merge and no production migration.
+
+LOCAL URL
+http://127.0.0.1:5201/field/timeclock
+Office Admin is signed in against the disposable database. From/To
+2026-09-21 through 2026-09-22 shows the fixture. Quick is the default.
+Restart commands are in handoff v291. Do not set VITE_TIME_CLOCK_ISOLATED
+on Vercel.
+
+WHAT THE SCREEN DOES
+Quick columns: Employee, Shift date, Job number, Job name, Customer,
+Clock in, Lunch out, Lunch in, Clock out, Regular hours, Overtime hours,
+Work hours, Status, Actions. Shift dates read “Sep 21”. Punch times are
+Pacific with AM/PM. A punch on another calendar day is marked with that
+day. Employee stays pinned while the table scrolls. Job and customer
+names wrap. Regular, overtime, and work hours stay on the shift that
+earned them.
+
+Expanded adds drive start, drive end, drive hours, and the full Pacific
+date and time on each punch. Lunch in stays blank unless a lunch-in punch
+was recorded. The 30-minute deduction does not invent a timestamp.
+
+Two open clock-ins stay two rows. The status is “Overlapping clock-ins”
+and the detail names both jobs and times. Review punches opens those
+records. A historical open shift stays “Missing clock-out”. “In progress”
+is only a shift whose Pacific start day is today. Hours math is unchanged.
+
+Add, Edit, and Void: Review changes, then Confirm add, Confirm changes,
+or Confirm void. The summary shows employee, job, punch, full Pacific
+time, and reason. An edit shows original → proposed. Back returns to the
+draft. Cancel writes nothing. Confirm submits the reviewed values once
+and disables while saving. A stale save says to reload and review again
+and does not resubmit.
+
+VERIFIED
+node scripts/check-time-clock.mjs — PASS.
+npx eslint on the Time Clock files — PASS.
+npm run build — PASS, existing bundle-size warning.
+Browser on the local URL: two Crew shifts on Sep 21 stayed separate;
+overlap text named 100 Deck at 8:30 AM and 200 Roof at 11:00 AM; Office
+Admin showed 8:00 AM and 6:00 PM, then a confirmed edit to 5:00 PM
+reloaded as 9.00 regular, 0.00 overtime, and 9.00 work. The CSV row
+matched. Expanded kept the same filters and the open detail. Review then
+Cancel left the audit count unchanged. Confirm wrote one audit row.
+A punch changed after review was rejected with “This punch changed before
+it was saved.” Confirm stayed disabled. Audit count stayed 6.
+
+SYNCHRONIZATION
+Reused from v291. The uploader and PowerSync client were not changed.
+That run passed: office edit kept, void not restored, new punch in the
+same batch, local queue empty. Test client was @powersync/web 1.37.1,
+not the installed phone.
+
+MIGRATION STATUS
+command-suite-db feat/time-punch-office-guard remains c49fc4a.
+Migration 20260924120000_time_punch_office_guard.sql is not applied.
+
+NOT TOUCHED
+Mobile Field Command. Production data. Production www.scmybiz.com.
+Hosted Field PowerSync. No merge.
+
+STEPS REMAINING FOR PRODUCTION RELEASE
+1. Chris reviews this local screen. That is not a production accept.
+2. Leave VITE_TIME_CLOCK_ISOLATED unset on Vercel.
+3. After Chris accepts the local save, apply the migration from
+   command-suite-db c49fc4a with that repo’s db:push.
+4. After the migration is on the shared database, a later desktop change
+   must allow saving against the real Supabase URL. Saving is on only
+   for 127.0.0.1 or localhost with the isolated flag.
+5. No mobile edit is required by these checks.
+6. Merge feat/time-clock-range-read only after a Ready Vercel preview
+   and Chris accepts that preview.
+
+GIT STATE
+sales-command branch feat/time-clock-range-read.
+Layout commit 8b2a117. This handoff commit follows on the same branch.
+main is unchanged.
+command-suite-db feat/time-punch-office-guard at c49fc4a, migration not applied.
