@@ -1,0 +1,50 @@
+SC Handoff v297 — Smoke Test: Schedule and Field ownership
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit exercised: 3fb2f99e4553255dde06790fc317c805e4725d7c
+Branch tip before this record: a3ea90e3af2496a3cc9d8c8fc032781846eb273d
+Build vs Plan: GO at f450801a122106728e9b7d6689753f1f21deee21
+Code Review: GO at b7831c6059b46f45cb7a3563bf36ef9303667ef2
+Security Review: GO at a3ea90e3af2496a3cc9d8c8fc032781846eb273d
+Plan: docs/plans/schedule_field_ownership.md (Revision 4, Plan Audit round 3 CONVERGED)
+Date: 2026-09-25
+Role: Smoke Test. This pass did not build the slice and did not edit application code, migrations, or production data.
+
+=== Verdict ===
+PASS
+
+Failed checks: none.
+
+=== Method ===
+The acceptance checks in the plan were run against the implementation at 3fb2f99. Review commits f450801, b7831c6, and a3ea90e add only the v297 review terminals. They were not treated as code changes.
+
+This environment has no logged-in tenant session, so the walk used the real Field and Schedule screens in headless Chrome against an in-memory fixture. The fixture client was injected outside the repo. It was not committed. Notes save went through the real NotesPanel and updateJobField into that fixture, then the card reloaded the saved note. Nothing was written to production.
+
+node scripts/check-time-clock.mjs passed (inclusive range, hours, filters, CSV, office writes).
+
+Local dates during the run: Field Today used 2026-09-25. Office Time Clock opened on the Pacific day 2026-09-24. That split is the existing tod() versus pacificToday() behavior.
+
+=== Checks ===
+PASS — Field Jobs opens one job.
+The Jobs list showed the active, complete, and staged fixtures. The Job # link for job-active opened /field/jobs/job-active with that job's number and name, plus Back. /field/jobs/missing-job showed "Job not found." and Back, and wrote no job_changes row.
+
+PASS — PRT history is on that job and matches its call log. Today still shows only today's PRT flag.
+The detail rendered embedded "Production — 4401" with PRT-TODAY-NOTE and PRT-OLD-NOTE. PRT-OTHER-NOTE, which belongs to the other call log, was not on the page. Today queried daily_production_reports with report_date = 2026-09-25 and did not render the PRT history heading or the older report note. src/field/views/Today.jsx is not in the build diff.
+
+PASS — Daily Logs ?job= reads that call log inside 7 days, including a Complete job. Empty does not fall back. Counts follow the rows on screen. Unfiltered Daily Logs stays on the active-stage list.
+?job=cl-active showed ACTIVE-LOG-NOTE only. Stat strip was Today 1, Start 1, Mid 0, End 0, and the All chip was 1. A 30-day-old row on that call log stayed out. ?job=cl-complete showed COMPLETE-LOG-NOTE with End 1 and did not show the active job. ?job=cl-none showed "No log entries in the last 7 days." with zero counts and did not show either job. Unfiltered Daily Logs showed only the active-stage row.
+
+PASS — Office Time Clock keeps fetchTimeClockReview, From/To, review hours, and office corrections. ?job= filters and does not fall back. Without ?job= the screen shows the range. Mobile Time Clock is unchanged.
+Unfiltered /field/timeclock showed From and To on 2026-09-24, both jobs (4401 and 4403), Add punch, Regular hours, and Review punches. The punch read was time_punches by punch_date, and the screen also read time_punch_audit. It did not take the job list from the active-stage jobs query. ?job=cl-active kept that id in the Job control and the table showed 4401 only. Changing the range to a day with no punches left the Job control on cl-active and showed "No punches match these filters." ?job=cl-none stayed on that id, showed "0 punches" and "in range", and did not list 4401 or 4403. The build diff has no phone punch screen. scripts/check-time-clock.mjs passed.
+
+PASS — Load-Out on the detail shows loaded of total and opens the same LoadOutModal.
+The detail showed "1 of 2 loaded" from the two job_material_checks rows (one checked). Load-out opened "Load-Out — 4401" with SMOKE RESIN and the modal's materials-loaded summary. The Schedule card's Planning LOAD-OUT tile opened "Load-Out — 4403".
+
+PASS — Schedule card keeps planning, puts NotesPanel on Details, and notes still save. Removed tiles and the collapsed dollar are gone. No replacement Budget screen. Finance Contract keeps authoritativeTotal.
+The collapsed 4403 row did not show 12500. The expanded card had PLANNING, DETAILS, TRIPS, SOW, MTRL, CREW, DAYS, MOBS, LOAD-OUT, and Promote to Ready. MANAGEMENT, BUDGET, PRT, LOGS, PROP, BILLING, DEPOSIT, and FILES were absent from the card. Saving "SMOKE NOTE SAVED" wrote jobs.notes on job-staged, inserted a job_changes notes row, and the Details readout showed the saved note. authoritativeTotal for a sold proposal total of 12500 and a contract_sum of 99000 returned 99000. Schedule Jobs did not query daily_production_reports or daily_log_entries while loading the card.
+
+PASS — No new table, grant, or migration. Home's production figure still loads on its own.
+The build diff is the Field and Schedule views listed in the build report plus BUILD-REPORT.md. No SQL. Home rendered its operations dashboard and queried daily_production_reports with an in-filter that included cl-active, the in-progress job. src/schedule/views/Home.jsx is not in the build diff.
+
+=== Not this gate ===
+Vercel preview, Chris acceptance, and merge were not run.
