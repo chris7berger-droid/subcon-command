@@ -1,0 +1,69 @@
+SC Handoff v297 — Security Review: Schedule and Field ownership
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit reviewed: 3fb2f99e4553255dde06790fc317c805e4725d7c
+Build vs Plan: GO at f450801a122106728e9b7d6689753f1f21deee21
+Code Review: GO at b7831c6059b46f45cb7a3563bf36ef9303667ef2
+Plan: docs/plans/schedule_field_ownership.md (Revision 4, Plan Audit round 3 CONVERGED)
+Date: 2026-09-25
+Role: Security Review (/audit per-PR). This review did not build the slice, did not write Build vs Plan, and did not write Code Review.
+Mode: per-PR. Feature slice. Not the weekly full audit. No subagent fan-out.
+
+=== Orient ===
+1. Review started from main @ abad440 (clean, matching origin/main). Slice branch origin/cursor/schedule-field-ownership-fb54 was b7831c6, which is the Code Review GO on top of the build.
+2. Latest handoffs on that branch: SC_Handoff_v297-buildvsplan_terminal.txt and SC_Handoff_v297-codereview_terminal.txt. This file is the security terminal for the same v297 slice.
+3. Unmerged feature branch under review: cursor/schedule-field-ownership-fb54. No new PR opened by this review.
+4. AUDIT_LOG.md last committed row: 2026-07-02, feat/invoice-email-attachments @ fe388e6, outcome accepted-pending-changes → build-ready, pattern copied-mechanism-misfit.
+5. Mode: per-PR, assigned by this Security Review phase.
+
+=== Verdict ===
+GO
+
+No new vulnerability in this diff. Blockers: none. Nothing auto-applied. No application code, migrations, or prod writes.
+
+=== Scope reviewed ===
+Diff 97e463d..3fb2f99 (the build). Application files:
+- src/field/FieldLayout.jsx
+- src/field/lib/queries.js
+- src/field/views/DailyLogs.jsx
+- src/field/views/JobDetail.jsx (new)
+- src/field/views/Jobs.jsx
+- src/field/views/TimeClock.jsx
+- src/schedule/components/LogsModal.jsx (deleted)
+- src/schedule/components/PRTModal.jsx
+- src/schedule/components/StageJobCard.jsx
+- src/schedule/views/Jobs.jsx
+Plus docs/agent-handoffs/BUILD-REPORT.md. No SQL, no supabase/functions, no public page, no package.json.
+
+=== Coverage ===
+Checked against CLAUDE.md, CLAUDE_RLS.md, and the per-PR passes in .claude/skills/security-audit/SKILL.md. Weekly full-audit steps (scaffold branch, six subagents, Drive upload) were not run; per-PR forbids that fan-out.
+
+Secrets and config. The build diff has no service_role, eyJ, sk_live, sk_test, SUPABASE_SERVICE, or new VITE_* name. No .env file. src/field/lib/timeClockIsolated.js is not in the diff.
+
+RLS, anon, and public access. No policy, grant, migration, or token-gated read. The 2026-04-26 anon anti-pattern is not present. The 6-gate RLS deploy pattern does not apply. New reads use the authenticated host client:
+- JobDetail.jsx:21 calls loadJobWithWTCs, which is supabase.from('jobs').select(...).eq('job_id', jobId).single() (src/schedule/lib/queries.js:666-671). Unchanged function. Unknown id returns no row (PGRST116) and JobDetail does not write.
+- fetchMaterialChecksForCallLog (queries.js:290-295) selects job_id, checked with filters eq on job_id. The id is the loaded job's call_log_id, not a string pasted into SQL.
+- fetchFieldLogsForCallLog (queries.js:508-520) selects daily_log_entries columns with eq + gte. The gte bound is fieldLogWindowStart, not the query string. fetchAll (src/lib/supabaseHelpers.js:21-23) calls q[method](...args) with those fixed method names.
+- The jobs label read (queries.js:516-519) is .eq('call_log_id', id) on the same client.
+/field/* stays behind the session gate (App.jsx:231 and :250 send an absent session to /login) and GroupGuard app="field" (App.jsx:344). GroupGuard remains client-side visibility. It is not the data boundary. The new route (FieldLayout.jsx:22) sits inside that same guard.
+
+Client. No dangerouslySetInnerHTML, eval, or new Function in the diff. Daily log notes render as a text child (DailyLogs.jsx:87). PRT task notes render as a text child (PRTModal.jsx:132). The production heading uses text (PRTModal.jsx:145). Time Clock ?job= does not issue a new punch query. It filters rows already loaded by fetchTimeClockReview. urlJobPinned keeps an id that is missing from jobOptions (TimeClock.jsx:248-249), so an empty match does not fall through to every job. filterTimeClockRows compares row.jobId !== job (src/field/lib/timeClock.js:410-415). The correction form still starts from punch.jobId. NotesPanel still saves updateJobField(job.job_id, 'notes', val, changedBy) (StageJobCard.jsx:276). LoadOutModal is the same component /field/loadouts already opens.
+
+Dependencies. package.json and package-lock.json are not in the diff. npm audit was not run.
+
+Project invariants. No fmt$ change, no proposal or invoice money recompute, no new public .select() grant, no storage upload. Schedule Jobs drops the card-only daily_log_entries and loadPRTsForCallLogIds reads. That is less data on the client, not a new grant.
+
+Skipped, and why. Live pg_policy was not re-queried: this diff does not change policies, and command-suite-db is where those migrations live. Supply-chain and edge-function passes have nothing in the diff to audit. Full-audit Drive upload does not apply to per-PR.
+
+=== Pre-existing, not this slice ===
+S13 and S14 stay on their own backlog rows. They were re-read and not re-filed.
+- S13: jobs still has the permissive authenticated ALL policy beside the tenant policies. loadJobWithWTCs did not gain a new policy. The new route passes a job id into that existing read.
+- S14: daily_log_entries authenticated SELECT is still USING (true), with no anon policy. fetchFieldLogsForCallLog is another authenticated reader of that table. The old active-stage list was a client filter. CLAUDE_RLS.md says a client filter is not enforcement. Removing it does not widen the policy. Direct PostgREST was already the exploit path, and it is still single-tenant until F7.
+
+=== AUDIT_LOG row ===
+Not committed here. docs/AUDIT_LOG.md line 3 says the build terminal commits the row on its next pass. Append this row:
+
+| 2026-09-25 | cursor/schedule-field-ownership-fb54 @ 3fb2f99 — Security Review (docs/handoffs/SC_Handoff_v297-security_terminal.txt) | 0 | clean | clean | clean |
+
+=== Gate ===
+Security Review GO for 3fb2f99e4553255dde06790fc317c805e4725d7c. Blockers: none. This pass does not edit application code, does not edit docs/BACKLOG.md, and does not merge. This verdict is not Smoke Test, Vercel preview, Chris acceptance, or merge approval.
