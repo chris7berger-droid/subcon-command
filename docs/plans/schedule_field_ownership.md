@@ -288,3 +288,15 @@ Recorded after Chris acceptance. The round-1 manifest, Revision 2, the round-2 m
 - Compact row: Field status, job number and name, customer, work type, location, start and time signal, crew count for the current or next trip. No planning actions and no dollar amount.
 - Expanded card: PRT history, Daily Logs link, Office Time Clock link, Load-Out status and the existing modal. Close returns to the list. No Schedule planning panels.
 - Primary route is `/field/jobs`. Deep link is `/field/jobs?job=<jobs.job_id>`. `/field/jobs/:jobId` redirects there. `JobDetail.jsx` is retired. `FieldJobCard.jsx` is the Field card. `PlainTable` is not edited and is not the Field Jobs list.
+
+## Audit manifest — round 4
+
+Plan Audit of Revision 5, against `3cdef40`. Implementation compared is that commit's tree (`00c9a83`; this commit changes only this file). Scope sections above are unchanged. **CONVERGED. BUILD-READY.**
+
+Field Jobs matches Schedule Jobs (`JobsToPrepare` and compact `StageJobCard`, `variant="home-compact"`) for search, date chips, auto-widen, the 25 cap, empty copy, click / Enter / Space expand, Close collapse, and deep-link widen / pin / auto-open. `matchesSearch` is `job_num`, `job_name`, and `work_type`. The work-type pill is the compact row's single-versus-many `_wtcs` label. Date windows are `rangeForKey`, `jobInRange`, `effectiveStart`, and `effectiveEnd`. Schedule Jobs already loads `loadJobs({ withWTCs: true })`. The status control is `getJobStatus` (All, Scheduled, In Progress, On Hold, Complete, Ongoing), not `stageOf`. Badge classes `jtp-badge-staged`, `jtp-badge-active`, `jtp-badge-on-hold`, and `jtp-badge-complete` already exist. The row omits BUILD SCHEDULE, Promote, Kickoff, Resume, Send to Billing, and `jobs.amount`. The expanded shell is `sjc-card sjc-card-home-expanded` with Close, the `sjc-identity` bubbles, and no Dates TBD chip, `StageBanner`, PLANNING / DETAILS / TRIPS, or `NotesPanel`. Field does not mount `StageJobCard` or `JobsToPrepare`. `PRTModal` `embedded` renders inline. Load-Out counts stay `countMaterialChecks` (checked vs total).
+
+`/field/jobs?job=<jobs.job_id>` is the list with that job pinned and expanded. `/field/jobs/:jobId` redirects there, so `JobDetail.jsx` is not a second page. Unknown `?job=` leaves the list with no card and no writes. Daily Logs and Office Time Clock links still pass `callLogId`.
+
+Ownership, Daily Logs `?job=`, and Office Time Clock `?job=` are unchanged. Office Time Clock stays `fetchTimeClockReview`, From/To, review hours, and office corrections. `?job=` filters `time_punches.job_id` and stays empty instead of falling back to all jobs. `fetchFieldPunches` and `fetchActiveFieldJobs` stay off that screen. No stat strip or chips. Mobile Time Clock is out of the slice.
+
+No remaining material gap.
