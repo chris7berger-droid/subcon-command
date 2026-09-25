@@ -1,0 +1,55 @@
+SC Handoff v297 — Vercel Preview: Schedule and Field ownership
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit: 3fb2f99e4553255dde06790fc317c805e4725d7c
+Branch tip at this record: 226c873fed1311ec1e8b6973d511a8ea0eeac7dc
+Build vs Plan: GO at f450801a122106728e9b7d6689753f1f21deee21
+Code Review: GO at b7831c6059b46f45cb7a3563bf36ef9303667ef2
+Security Review: GO at a3ea90e3af2496a3cc9d8c8fc032781846eb273d
+Smoke Test: PASS at 226c873fed1311ec1e8b6973d511a8ea0eeac7dc
+Plan: docs/plans/schedule_field_ownership.md
+Date: 2026-09-25
+Role: Vercel Preview. This pass did not build the slice, did not edit application code, and did not merge.
+
+Phase: Vercel Preview — recorded preview URL, Ready status, and what was visually verified.
+
+=== Verdict ===
+Deployment: Ready.
+App walk: not completed.
+
+The existing preview for this branch had already finished. It was not rebuilt and no second Vercel project was created. Opening that preview stops at Vercel Authentication, so the affected flows were not walked. The protocol gate is "Preview is Ready and the flow was walked." Ready is met. The walk is not. Chris Acceptance and Merge/Closeout were not started.
+
+=== Preview ===
+Branch alias (from the Vercel check on 226c873):
+https://sales-command-git-cursor-sc-bf4da1-chris7berger-droids-projects.vercel.app
+
+Deployment URL for 226c873:
+https://sales-command-mtfk66q2x-chris7berger-droids-projects.vercel.app
+
+GitHub deployment: 6651661553
+Environment: Preview
+SHA: 226c873fed1311ec1e8b6973d511a8ea0eeac7dc
+State: success
+Description: Deployment has completed
+Status time: 2026-09-25T01:21:18Z
+
+Ready status: Ready.
+
+Both URLs answer with HTTP 302 to https://vercel.com/login before any app HTML. That is deployment protection on a completed deployment, not a build still running. Gate commits after 3fb2f99 are handoff records only, so this deployment is the built app plus those records.
+
+=== What was visually verified ===
+The desktop browser opened the branch alias and landed on https://vercel.com/login. The page heading was "Log in to Vercel", with Continue with Email, Continue with Google, Continue with GitHub, and other sign-in options. The Sales Command app was not on screen. No credentials were entered.
+
+Not opened:
+- Field Jobs → job detail
+- PRT history
+- Daily Logs job filtering
+- Office Time Clock job filtering
+- Load-Out
+- Schedule job-card restructuring
+- Notes editing
+
+Visual issues in the app: none observed. The app was not reached.
+
+=== Not this gate ===
+No application-code change. No production data change. Chris Acceptance was not started. Merge/Closeout was not started.
