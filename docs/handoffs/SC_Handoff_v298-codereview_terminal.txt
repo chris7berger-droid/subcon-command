@@ -1,0 +1,42 @@
+SC Handoff v298 — Code Review: Schedule and Field ownership (Revision 5)
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit reviewed: 62ecefd164bc2d7476e25c97af934db250088254
+Build vs Plan: GO at c5c0b48f8a72528b3446aa6c2657264ccc140da9
+Plan: docs/plans/schedule_field_ownership.md (Revision 5, Plan Audit round 4 CONVERGED at 15d27dd76c890ef08702748a3049019a7c87cc9a)
+Prior Code Review: docs/handoffs/SC_Handoff_v297-codereview_terminal.txt (GO for 3fb2f99)
+Date: 2026-09-25
+Role: Code Review. This review did not build the slice and did not write the Build vs Plan verdict.
+Source of truth for settled product decisions: the converged plan. Those decisions are not re-opened here.
+
+Phase: Code Review — GO for 62ecefd was not yet recorded.
+
+=== Method ===
+Read the revision diff 3fb2f99..62ecefd (application files). Compared FieldJobCard and Jobs.jsx with JobsToPrepare, the compact StageJobCard row, getJobStatus, normalizeJob, loadJobs({ withWTCs: true }), and the .schedule-root rules those classes depend on. Checked data flow, regressions, unsafe assumptions, duplication, and CLAUDE.md style and data-integrity rules. No application-code edits, no migrations, no deploy, no mutating database calls. Nothing auto-applied.
+
+=== Verdict ===
+NO-GO
+
+One blocker. Expanding a job inserts another .schedule-root inside the card. That class is min-height 100vh, so the expanded row is at least a viewport tall and Daily Logs, Time Clock, and Load-Out sit below that band. One non-blocker is deferred below. It does not carry this verdict.
+
+=== Findings ===
+
+1. BLOCKER — src/field/components/FieldJobCard.jsx:219-221 and :244-247.
+   The list already fences the toolbar and rows with .schedule-root (src/field/views/Jobs.jsx:137). That ancestor is what makes .jtp-* and .sjc-* apply. The expanded card then nests a second .schedule-root around PRTModal, and a third around LoadOutModal.
+   src/schedule/index.css:57-62 sets .schedule-root { background: var(--bg); min-height: 100vh }. Each nested root is its own viewport-tall box. The PRT wrapper is in normal flow, so every expanded card is at least 100vh before the Daily Logs link, the Time Clock link, and the Load-Out row (FieldJobCard.jsx:224-241). A short report still leaves those controls below a full viewport of schedule background. The Load-Out wrapper does the same while the modal is open: .mbg is position:fixed (src/schedule/App.css:131-132), so it does not fill the parent, and the parent still occupies 100vh in the card.
+   The outer list root already supplies the fence. The inner roots are not required for the classes to match, and they are what stretch the card.
+   FIX: drop the inner .schedule-root wrappers and keep the list-level one. Do not add a new min-height override to paper over the nest.
+
+2. LOW — src/field/components/FieldJobCard.jsx:50-60. Deferred. Not a blocker.
+   For In Progress, day N of M returns only when both start and end exist. If the end is missing, execution falls through to overdue / today / in Nd. The compact StageJobCard does not: an in-progress row with no day count leaves the time signal empty (StageJobCard.jsx, the active branch, no else-fall-through). An In Progress job that started 10 days ago and has no end reads "10d overdue" here. The status badge still says In Progress. Jobs with both dates are unaffected.
+
+=== Checked, not findings ===
+
+- /field/jobs?job= clears search, forces All / All Time, pins that jobs.job_id, and auto-opens it. An unknown id stays on the list with no expanded card and no loadJobWithWTCs write. /field/jobs/:jobId redirects with encodeURIComponent. JobDetail.jsx is deleted and has no remaining imports.
+- Child links use call_log id (row.callLogId, then the loaded job's call_log_id). Load-Out opens loadJobWithWTCs(row.jobPk). Material counts still go through countMaterialChecks. fetchFieldJobs still starts from loadJobs and still builds the trip crew count. withWTCs only adds _wtcs via normalizeJob. Status filter and badge use getJobStatus values, not stageOf.
+- rangeForKey, jobInRange, and matchesSearch match JobsToPrepare. effectiveStart and effectiveEnd are the shared exports. The copied date helpers are the split the plan required (do not mount JobsToPrepare or StageJobCard). They are not an extra implementation.
+- Daily Logs, Office Time Clock, StageJobCard, and Schedule Jobs.jsx are unchanged in this revision. No new local color object. The load-out card uses C.linenCard. The teal button is Btn v="teal" (black text). No money recompute. No migration.
+- v297 findings 1 and 2 were on the retired JobDetail page. This card is keyed by jobPk and clears detail when the row identity changes. They are not re-opened. v297 finding 3 (shapeFieldLog / fetchAll) is outside this diff.
+
+=== Gate ===
+Code Review NO-GO for 62ecefd164bc2d7476e25c97af934db250088254. Blocker 1 returns to Build. Non-blocker 2 is deferred and was not applied. This pass does not edit docs/BACKLOG.md. This verdict is not Security Review, Smoke Test, preview acceptance, or merge approval.
