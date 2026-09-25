@@ -8,9 +8,10 @@ import { jobsAmountFromProposalTotal, scheduleSendErrorMessage } from "../lib/jo
 import {
   approveEffects,
   deductiveLinePayload,
-  executionRemovalDecision,
   isDeductiveTotal,
   lineMatchesSoldDeduction,
+  mayFinalizeCancellation,
+  planExecutionRetirement,
   validateCancelTarget,
   validateCancellationReason,
   wtcsForSchedule,
@@ -759,48 +760,54 @@ async function deletePropAttachment(fullName) {
     return new Set((data || []).map(r => r.cancels_proposal_wtc_id).filter(Boolean));
   }
 
-  async function retireCanceledExecution(proposalWtcId) {
-    const { data: rows, error } = await supabase
-      .from("job_wtcs")
-      .select("id, job_id, sow_revision_count")
-      .eq("proposal_wtc_id", proposalWtcId);
-    if (error) return { ok: false, message: error.message };
-    if (!rows?.length) return { ok: true };
-    for (const row of rows) {
-      const decision = executionRemovalDecision(row);
-      if (decision.action === "stop") return { ok: false, message: decision.reason };
-      const { data: tickets, error: ticketErr } = await supabase
-        .from("pull_tickets")
-        .select("id, day_keys")
-        .eq("job_id", row.job_id);
-      if (ticketErr) return { ok: false, message: ticketErr.message };
-      const named = (tickets || []).some(t =>
-        (Array.isArray(t.day_keys) ? t.day_keys : []).some(k => String(k?.wtc_id) === String(row.id))
-      );
-      if (named) {
-        return {
-          ok: false,
-          message: "A warehouse pull ticket still names this schedule work type, so the schedule copy was left in place.",
-        };
-      }
-    }
-    const ids = rows.map(r => r.id);
-    const { data: deleted, error: delErr } = await supabase.from("job_wtcs").delete().in("id", ids).select("id");
-    if (delErr) return { ok: false, message: delErr.message };
-    if ((deleted?.length || 0) !== ids.length) {
-      return { ok: false, message: "Schedule did not release the canceled work type." };
-    }
-    const jobIds = [...new Set(rows.map(r => r.job_id))];
-    for (const jobId of jobIds) {
-      const { data: remaining, error: remErr } = await supabase
+  async function releaseCanceledExecution(proposalWtcIds) {
+    const notSold = " The change order was not marked Sold.";
+    const plans = [];
+    for (const proposalWtcId of proposalWtcIds) {
+      const { data: rows, error } = await supabase
         .from("job_wtcs")
-        .select("field_sow")
+        .select("id, job_id, sow_revision_count")
+        .eq("proposal_wtc_id", proposalWtcId);
+      if (error) return { ok: false, message: error.message + notSold };
+      const jobIds = [...new Set((rows || []).map(r => r.job_id).filter(id => id != null))];
+      let tickets = [];
+      if (jobIds.length) {
+        const { data, error: ticketErr } = await supabase
+          .from("pull_tickets")
+          .select("job_id, day_keys")
+          .in("job_id", jobIds);
+        if (ticketErr) return { ok: false, message: ticketErr.message + notSold };
+        tickets = data || [];
+      }
+      const plan = planExecutionRetirement(rows || [], tickets);
+      if (!plan.proceed) return { ok: false, message: plan.message };
+      plans.push({ rows: rows || [], plan });
+    }
+
+    const removeIds = plans.flatMap(item => item.plan.removeIds);
+    if (!removeIds.length) return { ok: true };
+
+    const { data: deleted, error: delErr } = await supabase.from("job_wtcs").delete().in("id", removeIds).select("id");
+    if (delErr) return { ok: false, message: delErr.message + notSold };
+    const gate = mayFinalizeCancellation({
+      plan: { proceed: true, removeIds },
+      deletedIds: (deleted || []).map(row => row.id),
+    });
+    if (!gate.sold) {
+      return { ok: false, message: "Schedule did not release the canceled work type." + notSold };
+    }
+
+    const jobIds = [...new Set(plans.flatMap(item => item.rows.map(r => r.job_id)).filter(id => id != null))];
+    for (const jobId of jobIds) {
+      const { data: onJob, error: remErr } = await supabase
+        .from("job_wtcs")
+        .select("id, field_sow")
         .eq("job_id", jobId);
-      if (remErr) return { ok: false, message: remErr.message };
-      const anyDays = (remaining || []).some(w => Array.isArray(w.field_sow) && w.field_sow.length > 0);
-      if (!anyDays) {
+      if (remErr) return { ok: false, message: remErr.message + notSold };
+      const anyDaysLeft = (onJob || []).some(w => Array.isArray(w.field_sow) && w.field_sow.length > 0);
+      if (!anyDaysLeft) {
         const { error: sowErr } = await supabase.from("jobs").update({ field_sow: null }).eq("job_id", jobId);
-        if (sowErr) return { ok: false, message: sowErr.message };
+        if (sowErr) return { ok: false, message: sowErr.message + notSold };
       }
     }
     return { ok: true };
@@ -1178,6 +1185,18 @@ async function deletePropAttachment(fullName) {
     }
     const inSisterCohort = isSister || hasChildSisters;
 
+    const { data: priced } = await supabase.from("proposals").select("total").eq("id", p.id).single();
+    const freshTotal = priced?.total ?? p.total;
+    const effects = approveEffects(freshTotal);
+    const cancelIds = [...new Set(wtcs.map(w => w.cancels_proposal_wtc_id).filter(Boolean))];
+    if (cancelIds.length) {
+      const released = await releaseCanceledExecution(cancelIds);
+      if (!released.ok) {
+        alert(released.message);
+        return;
+      }
+    }
+
     await supabase.from("proposals").update({
       status: inSisterCohort ? "Signed" : "Sold",
       approved_at: new Date().toISOString(),
@@ -1185,8 +1204,6 @@ async function deletePropAttachment(fullName) {
       approved_by: approveBy.trim(),
       approval_reason: approveReason.trim(),
     }).eq("id", p.id);
-    const { data: priced } = await supabase.from("proposals").select("total").eq("id", p.id).single();
-    const effects = approveEffects(priced?.total ?? p.total);
     if (p.call_log_id && !inSisterCohort) {
       await supabase.from("call_log").update({ stage: "Sold" }).eq("id", p.call_log_id);
       refreshAlerts(); // N4
@@ -1196,12 +1213,6 @@ async function deletePropAttachment(fullName) {
           .catch(() => {});
       }
     }
-    const notes = [];
-    for (const line of wtcs.filter(w => w.cancels_proposal_wtc_id)) {
-      const retired = await retireCanceledExecution(line.cancels_proposal_wtc_id);
-      if (!retired.ok && retired.message) notes.push(retired.message);
-    }
-    if (notes.length) alert(notes.join("\n"));
 
     // The rep notification is NOT fired from here. A trigger on the proposals
     // status change sends it, so it can't be lost when a browser call doesn't

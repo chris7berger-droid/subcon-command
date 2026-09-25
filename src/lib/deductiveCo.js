@@ -131,18 +131,60 @@ export function wtcsForSchedule(wtcs, canceledIds) {
 
 /**
  * No table has a foreign key to job_wtcs.id.
- * sow_revision_count is history stored on that row. Deleting the row
- * would destroy it, so the copy stays and the caller reports the stop.
+ * sow_revision_count is history stored on that row. Deleting it would
+ * destroy that history, so the approval must stop with the row untouched.
  */
 export function executionRemovalDecision(row) {
   if (!row) return { action: "none" };
   if ((Number(row.sow_revision_count) || 0) > 0) {
     return {
       action: "stop",
-      reason: "This schedule copy has field SOW revision history, so it was left in place.",
+      reason: "This schedule work type has Field SOW revision history. The change order was not marked Sold. The schedule copy was not changed. Review that history before this cancellation can be approved.",
     };
   }
   return { action: "delete" };
+}
+
+export function pullTicketNamesRow(row, tickets) {
+  if (!row) return false;
+  return (tickets || []).some(t =>
+    String(t.job_id) === String(row.job_id) &&
+    (Array.isArray(t.day_keys) ? t.day_keys : []).some(k => String(k?.wtc_id) === String(row.id))
+  );
+}
+
+/**
+ * Inspect every execution copy before any Sold write and before any delete.
+ * No rows: the cancellation may be finalized.
+ * Safe rows: removeIds must be deleted and verified before Sold.
+ * A dependency: proceed is false, removeIds is empty, and Sold is refused.
+ */
+export function planExecutionRetirement(rows, tickets) {
+  const list = rows || [];
+  if (!list.length) return { proceed: true, removeIds: [] };
+  for (const row of list) {
+    const decision = executionRemovalDecision(row);
+    if (decision.action === "stop") {
+      return { proceed: false, removeIds: [], message: decision.reason };
+    }
+    if (pullTicketNamesRow(row, tickets)) {
+      return {
+        proceed: false,
+        removeIds: [],
+        message: "A warehouse pull ticket still names this schedule work type. The change order was not marked Sold. The schedule copy was not changed. Review that ticket before this cancellation can be approved.",
+      };
+    }
+  }
+  return { proceed: true, removeIds: list.map(r => r.id) };
+}
+
+/** Sold is allowed only after a proceed plan whose removeIds are all confirmed deleted. */
+export function mayFinalizeCancellation({ plan, deletedIds }) {
+  if (!plan?.proceed) return { sold: false, executableRemains: true };
+  const deleted = new Set((deletedIds || []).map(id => String(id)));
+  const leftover = (plan.removeIds || []).filter(id => !deleted.has(String(id)));
+  if (leftover.length) return { sold: false, executableRemains: true };
+  return { sold: true, executableRemains: false };
 }
 
 export function proposalContractValue(proposal, contractSum) {

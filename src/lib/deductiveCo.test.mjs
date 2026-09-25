@@ -7,6 +7,8 @@ import {
   deductiveLinePayload,
   distinctSoldJobCount,
   executionRemovalDecision,
+  mayFinalizeCancellation,
+  planExecutionRetirement,
   isCanceledBySoldCo,
   lineMatchesSoldDeduction,
   parentContractChain,
@@ -161,6 +163,45 @@ assert(
 assert(executionRemovalDecision({ id: "jw", sow_revision_count: 0 }).action === "delete", "a schedule copy with no revision history can be removed");
 assert(executionRemovalDecision({ id: "jw", sow_revision_count: 2 }).action === "stop", "SOW revision history blocks deletion");
 assert(executionRemovalDecision(null).action === "none", "no schedule copy is a no-op");
+
+const safeRow = { id: "jw-safe", job_id: 9, sow_revision_count: 0 };
+const safePlan = planExecutionRetirement([safeRow], []);
+const safeGate = mayFinalizeCancellation({ plan: safePlan, deletedIds: ["jw-safe"] });
+assert(safePlan.proceed === true && safePlan.removeIds.join() === "jw-safe", "1. a safe schedule copy is the row to remove");
+assert(safeGate.sold === true && safeGate.executableRemains === false, "1. after that row is removed, the negative CO may become Sold");
+
+const nonePlan = planExecutionRetirement([], []);
+const noneGate = mayFinalizeCancellation({ plan: nonePlan, deletedIds: [] });
+assert(nonePlan.proceed === true && nonePlan.removeIds.length === 0, "2. no schedule copy means there is nothing to remove");
+assert(noneGate.sold === true && noneGate.executableRemains === false, "2. the negative CO may become Sold when no schedule copy exists");
+
+const revised = { id: "jw-rev", job_id: 9, sow_revision_count: 2 };
+const revisedBefore = JSON.stringify(revised);
+const revisedPlan = planExecutionRetirement([revised], []);
+const revisedGate = mayFinalizeCancellation({ plan: revisedPlan, deletedIds: [] });
+assert(revisedPlan.proceed === false && revisedPlan.removeIds.length === 0, "3. SOW revision history does not select the row for deletion");
+assert(revisedGate.sold === false && revisedGate.executableRemains === true, "3. approval is blocked and the schedule copy stays executable");
+assert(JSON.stringify(revised) === revisedBefore, "3. the schedule copy is not modified by the blocked plan");
+assert(
+  mayFinalizeCancellation({ plan: revisedPlan, deletedIds: ["jw-rev"] }).sold === false,
+  "3. a blocked plan cannot be finalized even if a delete id is supplied",
+);
+
+const ticketRow = { id: "jw-ticket", job_id: 9, sow_revision_count: 0 };
+const ticketBefore = JSON.stringify(ticketRow);
+const ticketPlan = planExecutionRetirement(
+  [ticketRow],
+  [{ job_id: 9, day_keys: [{ wtc_id: "jw-ticket", slot: 1 }] }],
+);
+const ticketGate = mayFinalizeCancellation({ plan: ticketPlan, deletedIds: [] });
+assert(ticketPlan.proceed === false && ticketPlan.removeIds.length === 0, "4. a pull ticket does not select the row for deletion");
+assert(ticketGate.sold === false && ticketGate.executableRemains === true, "4. approval is blocked and the schedule copy stays executable");
+assert(JSON.stringify(ticketRow) === ticketBefore, "4. the schedule copy is not modified by the blocked plan");
+
+const failedPlan = planExecutionRetirement([safeRow], []);
+const failedGate = mayFinalizeCancellation({ plan: failedPlan, deletedIds: [] });
+assert(failedPlan.proceed === true, "5. a safe row is eligible for removal");
+assert(failedGate.sold === false && failedGate.executableRemains === true, "5. a failed removal does not allow Sold while the schedule copy remains");
 
 const plain = parentContractChain([
   { status: "Sold", call_log_id: 100, total: 4334, call_log: { is_change_order: false } },

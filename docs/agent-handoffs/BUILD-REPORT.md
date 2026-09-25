@@ -40,7 +40,7 @@ Cancellation for execution is derived: a non-deleted Sold line whose `cancels_pr
 
 A live non-deleted pointer, including a draft, blocks a second deduction of the same WTC. Only a Sold non-deleted pointer hides the original from Schedule.
 
-`job_wtcs` has no inbound foreign key. `daily_production_reports.wtc_id` and `invoice_lines.proposal_wtc_id` point at `proposal_wtc`, which is never deleted. On approve, a matching `job_wtcs` row is deleted only when `sow_revision_count` is 0 and no `pull_tickets.day_keys` entry names that row's id. Otherwise the sale still completes, the row stays, and the screen reports the stop. If no remaining `job_wtcs` row on that job has field-SOW days, `jobs.field_sow` is set null so the legacy fallback cannot show the canceled scope. `jobs.amount` is not rewritten.
+`job_wtcs` has no inbound foreign key. `daily_production_reports.wtc_id` and `invoice_lines.proposal_wtc_id` point at `proposal_wtc`, which is never deleted. Approval of a cancellation line inspects the matching `job_wtcs` row before any Sold write. No row: the change order can become Sold. A row with `sow_revision_count` 0 and no pull ticket `day_keys` naming it is deleted, the delete is checked, and only then is the change order marked Sold. A row with SOW revision history, or a pull ticket that names it, stops the approval: the change order is not marked Sold, the call log stage is not changed, QuickBooks is not called, and the schedule row is not deleted. If the delete does not confirm, the change order is not marked Sold. After a confirmed delete, `jobs.field_sow` is cleared when no remaining schedule row on that job has field-SOW days. `jobs.amount` is not rewritten.
 
 When the approved total is negative, `qb-create-job` is not called. Positive totals still call it, except the existing test-job and sister-cohort skips. Approve does not write invoices. Create Invoice and Send to Schedule are hidden when the proposal total is negative.
 
@@ -50,7 +50,7 @@ Sold dollars include the negative total in the period `approved_at` credits. Sol
 
 ## Verification Performed
 
-`node src/lib/deductiveCo.test.mjs` — passed (A–K, missing locked price, SOW-revision stop, no-CO contract stays 4334).
+`node src/lib/deductiveCo.test.mjs` — passed (A–K, missing locked price, no-CO contract stays 4334, and the approval order: safe row removed then Sold allowed, no row then Sold allowed, SOW revision blocks Sold and does not select the row, pull ticket blocks Sold and does not select the row, a failed removal does not allow Sold).
 
 `node src/lib/jobsAmount.test.mjs` — passed.
 
