@@ -1,0 +1,43 @@
+SC Handoff v298 — Build vs Plan: Schedule and Field ownership (Revision 5)
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit reviewed: 62ecefd164bc2d7476e25c97af934db250088254
+Converged plan: docs/plans/schedule_field_ownership.md at 15d27dd76c890ef08702748a3049019a7c87cc9a (Revision 5, Plan Audit round 4 CONVERGED / BUILD-READY)
+Prior Build vs Plan: docs/handoffs/SC_Handoff_v297-buildvsplan_terminal.txt (GO for 3fb2f99, Revision 4)
+Date: 2026-09-25
+Role: Build vs Plan. This review did not build the slice.
+Phase: Build vs Plan — GO for the revised Field Jobs list was not yet recorded.
+
+=== Method ===
+Read the converged plan, the revision diff 3fb2f99..62ecefd, and the cited Schedule list (JobsToPrepare, compact StageJobCard, App.css, index.css). Compared search, date windows, compact-row markup, expand/collapse, deep link, and the expanded Field body against that plan. Confirmed Daily Logs, Office Time Clock, and the Schedule card were not edited in this revision and still match the earlier acceptance lines. Ran node scripts/check-field-jobs.mjs on this commit (PASS). No application-code edits, no migrations, no deploy, no mutating database calls. Authenticated click-through is the later Smoke Test gate, not this one.
+
+=== Verdict ===
+GO
+
+The build at 62ecefd matches the converged plan, including the Revision 5 Field Jobs list. No GAP.
+
+=== Punch-list ===
+
+1. VERIFIED — Schedule-style Field Jobs search.
+   src/field/views/Jobs.jsx uses one jtp-search input, placeholder "Search jobs by name, number, or work type…", and matchesSearch on job_num, job_name, and work_type. Date chips are This Week, This Month, This Quarter, and All Time. Default is This Month. Auto-widen walks week → month → quarter → all when the current window is empty, and a chip click sets manualDate so a picked chip stays. Status uses jtp-stage-select with All, Scheduled, In Progress, On Hold, Complete, Ongoing from getJobStatus. It does not use stageOf. Cap is 25. Count text is "Showing N of M jobs". Empty copy is "No jobs match the current filters." The Live / Scheduled / No crew strip and filter chips are gone. There is no second search. The screen title stays Jobs. "Jobs to Prepare", its subtitle, and "View All Jobs" are not copied. rangeForKey, jobInRange, effectiveStart, and effectiveEnd match JobsToPrepare, including undated jobs staying in every window.
+
+2. VERIFIED — Compact-row visual match.
+   FieldJobCard's collapsed row is a jtp-row inside .schedule-root: status badge, jtp-jobname, customer, jtp-pill, location, start plus jtp-time, crew. Badge classes are the existing ones: Scheduled → jtp-badge-staged, In Progress and Ongoing → jtp-badge-active, On Hold → jtp-badge-on-hold, Complete → jtp-badge-complete. The label is getJobStatus. The work-type pill uses getWtcChips the same way the Schedule compact row does (many → "N work types", one → that work_type_name, else work_type). The time signal is day N of M for In Progress, using the compact row's ymd(today) elapsed math, and otherwise overdue / today / in Nd. Crew is the existing current-or-next-trip count, or "—", with no required denominator. The actions column, BUILD SCHEDULE, Promote, Kickoff, Resume, Send to Billing, the dollar amount, and the planning box are omitted. App.css and index.css load through the static ScheduleLayout import in src/App.jsx, so the .schedule-root rules apply on /field/jobs. The row is flex, so omitting the actions column does not depend on a fixed grid.
+
+3. VERIFIED — Inline expand/collapse.
+   Click, Enter, and Space set expanded on the row and do not navigate. Close ✕ (jtp-collapse) sets expanded false. The expanded shell is sjc-card sjc-card-home-expanded. The address stays /field/jobs.
+
+4. VERIFIED — Field-owned expanded content only.
+   The header is the display job number and name (normalizeJob already prefers call_log.display_job_number). Identity bubbles are job, customer, and work type. There is no Dates TBD chip, StageBanner, PLANNING / DETAILS / TRIPS, or NotesPanel. The body loads on expand via loadJobWithWTCs, so _wtcs is present. PRTModal is embedded inside .schedule-root and still calls loadPRTsForJob(call_log_id). Daily Logs links to /field/dailylogs?job=<callLogId>. Office Time Clock links to /field/timeclock?job=<callLogId>. Load-Out shows loaded of total from fetchMaterialChecksForCallLog, which uses countMaterialChecks, the same checked-vs-total rule as fetchLoadOutJobs. Open calls loadJobWithWTCs and LoadOutModal inside .schedule-root. FieldJobCard does not import StageJobCard or JobsToPrepare.
+
+5. VERIFIED — Deep-link behavior.
+   /field/jobs?job=<jobs.job_id> clears search, sets the date chip and the status control to All, pins that job first, and passes autoOpen. autoOpen uses the same focus ring (box-shadow 0 0 0 3px #30cfac) and scrollIntoView({ behavior: "instant", block: "start" }) as the Schedule card. /field/jobs/:jobId redirects to /field/jobs?job=<jobId>. An unknown ?job= stays on the list with no expanded card and no writes. JobDetail.jsx is deleted and has no remaining imports. The jobs query is still jobs.job_id. The child links still pass callLogId.
+
+6. VERIFIED — Prior ownership and data behavior remains correct.
+   This revision's application diff is FieldLayout.jsx, Jobs.jsx, FieldJobCard.jsx, fieldJobs.js, queries.js (loadJobs({ withWTCs: true }) only), and the JobDetail deletion. DailyLogs.jsx, TimeClock.jsx, StageJobCard.jsx, Schedule Jobs.jsx, Today.jsx, Home.jsx, and PlainTable are unchanged since the v297 GO. fetchFieldJobs still starts from loadJobs (non-deleted, non-merged, including Complete) and buildFieldJobs still computes the trip crew count (scripts/check-field-jobs.mjs PASS). Daily Logs ?job= still uses fetchFieldLogsForCallLog inside the 7-day window, including jobs outside ACTIVE_FIELD_STAGE_KEYS, and an empty window stays empty. Unfiltered Daily Logs still uses fetchActiveFieldJobs. Stat and chip counts still come from the rows on screen. NotesPanel is still on Schedule Details. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed jobs.amount stay off the Schedule card. The complete-stage Send to Billing control is still the pre-existing stage button. billingWorklist still feeds nothing-to-bill. Home still calls loadPRTsForCallLogIds. Today still limits daily_production_reports to report_date = today. No new table, grant, or migration.
+
+7. VERIFIED — Office Time Clock behavior is preserved.
+   /field/timeclock still loads fetchTimeClockReview, keeps From/To, reviewTimePunches, and office corrections. It does not import fetchFieldPunches or fetchActiveFieldJobs. No stat strip or chips were added. ?job=<callLogId> still seeds jobId and urlJobPinned keeps that id when it is absent from jobOptions, so filterTimeClockRows stays on that call log and does not fall back to all jobs. Without ?job=, an id missing from jobOptions still clears. Mobile Time Clock is not in this diff.
+
+=== GO ===
+Build vs Plan GO for 62ecefd164bc2d7476e25c97af934db250088254 against plan 15d27dd76c890ef08702748a3049019a7c87cc9a. Gaps return to Build. This verdict is not Code Review, Security Review, Smoke Test, preview acceptance, or merge approval.
