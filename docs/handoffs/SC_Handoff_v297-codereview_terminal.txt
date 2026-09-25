@@ -1,0 +1,43 @@
+SC Handoff v297 — Code Review: Schedule and Field ownership
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit reviewed: 3fb2f99e4553255dde06790fc317c805e4725d7c
+Build vs Plan: GO at f450801a122106728e9b7d6689753f1f21deee21
+Plan: docs/plans/schedule_field_ownership.md (Revision 4, Plan Audit round 3 CONVERGED at 55d2b06f547a7dd2e64c88d5dccb5e4e2c27bc4b)
+Date: 2026-09-25
+Role: Code Review. This review did not build the slice and did not write the Build vs Plan verdict.
+Source of truth for settled product decisions: the converged plan. Those decisions are not re-opened here.
+
+=== Method ===
+Read the build diff at 3fb2f99 (application files plus BUILD-REPORT.md) against the callers and helpers it touches. Checked data flow, regressions, unsafe assumptions, duplication, and CLAUDE.md style and data-integrity rules. No application-code edits, no migrations, no deploy, no mutating database calls. Nothing auto-applied.
+
+=== Verdict ===
+GO
+
+No correctness blocker. The job route, the Daily Logs and Office Time Clock filters, the load-out count, and the schedule-card removal are wired to the existing reads and writes. Three non-blockers are deferred below. They do not return this slice to Build.
+
+=== Findings ===
+
+1. LOW — src/field/views/JobDetail.jsx:35-36 and :104-108. Deferred.
+   `useAsync` keeps the previous `data` while a new `jobId` loads (`src/field/lib/useAsync.js:5`). `openJob` is not cleared when the param changes. The list link and Back unmount this screen, so the normal path is clean. Changing `/field/jobs/:jobId` in place (address bar or history between two detail URLs) can keep showing the previous job until the next read resolves, and an open `LoadOutModal` can still write checks for that previous job.
+
+2. LOW — src/schedule/components/PRTModal.jsx:20-27, used from JobDetail.jsx:57 and :82. Deferred.
+   Production history loads once per `job.call_log_id`. The effect does not set `loading` back to true, and the page Refresh only re-runs `loadJobDetail`. The first open is the right call log. Refresh updates the load-out count and leaves the report list as it was. The same gap flashes the previous reports if the call log id changes without a remount.
+
+3. LOW — src/field/lib/queries.js:481-487 and :497-524. Deferred.
+   `shapeFieldLog` matches the object `fetchFieldLogs` still builds inline. The two shapes agree today. A later edit to one of them can drift the filtered and unfiltered Daily Logs rows. `fetchAll` (`src/lib/supabaseHelpers.js:24-25`) still drops a query error and returns `[]`, so a failed `?job=` read uses the same "No log entries in the last 7 days." empty state as a real empty window. That helper already did this for the unfiltered list.
+
+=== Checked, not findings ===
+
+- Office Time Clock `?job=` stays filtered. `selectedJobId` is `(in jobOptions || urlJobPinned) ? jobId : ""` (`TimeClock.jsx:248-249`). `||` binds before the ternary, so a match does not become the boolean `true`. The clear effect at `:262-267` only calls `setJobId("")` when `selectedJobId` is empty. A pinned id is not empty, including when that call log has no punches in the open range. From/To, `fetchTimeClockReview`, review hours, and corrections are unchanged. Choosing All jobs still clears. The extra option label is the raw id only when that id is absent from `jobOptions`; the rows stay empty.
+- `filterTimeClockRows` compares `idString` job ids (`src/field/lib/timeClock.js:410-415`). Shift rows carry `jobId` from the punch (`timeClockHours.js` `baseRow`). The table and the punch count use the same filter the dropdown already used.
+- Daily Logs `?job=` uses `fieldLogWindowStart`, the same `created_at` lower bound as `fetchFieldLogs`, and does not call `fetchActiveFieldJobs`. An empty param still uses `fetchFieldLogs`. Chip counts are computed from `rows`.
+- `countMaterialChecks` is the old checked-versus-total loop. `fetchLoadOutJobs` and `fetchMaterialChecksForCallLog` both use it. Unknown `jobId` returns null from `loadJobWithWTCs` on `PGRST116` and renders the empty state. That path does not write.
+- `PlanningPanel` still closes around SOW, MTRL, CREW, DAYS, MOBS, and LOAD-OUT. The TRIPS toggle and `TripsPanel` remain. `NotesPanel` still saves through `updateJobField(job.job_id, 'notes', ...)`. Details still prints the read-only notes row. `LogsModal` has no remaining imports. `fmtMoney` / `BudgetPanel` / `ManagementPanel` have no remaining calls.
+- The compact row is a flex row. Removing `.jtp-budget` does not shift a column header. `.jtp-budget` in `App.css` is now unused. Card lists may still pass `logsByCallLog` and `prtMap`; `StageJobCard` no longer reads them.
+- `Jobs.jsx` `computeHomeDashboard` did not receive `prtMap` before this build. Dropping the card-only `daily_log_entries` and `loadPRTsForCallLogIds` loads does not zero that dashboard. The stale-load guards in `loadData` are still there. Home's own PRT read is outside this diff.
+- `/field/*` still owns the nested routes. `jobs/:jobId` sits beside `jobs`, and the splat redirect stays last. Sidebar active state uses `startsWith(item.path + "/")`, so the detail highlights Jobs.
+- No new local color object. The new card uses `C.linenCard`. No money recompute was added. No migration. Today and Mobile Time Clock are not in the diff.
+
+=== Gate ===
+Code Review GO for 3fb2f99e4553255dde06790fc317c805e4725d7c. Blockers: none. Non-blockers 1–3 are deferred for triage and were not applied. This pass does not edit `docs/BACKLOG.md`. This verdict is not Security Review, Smoke Test, preview acceptance, or merge approval.
