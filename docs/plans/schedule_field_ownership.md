@@ -1,8 +1,8 @@
 # Schedule and Field ownership
 
-Planning artifact. Locked 2026-09-24. Schedule Command owns planning and readiness. Field Command owns execution and what actually happened. No new tables, migrations, or data paths. One new view.
+Planning artifact. Locked 2026-09-24. Schedule Command owns planning and readiness. Field Command owns execution and what actually happened. No new tables, migrations, or data paths.
 
-Revision 4, after Plan Audit round 2. Resolves R2-F1. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
+Revision 5, Chris acceptance correction. Field Jobs uses the Schedule Jobs compact-row language. **NOT CONVERGED. Not build-ready.** Do not build from this revision.
 
 Office Time Clock is the desktop screen at `/field/timeclock`. Mobile Time Clock is crew punching on the phone. This slice does not redesign or expand either.
 
@@ -40,28 +40,65 @@ Remove:
 
 `billingWorklist` on the Schedule Jobs page stays. It still feeds the nothing-to-bill filter, not the removed tile.
 
-## Field Command job detail
+## Field Jobs
 
-Field Jobs (`/field/jobs`) gets one new per-job detail. That detail is the only new view. Today, Daily Logs, Office Time Clock, and Load-Outs stay the screens they are. Mobile Time Clock stays the phone punch path.
+The canonical UI is Schedule Jobs: `JobsToPrepare` and the compact `StageJobCard` (`variant="home-compact"`). Field Jobs matches that list in spacing, type, badges, information hierarchy, and interaction. Do not mount `StageJobCard` or `JobsToPrepare`. Those components carry Schedule planning actions (BUILD SCHEDULE, Promote, Kickoff, Resume, Send to Billing, PLANNING / DETAILS / TRIPS, SOW, materials, days, mobilizations, notes). Reuse their classes and the list interaction. Wrap the list in `.schedule-root` so `src/schedule/App.css` applies: `.jtp-search`, `.jtp-chips`, `.jtp-chip`, `.jtp-stage-select`, `.jtp-row`, `.jtp-badge`, `.jtp-jobname`, `.jtp-cell`, `.jtp-pill`, `.jtp-collapse`, `.sjc-card`, `.sjc-card-home-expanded`.
 
-`src/field/views/JobDetail.jsx`, using the existing `FieldScreen`.
+The screen title stays Jobs. Do not copy "Jobs to Prepare", its planning subtitle, or "View All Jobs". Today, Daily Logs, Office Time Clock, and Load-Outs stay the screens they are. Mobile Time Clock stays the phone punch path. No new Field nav item.
 
-- Back to `/field/jobs`.
-- Title: display job number and name, the same fields the Jobs list already shows.
-- Production reports live on this page, not on Today and not on a second screen. Reuse `PRTModal` inline (`embedded`, no overlay). It already calls `loadPRTsForJob(call_log_id)` and compares reports to that job’s SOW. Pass the job from `loadJobWithWTCs` so `_wtcs` is present. Wrap with `.schedule-root` the way Load-Outs wraps `LoadOutModal`.
-- Daily Logs is one link to `/field/dailylogs?job=<callLogId>`. The detail does not host a second log list.
-- Office Time Clock is one link to `/field/timeclock?job=<callLogId>`. That filters the existing Office Time Clock to that call log. The detail does not host a second punch list. Do not rebuild that screen. Do not change Mobile Time Clock.
-- Load-Out status on the detail is loaded of total from `job_material_checks` for that call log, counted the same way `fetchLoadOutJobs` counts (checked vs total). Open calls `loadJobWithWTCs` and `LoadOutModal`, the same door `/field/loadouts` uses.
-- Unknown `jobId`: the existing empty state, plus the back link. No writes.
-- Jobs list: the Job # cell links to `/field/jobs/<jobPk>`. Leave `PlainTable` as it is. No new Field nav item.
+### Search and filters
+
+Reuse the `JobsToPrepare` toolbar on the Field job population. Do not keep the Live / Scheduled / No crew stat strip and filter chips on this screen. Do not add a second search.
+
+- The search input uses `jtp-search` and the placeholder "Search jobs by name, number, or work type…". Match `matchesSearch` on `job_num`, `job_name`, and `work_type`. The work-type pill uses `_wtcs` the same way the Schedule compact row does. Load the list with `loadJobs({ withWTCs: true })`, the read Schedule Jobs already uses, and pass `customer_name`, `jobsite_city`, `jobsite_state`, `work_type`, and `_wtcs` through `buildFieldJobs`. Do not add a table or a new query.
+- Date chips are This Week, This Month, This Quarter, and All Time. Default is This Month. Auto-widen week → month → quarter → all when the window is empty, unless the user picked a chip. Use the same window rules as `rangeForKey`, `jobInRange`, `effectiveStart`, and `effectiveEnd`. Do not invent another date model.
+- The stage control uses `jtp-stage-select`. Options are Field workflow status from `getJobStatus`: All, Scheduled, In Progress, On Hold, Complete, Ongoing. Do not use Schedule `stageOf` (staged / ready / active).
+- Cap the list at 25 and show "Showing N of M". Empty copy is "No jobs match the current filters."
+- The population stays `fetchFieldJobs`: every non-deleted, non-merged schedule job, including Complete.
+
+A deep link clears search, sets the date chip and the status control to All, pins that job first, and auto-opens it. That is the same widen / pin / auto-open behavior as `/schedule/jobs?job=`.
+
+### Compact row
+
+One `jtp-row` per job. Click the row, or Enter / Space, expands that job inline. Close ✕ collapses that row back into the list. Expanding does not leave `/field/jobs`.
+
+Row contents, in the Schedule order, with no planning actions:
+
+- Status badge (`jtp-badge`). The label is `getJobStatus`. Scheduled uses `jtp-badge-staged`. In Progress and Ongoing use `jtp-badge-active`. On Hold uses `jtp-badge-on-hold`. Complete uses `jtp-badge-complete`. Do not add a badge class. Do not show Staged, Ready, Promote, Kickoff, or Send to Billing.
+- Job number and name (`jtp-jobname`).
+- Customer (`customer_name`).
+- Work-type pill, using the same single-versus-many label as the Schedule compact row.
+- Location (`jobsite_city`, `jobsite_state`).
+- Start (`effectiveStart`) and the same time signal: day N of M when status is In Progress, otherwise overdue / today / in Nd.
+- Crew count for the current or next trip, the count Field Jobs already computes. Do not show the planning required denominator.
+
+Omit the actions column. No BUILD SCHEDULE, Promote, Kickoff, Resume, Send to Billing, or dollar amount.
+
+### Expanded Field card
+
+The expanded shell matches the compact Schedule card: `sjc-card sjc-card-home-expanded`, header title (display job number and name), and Close ✕ (`jtp-collapse`). A deep link uses the same focus ring the Schedule card uses when `autoOpen` is set, and scrolls the card into view.
+
+The identity line uses the `sjc-identity` bubbles for job, customer, and work type. Do not show the Dates TBD planning chip. Do not render `StageBanner`, the PLANNING / DETAILS / TRIPS toggles, `NotesPanel`, or any Schedule action.
+
+The body is Field execution only. Load it when the row expands, including when a deep link auto-opens it.
+
+- Production reports live on this card, not on Today and not on a second screen. Reuse `PRTModal` inline (`embedded`, no overlay). It already calls `loadPRTsForJob(call_log_id)` and compares reports to that job’s SOW. Pass the job from `loadJobWithWTCs` so `_wtcs` is present. Wrap with `.schedule-root` the way Load-Outs wraps `LoadOutModal`.
+- Daily Logs is one link to `/field/dailylogs?job=<callLogId>`. The card does not host a second log list.
+- Office Time Clock is one link to `/field/timeclock?job=<callLogId>`. That filters the existing Office Time Clock to that call log. The card does not host a second punch list. Do not rebuild that screen. Do not change Mobile Time Clock.
+- Load-Out status on the card is loaded of total from `job_material_checks` for that call log, counted the same way `fetchLoadOutJobs` counts (checked vs total). Open calls `loadJobWithWTCs` and `LoadOutModal`, the same door `/field/loadouts` uses.
+- Unknown `?job=`: stay on `/field/jobs` with no expanded card. No writes.
+
+`src/field/views/JobDetail.jsx` is retired as the page. Its PRT history, Daily Logs link, Office Time Clock link, and Load-Out move onto this card.
 
 Today (`/field/today`) stays a today/status screen and keeps only today’s PRT flag.
 
 ## Routes and filtering
 
-`/field/jobs/:jobId` in `src/field/FieldLayout.jsx`, beside the existing `/field/jobs` route.
+The primary Field Jobs experience is `/field/jobs`. A deep link is `/field/jobs?job=<jobPk>`, the same query style as Schedule Jobs (`/schedule/jobs?job=<id>`). It lands on the list with that job expanded inline.
 
-`jobId` is `jobs.job_id` (the Jobs list `jobPk`). Child rows stay keyed by call log: `daily_log_entries.job_id`, `time_punches.job_id`, and `daily_production_reports.job_id` are `call_log.id`. Do not put the call log id in this path. `loadJobWithWTCs(jobId)` already returns both.
+`/field/jobs/:jobId` is no longer the primary page. In `src/field/FieldLayout.jsx` that route redirects to `/field/jobs?job=<jobId>`.
+
+`jobPk` / `jobId` is `jobs.job_id` (the Jobs list `jobPk`). Child rows stay keyed by call log: `daily_log_entries.job_id`, `time_punches.job_id`, and `daily_production_reports.job_id` are `call_log.id`. Do not put the call log id in the jobs query. `loadJobWithWTCs(jobId)` already returns both. The Daily Logs and Office Time Clock links still pass `callLogId`.
 
 `/field/jobs` lists every non-deleted, non-merged schedule job, including Complete. Unfiltered Daily Logs does not. `fetchFieldLogs` starts from `fetchActiveFieldJobs`, which keeps only call logs whose stage is in `ACTIVE_FIELD_STAGE_KEYS`. Complete is outside that set.
 
@@ -77,49 +114,55 @@ A Daily Logs `?job=` that has no rows inside the 7 days uses the existing empty 
 
 ## Reuse
 
-- `loadJobWithWTCs`, `loadPRTsForJob`, `PRTModal`
+- `JobsToPrepare` toolbar and compact-row interaction: search, date chips, auto-widen, 25 cap, "Showing N of M", deep-link widen / pin / auto-open, click to expand, Close ✕ to collapse. Do not import `JobsToPrepare` or `StageJobCard`.
+- The `.jtp-*` and `.sjc-*` classes above, inside `.schedule-root`. `effectiveStart` and `effectiveEnd` for the date chips and the row date. `getJobStatus` for the Field badge and the status control.
+- `loadJobWithWTCs`, `loadPRTsForJob`, `PRTModal` (`embedded`)
 - `fetchFieldLogs` for unfiltered Daily Logs. The Daily Logs `?job=` read uses the same table and the same 7-day window, without the active-stage gate.
-- Office Time Clock: `fetchTimeClockReview`, `filterTimeClockRows`, From/To, review hours, and the existing correction UI. Do not call `fetchFieldPunches` or `fetchActiveFieldJobs` from `/field/timeclock`. Mobile Time Clock is unchanged.
+- Office Time Clock: `fetchTimeClockReview`, `filterTimeClockRows`, From/To, review hours, and the existing correction UI. Do not call `fetchFieldPunches` or `fetchActiveFieldJobs` from `/field/timeclock`. Mobile Time Clock is unchanged. This revision only links and filters into that screen.
 - `LoadOutModal` and the Load-Outs open path
 - `job_material_checks` checked/total rule inside `fetchLoadOutJobs`
-- The existing `NotesPanel` and `updateJobField` for `jobs.notes`, placed on Details
-- `FieldScreen`
+- The existing `NotesPanel` and `updateJobField` for `jobs.notes`, placed on the Schedule Details panel
+- `FieldScreen` for the Jobs screen chrome. The job list itself is the compact rows, not `PlainTable`.
 
 Modify:
 
-- `src/field/FieldLayout.jsx`
-- `src/field/views/Jobs.jsx`
-- `src/field/views/DailyLogs.jsx`
-- `src/field/views/TimeClock.jsx` — apply `?job=` on the existing Office Time Clock. Do not replace `fetchTimeClockReview`. Do not edit Mobile Time Clock.
+- `src/field/FieldLayout.jsx` — `jobs/:jobId` redirects to `/field/jobs?job=`.
+- `src/field/views/Jobs.jsx` — compact list replaces the table, stat strip, and filter chips on this screen.
+- `src/field/lib/fieldJobs.js` and `fetchFieldJobs` — `loadJobs({ withWTCs: true })`, then pass through `customer_name`, `jobsite_city`, `jobsite_state`, `work_type`, and `_wtcs`. No new query.
+- `src/field/views/DailyLogs.jsx` — `?job=` behavior from Revision 2. Unchanged by this revision.
+- `src/field/views/TimeClock.jsx` — `?job=` on the existing Office Time Clock. Do not replace `fetchTimeClockReview`. Do not edit Mobile Time Clock. Unchanged by this revision.
 - `src/field/lib/queries.js` — Daily Logs `?job=` read. Do not point Time Clock at `fetchFieldPunches`.
-- `src/schedule/components/PRTModal.jsx`
-- `src/schedule/components/StageJobCard.jsx`
-- `src/schedule/views/Jobs.jsx` — drop the `daily_log_entries` load and the `loadPRTsForCallLogIds` load that only fed the card. Home keeps its own PRT read.
+- `src/schedule/components/PRTModal.jsx` — keep the embedded path used on the Field card.
+- `src/schedule/components/StageJobCard.jsx` — Schedule ownership removals stay. Do not add Field content here, and do not render this component on Field Jobs.
+- `src/schedule/views/Jobs.jsx` — the card-only `daily_log_entries` and `loadPRTsForCallLogIds` drops stay. Home keeps its own PRT read. Do not change this page to serve Field.
 
 Create:
 
-- `src/field/views/JobDetail.jsx`
+- `src/field/components/FieldJobCard.jsx` — Field-owned compact row and expanded card. Shared classes only. It does not import `StageJobCard`.
 
-Delete after the card no longer imports it:
+Retire:
 
-- `src/schedule/components/LogsModal.jsx`
+- `src/field/views/JobDetail.jsx`, after the expanded card owns PRT history, the Daily Logs link, the Office Time Clock link, and Load-Out.
 
-Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are ignored.
+`LogsModal` stays deleted. Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are ignored. Do not edit the `PlainTable` component. Daily Logs, Office Time Clock, and Crews still use it.
 
 ## Implementation order
 
-1. Route and job-detail shell (`loadJobWithWTCs`, identity, back link).
-2. Inline PRT history.
-3. Daily Logs `?job=`, including jobs outside the active-stage set, and its link. Filtered Daily Logs stat and chip counts use the filtered rows. Office Time Clock `?job=` filters the existing Office Time Clock to that call log and does not fall back to all jobs. No Office Time Clock stat strip or chips. Mobile Time Clock is not in this step.
-4. Load-out status and the existing modal.
-5. Move the existing `NotesPanel` into Details. Then remove Management, the Budget tab, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount`. Then delete `LogsModal` and the card-only Schedule fetches.
+Schedule card removals, Daily Logs `?job=`, and Office Time Clock `?job=` stay as Revisions 2–4 locked them. This revision replaces the separate Field job page with the inline card.
+
+1. Field Jobs list: search, date chips, Field status control, compact rows. Stop using `PlainTable`, `StatStrip`, and `FilterChips` on this screen.
+2. Click expands the Field card inline. Close collapses it. `/field/jobs?job=<jobPk>` widens filters, pins the job, auto-opens it, and scrolls it into view. Redirect `/field/jobs/:jobId` to that query. Retire `JobDetail`.
+3. Expanded card: PRT history, Daily Logs link, Office Time Clock link, Load-Out status and the existing modal.
+4. Daily Logs `?job=`, including jobs outside the active-stage set. Filtered Daily Logs stat and chip counts use the filtered rows. Office Time Clock `?job=` filters the existing Office Time Clock to that call log and does not fall back to all jobs. No Office Time Clock stat strip or chips. Mobile Time Clock is not in this step. Do not redesign either Time Clock.
+5. Schedule card: `NotesPanel` is on Details. Management, the Budget tab, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount` stay removed. No replacement Budget screen.
 
 ## Acceptance criteria
 
-- `/field/jobs/:jobId` opens one job. PRT history is on that page and matches `loadPRTsForJob` for its call log. Today still shows only today’s PRT flag.
+- `/field/jobs` uses the Schedule search bar, date chips, status control, and compact rows. Clicking a row expands that job inline. Close collapses it back to the list. The row shows Field status, job number and name, customer, work type, location, start, and crew count. It does not show BUILD SCHEDULE, Promote, Kickoff, Resume, Send to Billing, or `jobs.amount`.
+- `/field/jobs?job=<jobPk>` lands on `/field/jobs` with that job expanded. `/field/jobs/:jobId` redirects there and is not a separate page. PRT history on the expanded card matches `loadPRTsForJob` for its call log. The card links to Daily Logs and Office Time Clock for that call log, and shows Load-Out loaded of total. Today still shows only today’s PRT flag.
 - Daily Logs with `?job=` shows that call log’s rows inside the existing 7 days, including a Complete job and any other job outside `ACTIVE_FIELD_STAGE_KEYS`. Empty means nothing in those 7 days. Without `?job=`, Daily Logs matches current behavior. With `?job=`, its stat strip and chip counts match the filtered job. Without it, they match the unfiltered list.
 - `/field/timeclock` still uses `fetchTimeClockReview`, From/To, review hours, office corrections, and the existing Office Time Clock UI. `?job=<callLogId>` filters that screen to that call log. A job with no punches in the selected range shows an empty result for that job and does not fall back to all jobs. Office Time Clock has no stat-strip or chip requirement. Without `?job=`, Office Time Clock matches the current screen. Mobile Time Clock is unchanged.
-- Load-Out on the detail shows loaded of total and opens the same `LoadOutModal` as `/field/loadouts`.
+- Load-Out on the expanded card shows loaded of total and opens the same `LoadOutModal` as `/field/loadouts`.
 - Schedule card still has SOW, crew, materials, days, trips, mobilizations, readiness, and Load-Out under Planning. `NotesPanel` is on Details and notes still save after Management is gone. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount` are gone. No replacement Budget screen exists. Finance Contract still uses its own authoritative total.
 - No new table, grant, or migration. Home’s production figure still loads on its own.
 
@@ -134,7 +177,9 @@ Card list files may keep passing `logsByCallLog` and `prtMap`. Unused props are 
 - A new notes editor. Billing notes stay where they are.
 - New tables, grants, or migrations.
 - Widening unfiltered Daily Logs beyond the active-stage set.
-- A new Field nav item, or a change to `PlainTable`.
+- A new Field nav item, or an edit to the `PlainTable` component. Field Jobs stops using it for this list. Other screens keep it.
+- Mounting `StageJobCard` or `JobsToPrepare` on Field, or copying Schedule planning actions onto the Field card.
+- A second Field Jobs visual language, search, or filter system.
 - Wiring the unwired FILES stub onto the Schedule card.
 
 ## Audit manifest
@@ -233,3 +278,13 @@ Plan Audit, round 3, against `233acc7`, compared with current `main` (`abad440`)
 R2-F1 is resolved. Office Time Clock stays `fetchTimeClockReview` with From/To, review hours, and office corrections. `?job=<callLogId>` filters `time_punches.job_id` through the existing screen and must stay empty instead of falling back to all jobs. `fetchFieldPunches` and `fetchActiveFieldJobs` stay off this screen. No stat strip or chips. Mobile Time Clock is out of the slice. On `main`, `/field/timeclock` still loads `fetchTimeClockReview`, `filterTimeClockRows` still keys the job on `time_punches.job_id`, and a fresh visit still opens today through today without reading a date range from the URL.
 
 No remaining material gap. Daily Logs `?job=`, the bid-tab removal, the `NotesPanel` move, and `jobs.amount` versus Contract stay as the earlier rounds closed them.
+
+## Revision 5
+
+Recorded after Chris acceptance. The round-1 manifest, Revision 2, the round-2 manifest, Revisions 3 and 4, and the round-3 manifest stay as written. Round 3 converged the previous text. This revision changes the Field Jobs UI. **NOT CONVERGED. Not build-ready.** Do not build from this revision. Ownership, Daily Logs `?job=`, and Office Time Clock `?job=` are unchanged.
+
+- Field Jobs matches Schedule Jobs (`JobsToPrepare` / compact `StageJobCard`) in search, compact rows, and inline expand / collapse. Reuse those classes and interaction patterns. Do not mount `StageJobCard` or `JobsToPrepare`.
+- The search bar, date chips, auto-widen, 25 cap, and deep-link widen / pin / auto-open are the Schedule list behavior. The list uses `loadJobs({ withWTCs: true })`. The status control uses `getJobStatus`, not Schedule `stageOf`.
+- Compact row: Field status, job number and name, customer, work type, location, start and time signal, crew count for the current or next trip. No planning actions and no dollar amount.
+- Expanded card: PRT history, Daily Logs link, Office Time Clock link, Load-Out status and the existing modal. Close returns to the list. No Schedule planning panels.
+- Primary route is `/field/jobs`. Deep link is `/field/jobs?job=<jobs.job_id>`. `/field/jobs/:jobId` redirects there. `JobDetail.jsx` is retired. `FieldJobCard.jsx` is the Field card. `PlainTable` is not edited and is not the Field Jobs list.
