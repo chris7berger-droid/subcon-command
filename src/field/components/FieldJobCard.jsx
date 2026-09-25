@@ -215,11 +215,7 @@ export default function FieldJobCard({ row, today = new Date(), autoOpen = false
 
       {detailError ? <ErrorNote>{detailError}</ErrorNote> : null}
       {detailLoading && !job ? <div className="jh-empty">Loading…</div> : null}
-      {job ? (
-        <div className="schedule-root">
-          <PRTModal job={job} embedded />
-        </div>
-      ) : null}
+      {job ? <PRTModal job={job} embedded /> : null}
 
       {callLogId ? (
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "12px 0" }}>
@@ -242,9 +238,7 @@ export default function FieldJobCard({ row, today = new Date(), autoOpen = false
       {openError ? <ErrorNote>{openError}</ErrorNote> : null}
 
       {openJob && (
-        <div className="schedule-root">
-          <LoadOutModal job={openJob} onClose={() => setOpenJob(null)} />
-        </div>
+        <LoadOutModal job={openJob} onClose={() => setOpenJob(null)} />
       )}
     </div>
   );
