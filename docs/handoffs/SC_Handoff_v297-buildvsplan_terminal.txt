@@ -1,0 +1,78 @@
+SC Handoff v297 — Build vs Plan: Schedule and Field ownership
+Repo: subcon-command
+Branch: cursor/schedule-field-ownership-fb54
+Build commit reviewed: 3fb2f99e4553255dde06790fc317c805e4725d7c
+Merge-base: abad440337510f6e657ed5fd029bacede4a59c52 (origin/main)
+Date: 2026-09-25
+Role: Build vs Plan. This review did not build the slice.
+Source of truth: docs/plans/schedule_field_ownership.md at 3fb2f99 (Revision 4, Plan Audit round 3 CONVERGED / BUILD-READY).
+
+=== Method ===
+Read the converged plan, the build diff against the merge-base, and the cited screens. No application-code edits, no migrations, no deploy, no mutating database calls. Authenticated click-through is the later Smoke Test gate, not this one.
+
+=== Verdict ===
+GO
+
+The build at 3fb2f99 matches the converged plan. No GAP. No CANNOT-CONFIRM on an acceptance line.
+
+=== Punch-list ===
+
+1. VERIFIED — `/field/jobs/:jobId` opens one job.
+   `src/field/FieldLayout.jsx` adds `jobs/:jobId` → `JobDetail`. The Job # cell in `src/field/views/Jobs.jsx` links to `/field/jobs/${r.jobPk}`. `jobPk` is `jobs.job_id` (`src/field/lib/fieldJobs.js`). `JobDetail` loads that id with `loadJobWithWTCs`. `PlainTable` and `src/lib/nav.js` are not in the diff. No new Field nav item.
+
+2. VERIFIED — Unknown `jobId` is the empty state plus Back, and it does not write.
+   `loadJobWithWTCs` returns `{ data: null, error }` on failure. `JobDetail` treats `PGRST116` as "Job not found." inside `EmptyNote`, with the Back control. Other errors use `ErrorNote`. That path only reads.
+
+3. VERIFIED — PRT history is on the job detail and matches `loadPRTsForJob` for its call log.
+   `JobDetail` passes the `loadJobWithWTCs` job (`_wtcs` attached in `normalizeJob`) into `<PRTModal job={job} embedded />` inside `.schedule-root`. `PRTModal` still loads `loadPRTsForJob(job.call_log_id)` and still scores that job’s `_wtcs`. `embedded` drops the overlay and Close button. `loadPRTsForJob` returns `[]` when there is no call log.
+
+4. VERIFIED — Today still shows only today’s PRT flag.
+   `src/field/views/Today.jsx` is not in the diff. `fetchTodayRows` still limits `daily_production_reports` to `report_date` = today. The Today table still renders that flag cell.
+
+5. VERIFIED — Daily Logs `?job=` shows that call log inside the existing 7-day window, including Complete and any other job outside `ACTIVE_FIELD_STAGE_KEYS`.
+   `DailyLogs.jsx` calls `fetchFieldLogsForCallLog({ callLogId, days: 7 })` when `?job=` is non-empty. That function queries `daily_log_entries` with the same `fieldLogWindowStart` + `created_at >= fromStr` filter as `fetchFieldLogs`, and it does not call `fetchActiveFieldJobs`.
+
+6. VERIFIED — A `?job=` with no rows in the window uses the existing empty state and does not fall back to the unfiltered list.
+   The filtered read returns `[]`. `PlainTable` still uses "No log entries in the last 7 days." The unfiltered `fetchFieldLogs({ days: 7 })` path runs only when `?job=` is empty.
+
+7. VERIFIED — Without `?job=`, Daily Logs matches current behavior.
+   `fetchFieldLogs` still starts from `fetchActiveFieldJobs`, still uses the same select and the same 7-day `gte` filter. The window helper is a move of the previous date math.
+
+8. VERIFIED — Daily Logs stat strip and chip counts follow the rows on screen.
+   Today / Start / Mid / End and the chip counts are computed from `list` (`rows || []`). With `?job=`, `rows` is the filtered read. Without it, `rows` is the active-stage list.
+
+9. VERIFIED — `/field/timeclock` still uses `fetchTimeClockReview`, From/To, review hours, office corrections, and the existing Office Time Clock UI.
+   `TimeClock.jsx` still imports and calls `fetchTimeClockReview`, still keeps `from` / `to`, still uses `reviewTimePunches` / `formatDurationHours`, and still applies `applyTimePunchCorrection`. It does not import `fetchFieldPunches` or `fetchActiveFieldJobs`. No stat strip or chips were added.
+
+10. VERIFIED — `?job=<callLogId>` filters Office Time Clock to that call log, and a job with no punches in the selected range stays empty.
+    The screen seeds `jobId` from `?job=` and re-applies it when the param changes. `urlJobPinned` keeps that id when it is absent from `jobOptions`, so the old "clear an unknown id and show every job" path does not run. `filterTimeClockRows` compares `idString` job ids, so the pinned id yields no rows. From/To are not taken from the URL and are not reset by the job param. Choosing All jobs in the dropdown is still the existing control. The automatic clear is what the plan forbids, and that clear is pinned.
+
+11. VERIFIED — Without `?job=`, Office Time Clock matches the current screen.
+    `urlJobId` is empty, `urlJobPinned` is false, and an id that is not in `jobOptions` still clears. The rest of the screen is the pre-build Office Time Clock.
+
+12. VERIFIED — Mobile Time Clock is unchanged.
+    The build diff has no phone punch screen. This slice edits the desktop `/field/timeclock` filter only.
+
+13. VERIFIED — Load-Out on the detail shows loaded of total and opens the same `LoadOutModal` as `/field/loadouts`.
+    `countMaterialChecks` counts checked vs total the same way `fetchLoadOutJobs` now counts. `fetchMaterialChecksForCallLog` uses that rule for the detail’s call log. Open calls `loadJobWithWTCs` and renders `LoadOutModal` inside `.schedule-root`, the same door as `src/field/views/LoadOuts.jsx`. The detail does not host a second load-out list.
+
+14. VERIFIED — The Schedule card still has SOW, crew, materials, days, trips, mobilizations, readiness, and Load-Out under Planning.
+    `StageJobCard` still has the SOW score, `CardSowModal`, `FieldSowModal`, the CREW tile (`crewScheduleLink`), the Details crew readout, MTRL, DAYS, MOBS, TRIPS, `baseChecklistPasses` / Promote to Ready, and a LOAD-OUT tile in `PlanningPanel` that opens `LoadOutModal`.
+
+15. VERIFIED — `NotesPanel` is on Details and notes still save after Management is gone.
+    Details renders the existing read-only `job.notes` row and the existing `NotesPanel`. Save still calls `updateJobField(job.job_id, 'notes', val, changedBy)`. The MANAGEMENT toggle and `ManagementPanel` are gone.
+
+16. VERIFIED — Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed `jobs.amount` are gone.
+    Those toggles, `BudgetPanel`, `ManagementPanel`, the active-banner PRT label, `PRTModal` on the card, `LogsModal`, and the compact `jtp-budget` cell are absent from `StageJobCard`. `LogsModal.jsx` is deleted and has no remaining imports. The complete-stage "Send to Billing" action is the pre-existing stage button, not the removed BILLING tile.
+
+17. VERIFIED — No replacement Budget screen. Finance Contract still uses its own authoritative total.
+    No new Budget view is in the diff. `src/schedule/lib/billingForecast.js` `authoritativeTotal` is untouched.
+
+18. VERIFIED — `billingWorklist` still feeds the nothing-to-bill filter.
+    `src/schedule/views/Jobs.jsx` still loads it and still filters `nothing_to_bill`.
+
+19. VERIFIED — No new table, grant, or migration. Home’s production figure still loads on its own.
+    The build diff is application views plus this plan’s existing docs. No SQL. `src/schedule/views/Jobs.jsx` dropped the card-only `daily_log_entries` load and `loadPRTsForCallLogIds` load. `src/schedule/views/Home.jsx` is not in the diff and still calls `loadPRTsForCallLogIds`. `JobsToPrepare` may still pass `logsByCallLog` and `prtMap`. `StageJobCard` no longer reads them.
+
+=== GO ===
+Build vs Plan GO for 3fb2f99e4553255dde06790fc317c805e4725d7c. Gaps return to Build. This verdict is not Code Review, Security Review, Smoke Test, preview acceptance, or merge approval.
