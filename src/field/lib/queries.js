@@ -301,7 +301,7 @@ export async function fetchMaterialChecksForCallLog(callLogId) {
 // Jobs alone uses the canonical Schedule population/lifecycle. Do not route
 // Today/Load-Outs through this adapter: their existing behavior is separate.
 export async function fetchFieldJobs({ today = tod() } = {}) {
-  const { data: jobs, error } = await loadJobs();
+  const { data: jobs, error } = await loadJobs({ withWTCs: true });
   if (error) throw new Error(error.message);
   if (!jobs?.length) return [];
   const jobIds = jobs.map(j => j.job_id);

@@ -1,40 +1,40 @@
 ## Status
 
-Build complete for the converged Schedule and Field ownership plan (`docs/plans/schedule_field_ownership.md`, commit `55d2b06`). Stopped at the Build gate. Do not merge.
+Build complete for the Field Jobs UI revision in `docs/plans/schedule_field_ownership.md` (Plan Audit CONVERGED / BUILD-READY at `15d27dd`). Ownership and data behavior from the earlier build stay. Stopped at the Build gate. Do not merge.
 
 ## Summary
 
-Field Jobs opens one job detail. That page shows production-report history, links to Daily Logs and Office Time Clock for the job’s call log, and shows load-out progress that opens the existing Load-Out modal.
+`/field/jobs` is a compact job list in the Schedule Jobs visual language: search, date chips, Field status control, and rows that expand inline. The expanded card keeps Field execution only — production-report history, Daily Logs and Office Time Clock links, and Load-Out. Schedule planning actions are not on this screen.
 
-Daily Logs `?job=` reads that call log inside the existing 7-day window, including jobs outside the active-stage set. Unfiltered Daily Logs is unchanged. Office Time Clock still uses `fetchTimeClockReview`, From/To, review hours, and office corrections. `?job=` filters that screen and stays empty when the job has no punches in the selected range.
+`/field/jobs?job=<jobs.job_id>` clears search, sets the date and status controls to All, pins that job, and opens it. `/field/jobs/:jobId` redirects there. The separate job-detail page is retired. An unknown `?job=` stays on the list with no expanded card and no writes.
 
-The Schedule job card keeps planning (including Load-Out) and puts the existing notes editor on Details. Management, Budget, PRT, Logs, PROP, BILLING, DEPOSIT, FILES, and the collapsed dollar amount are removed.
+Daily Logs `?job=` and Office Time Clock `?job=` are unchanged. Office Time Clock still uses `fetchTimeClockReview`, From/To, review hours, and office corrections. Schedule card ownership removals stay.
 
 ## Files Changed
 
-- `src/field/FieldLayout.jsx` — `/field/jobs/:jobId`
-- `src/field/views/JobDetail.jsx` — new job detail
-- `src/field/views/Jobs.jsx` — Job # links to the detail
-- `src/field/views/DailyLogs.jsx` — `?job=` read
-- `src/field/views/TimeClock.jsx` — `?job=` on the existing Office Time Clock
-- `src/field/lib/queries.js` — call-log Daily Logs read and material-check counts
-- `src/schedule/components/PRTModal.jsx` — inline `embedded` view
-- `src/schedule/components/StageJobCard.jsx` — notes on Details; planning Load-Out; removed panels and tiles
-- `src/schedule/views/Jobs.jsx` — dropped the card-only log and PRT loads
-- `src/schedule/components/LogsModal.jsx` — deleted
+- `src/field/views/Jobs.jsx` — search, date chips, status control, 25-row cap, deep-link pin
+- `src/field/components/FieldJobCard.jsx` — compact row and Field expanded card
+- `src/field/FieldLayout.jsx` — `/field/jobs/:jobId` redirects to `?job=`
+- `src/field/views/JobDetail.jsx` — deleted
+- `src/field/lib/fieldJobs.js` — pass through the list fields the compact row reads
+- `src/field/lib/queries.js` — `fetchFieldJobs` loads `loadJobs({ withWTCs: true })`
 - `docs/agent-handoffs/BUILD-REPORT.md`
+
+Unchanged in this revision: `DailyLogs.jsx`, `TimeClock.jsx`, `StageJobCard.jsx`, `PRTModal.jsx`, Schedule `Jobs.jsx`, `PlainTable`.
 
 ## Important Implementation Decisions
 
-- The branch started at the converged plan commit, then merged `origin/main` (`abad440`) so Office Time Clock stayed `fetchTimeClockReview`. The plan commit itself did not contain that screen.
-- `/field/timeclock` does not call `fetchFieldPunches` or `fetchActiveFieldJobs`. A `?job=` id that is missing from the loaded range stays selected. The job dropdown still clears an id that is not pinned by the URL.
-- Daily Logs `?job=` queries `daily_log_entries` for that call log inside the same 7-day window. It does not filter the active-stage list.
-- Load-out counts use the same checked-vs-total rule as `fetchLoadOutJobs`. Opening the modal calls `loadJobWithWTCs`, the same door as `/field/loadouts`.
-- Home still loads its own production reports. Schedule Jobs no longer loads `daily_log_entries` or `loadPRTsForCallLogIds` for the card.
+- Field Jobs reuses `.jtp-*` and `.sjc-*` classes inside `.schedule-root`. It does not mount `StageJobCard` or `JobsToPrepare`.
+- Status options and the badge label come from `getJobStatus`. Badge classes already in the Schedule stylesheet are reused. No new badge class.
+- Date windows use `rangeForKey`, `jobInRange`, `effectiveStart`, and `effectiveEnd`. Auto-widen is derived while rendering so a chip the user did not pick can move from week to month to quarter to all when the window is empty.
+- The row omits the actions column, the dollar amount, and the planning box. Crew count is the existing current-or-next-trip count. A null count shows "—".
+- Expanding loads `loadJobWithWTCs` and material-check counts. `PRTModal` is `embedded` inside `.schedule-root`. Load-Out opens `LoadOutModal` through that same job load.
+- The header title is the display job number and name. Identity bubbles are job, customer, and work type. No Dates TBD chip, stage banner, planning toggles, or notes panel.
 
 ## Verification Performed
 
-- `npx eslint` on the changed application files — passed
+- `npx eslint` on `FieldLayout.jsx`, `Jobs.jsx`, `FieldJobCard.jsx`, `fieldJobs.js`, and `queries.js` — passed
+- `node scripts/check-field-jobs.mjs` — passed
 - `npm run build` — passed
 
 ## Visual Verification
