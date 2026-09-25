@@ -5,6 +5,16 @@ import { supabase } from "../lib/supabase";
 import { fmt$, fmt$c, fmtD, rateCardLabel } from "../lib/utils";
 import { calcLabor, calcMaterialRow, calcTravel, calcWtcPrice, calcProposalTotal, calcWtcBreakdown, calcBidStamp, usesExactPricing, sumContractBilled } from "../lib/calc";
 import { jobsAmountFromProposalTotal, scheduleSendErrorMessage } from "../lib/jobsAmount";
+import {
+  approveEffects,
+  deductiveLinePayload,
+  executionRemovalDecision,
+  isDeductiveTotal,
+  lineMatchesSoldDeduction,
+  validateCancelTarget,
+  validateCancellationReason,
+  wtcsForSchedule,
+} from "../lib/deductiveCo";
 import { PROP_C } from "../lib/mockData";
 import { getTenantConfig } from "../lib/config";
 import { useAlerts } from "../lib/alerts";
@@ -101,6 +111,15 @@ const [linkedInvoices, setLinkedInvoices] = useState([]);
 const [showMultiGC, setShowMultiGC] = useState(false);
 const [syncConflict, setSyncConflict] = useState(null);
 const [sovContractSum, setSovContractSum] = useState(null);
+const [removeOpen, setRemoveOpen] = useState(false);
+const [removeTargets, setRemoveTargets] = useState([]);
+const [removePointers, setRemovePointers] = useState([]);
+const [removeParentId, setRemoveParentId] = useState(null);
+const [removeTenant, setRemoveTenant] = useState(null);
+const [removeId, setRemoveId] = useState("");
+const [removeReason, setRemoveReason] = useState("");
+const [removeError, setRemoveError] = useState("");
+const [removeSaving, setRemoveSaving] = useState(false);
 const navigate = useNavigate();
 
 useEffect(() => {
@@ -302,11 +321,18 @@ async function deletePropAttachment(fullName) {
   }
 
   async function deleteWtc(wtcId) {
+    const wtc = wtcs.find(w => w.id === wtcId);
     if (!window.confirm("Delete this WTC? This cannot be undone.")) return;
     await supabase.from("proposal_wtc").delete().eq("id", wtcId);
     const { data: still } = await supabase.from("proposal_wtc").select("id").eq("id", wtcId).maybeSingle();
     if (still) { alert("Delete failed — you may not have permission."); return; }
-    setWtcs(prev => prev.filter(w => w.id !== wtcId));
+    const next = wtcs.filter(w => w.id !== wtcId);
+    setWtcs(next);
+    if (wtc?.cancels_proposal_wtc_id) {
+      const total = calcProposalTotal(next, undefined, usesExactPricing(p));
+      await supabase.from("proposals").update({ total }).eq("id", p.id);
+      setP(prev => ({ ...prev, total }));
+    }
   }
 
   async function toggleWtcLock(wtcId) {
@@ -329,8 +355,9 @@ async function deletePropAttachment(fullName) {
         if (!window.confirm(`This job has a billing schedule at ${fmt$(sched.contract_sum)}. If you change pricing, update the schedule to match on the job's Billing Schedule section. Unlock?`)) return;
       }
     }
-    // If locking, confirm the WTC checklist is complete enough
-    if (newLocked) {
+    // A deductive cancellation line has no new labor, dates, size, or SOW.
+    // Those checks exist to author executable work.
+    if (newLocked && !wtc.cancels_proposal_wtc_id) {
       const checks = getWtcChecks(wtc);
       const preChecks = checks.slice(0, 5); // work type, rates, labor, materials, size
       const incomplete = preChecks.filter(c => !c.done);
@@ -360,7 +387,7 @@ async function deletePropAttachment(fullName) {
     await supabase.from("proposals").update({ total: proposalTotal }).eq("id", p.id);
 
     // Auto-create billing schedule when all WTCs locked and customer requires pay app
-    if (newLocked && allWtcs?.length && allWtcs.every(w => w.locked)) {
+    if (newLocked && !(Number(proposalTotal) < 0) && allWtcs?.length && allWtcs.every(w => w.locked)) {
       const requiresPayApp = p.call_log?.customers?.requires_pay_app;
       if (requiresPayApp) {
         const { data: existing } = await supabase.from("billing_schedule").select("id").eq("proposal_id", p.id).maybeSingle();
@@ -626,7 +653,164 @@ async function deletePropAttachment(fullName) {
 
   // Validate a fresh snapshot and send it directly. Field SOW retains its trip
   // membership; the customer-facing Sales SOW stays on the proposal.
+  async function openRemovePanel() {
+    setRemoveError("");
+    setRemoveOpen(true);
+    setRemoveId("");
+    setRemoveReason("");
+    const { data: job, error: jobErr } = await supabase
+      .from("call_log")
+      .select("id, parent_job_id, tenant_id")
+      .eq("id", p.call_log_id)
+      .single();
+    if (jobErr || !job?.parent_job_id) {
+      setRemoveError(jobErr?.message || "This change order has no parent job.");
+      setRemoveTargets([]);
+      return;
+    }
+    setRemoveParentId(job.parent_job_id);
+    setRemoveTenant(p.tenant_id || job.tenant_id);
+    const { data: props, error } = await supabase
+      .from("proposals")
+      .select("id, status, deleted_at, call_log_id, tenant_id, call_log(is_change_order), proposal_wtc(id, tenant_id, work_type_id, is_rate_card, locked_line_total, work_types(name))")
+      .eq("call_log_id", job.parent_job_id)
+      .eq("status", "Sold")
+      .is("deleted_at", null);
+    if (error) { setRemoveError(error.message); return; }
+    const targets = [];
+    for (const prop of props || []) {
+      for (const w of prop.proposal_wtc || []) {
+        targets.push({
+          ...w,
+          call_log_id: prop.call_log_id,
+          proposal_status: prop.status,
+          proposal_deleted_at: prop.deleted_at,
+          is_change_order: !!prop.call_log?.is_change_order,
+          tenant_id: w.tenant_id || prop.tenant_id,
+        });
+      }
+    }
+    setRemoveTargets(targets);
+    const ids = targets.map(t => t.id);
+    if (!ids.length) { setRemovePointers([]); return; }
+    const { data: pointers, error: pointerErr } = await supabase
+      .from("proposal_wtc")
+      .select("cancels_proposal_wtc_id, proposals!inner(status, deleted_at)")
+      .in("cancels_proposal_wtc_id", ids)
+      .is("proposals.deleted_at", null);
+    if (pointerErr) { setRemoveError(pointerErr.message); return; }
+    setRemovePointers((pointers || []).map(r => ({
+      cancels_proposal_wtc_id: r.cancels_proposal_wtc_id,
+      deleted_at: r.proposals?.deleted_at || null,
+      status: r.proposals?.status,
+    })));
+  }
+
+  async function saveRemoval() {
+    const target = removeTargets.find(t => t.id === removeId);
+    const why = validateCancellationReason(removeReason);
+    if (!why.ok) { setRemoveError(why.reason); return; }
+    const check = validateCancelTarget({
+      target,
+      parentJobId: removeParentId,
+      coTenantId: removeTenant,
+      existingPointers: removePointers,
+    });
+    if (!check.ok) { setRemoveError(check.reason); return; }
+    const built = deductiveLinePayload({ proposalId: p.id, target, reason: why.reason });
+    if (!built.ok) { setRemoveError(built.reason || "Could not build the deduction."); return; }
+    if (removeTenant) built.row.tenant_id = removeTenant;
+    const exact = usesExactPricing(p);
+    if (!lineMatchesSoldDeduction(built.row, exact)) {
+      setRemoveError("The deduction does not match the locked sold price. Nothing was saved.");
+      return;
+    }
+    setRemoveSaving(true);
+    const { data: inserted, error } = await supabase.from("proposal_wtc").insert(built.row).select("*, work_types(name)").single();
+    if (error || !inserted) {
+      setRemoveError(error?.message || "The deduction was not saved.");
+      setRemoveSaving(false);
+      return;
+    }
+    const next = [...wtcs, inserted];
+    const total = calcProposalTotal(next, undefined, exact);
+    const { error: totalErr } = await supabase.from("proposals").update({ total }).eq("id", p.id);
+    if (totalErr) {
+      await supabase.from("proposal_wtc").delete().eq("id", inserted.id);
+      setRemoveError(totalErr.message);
+      setRemoveSaving(false);
+      return;
+    }
+    setWtcs(next);
+    setP(prev => ({ ...prev, total }));
+    setRemoveSaving(false);
+    setRemoveOpen(false);
+  }
+
+  async function soldCanceledWtcIds(wtcIds) {
+    if (!wtcIds.length) return new Set();
+    const { data, error } = await supabase
+      .from("proposal_wtc")
+      .select("cancels_proposal_wtc_id, proposals!inner(status, deleted_at)")
+      .in("cancels_proposal_wtc_id", wtcIds)
+      .eq("proposals.status", "Sold")
+      .is("proposals.deleted_at", null);
+    if (error) throw error;
+    return new Set((data || []).map(r => r.cancels_proposal_wtc_id).filter(Boolean));
+  }
+
+  async function retireCanceledExecution(proposalWtcId) {
+    const { data: rows, error } = await supabase
+      .from("job_wtcs")
+      .select("id, job_id, sow_revision_count")
+      .eq("proposal_wtc_id", proposalWtcId);
+    if (error) return { ok: false, message: error.message };
+    if (!rows?.length) return { ok: true };
+    for (const row of rows) {
+      const decision = executionRemovalDecision(row);
+      if (decision.action === "stop") return { ok: false, message: decision.reason };
+      const { data: tickets, error: ticketErr } = await supabase
+        .from("pull_tickets")
+        .select("id, day_keys")
+        .eq("job_id", row.job_id);
+      if (ticketErr) return { ok: false, message: ticketErr.message };
+      const named = (tickets || []).some(t =>
+        (Array.isArray(t.day_keys) ? t.day_keys : []).some(k => String(k?.wtc_id) === String(row.id))
+      );
+      if (named) {
+        return {
+          ok: false,
+          message: "A warehouse pull ticket still names this schedule work type, so the schedule copy was left in place.",
+        };
+      }
+    }
+    const ids = rows.map(r => r.id);
+    const { data: deleted, error: delErr } = await supabase.from("job_wtcs").delete().in("id", ids).select("id");
+    if (delErr) return { ok: false, message: delErr.message };
+    if ((deleted?.length || 0) !== ids.length) {
+      return { ok: false, message: "Schedule did not release the canceled work type." };
+    }
+    const jobIds = [...new Set(rows.map(r => r.job_id))];
+    for (const jobId of jobIds) {
+      const { data: remaining, error: remErr } = await supabase
+        .from("job_wtcs")
+        .select("field_sow")
+        .eq("job_id", jobId);
+      if (remErr) return { ok: false, message: remErr.message };
+      const anyDays = (remaining || []).some(w => Array.isArray(w.field_sow) && w.field_sow.length > 0);
+      if (!anyDays) {
+        const { error: sowErr } = await supabase.from("jobs").update({ field_sow: null }).eq("job_id", jobId);
+        if (sowErr) return { ok: false, message: sowErr.message };
+      }
+    }
+    return { ok: true };
+  }
+
   async function handleSendToSchedule() {
+    if (!approveEffects(p.total).sendToSchedule) {
+      alert("A deductive change order is not sent to Schedule.");
+      return;
+    }
     setSendingToSchedule(true);
     try {
       // Check if already sent. A soft-deleted job (deleted='Yes') doesn't count —
@@ -644,6 +828,13 @@ async function deletePropAttachment(fullName) {
       // Gather WTC data (field_sow comes fresh from here)
       const { data: wtcData, error: wtcError } = await supabase.from("proposal_wtc").select("*, work_types(name, cost_code)").eq("proposal_id", p.id).order("created_at", { ascending: true });
       if (wtcError) throw wtcError;
+      const canceledIds = await soldCanceledWtcIds((wtcData || []).map(w => w.id));
+      const activeWtcData = wtcsForSchedule(wtcData || [], canceledIds);
+      if ((wtcData || []).length > 0 && activeWtcData.length === 0) {
+        alert("Every work type on this proposal was removed by a sold change order. Nothing was sent to Schedule.");
+        setSendingToSchedule(false);
+        return;
+      }
 
       // [K1] (§5.1): mobilizations come from a SEPARATE fresh fetch (different table —
       // proposals, not proposal_wtc) so we never trust possibly-stale ProposalDetail
@@ -658,7 +849,7 @@ async function deletePropAttachment(fullName) {
       }
       // One trip has an unambiguous default. Keep explicit associations intact,
       // including stale IDs so validation can flag them instead of guessing.
-      const wtcList = (wtcData || []).map(wtc => ({
+      const wtcList = activeWtcData.map(wtc => ({
         ...wtc,
         field_sow: (wtc.field_sow || []).map(day => freshMobilizations.length === 1 && day.mobilization_id == null
           ? { ...day, mobilization_id: freshMobilizations[0].id }
@@ -682,6 +873,11 @@ async function deletePropAttachment(fullName) {
 
   // Use the same validated snapshot for both Field SOW copies and the trip rows.
   async function commitSendToSchedule({ wtcList, mobById, mobilizations }) {
+    if (!approveEffects(p.total).sendToSchedule || (wtcList || []).some(w => w.cancels_proposal_wtc_id)) {
+      alert("A deductive change order is not sent to Schedule.");
+      setSendingToSchedule(false);
+      return;
+    }
     setSendingToSchedule(true);
     try {
       // Re-check immediately before writing, after the scope/trip reads.
@@ -989,13 +1185,23 @@ async function deletePropAttachment(fullName) {
       approved_by: approveBy.trim(),
       approval_reason: approveReason.trim(),
     }).eq("id", p.id);
+    const { data: priced } = await supabase.from("proposals").select("total").eq("id", p.id).single();
+    const effects = approveEffects(priced?.total ?? p.total);
     if (p.call_log_id && !inSisterCohort) {
       await supabase.from("call_log").update({ stage: "Sold" }).eq("id", p.call_log_id);
       refreshAlerts(); // N4
-      const isTest = (p.call_log?.job_name || "").toLowerCase().includes("test");
-      !isTest && supabase.functions.invoke("qb-create-job", { body: { callLogId: p.call_log_id, proposalId: p.id } })
-        .catch(() => {});
+      if (effects.createQuickBooksJob) {
+        const isTest = (p.call_log?.job_name || "").toLowerCase().includes("test");
+        !isTest && supabase.functions.invoke("qb-create-job", { body: { callLogId: p.call_log_id, proposalId: p.id } })
+          .catch(() => {});
+      }
     }
+    const notes = [];
+    for (const line of wtcs.filter(w => w.cancels_proposal_wtc_id)) {
+      const retired = await retireCanceledExecution(line.cancels_proposal_wtc_id);
+      if (!retired.ok && retired.message) notes.push(retired.message);
+    }
+    if (notes.length) alert(notes.join("\n"));
 
     // The rep notification is NOT fired from here. A trigger on the proposals
     // status change sends it, so it can't be lost when a browser call doesn't
@@ -1076,13 +1282,13 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
           {(p.status === "Sent" || p.status === "Signed" || p.status === "Sold") && (
             <Btn sz="sm" v="ghost" onClick={handlePullBack} style={{ color: C.amber, borderColor: C.amber }}>↩ Pull Back</Btn>
           )}
-          {p.status === "Sold" && (
+          {p.status === "Sold" && !isDeductiveTotal(p.total) && (
             <Btn sz="sm" v="ghost" onClick={handleSendToSchedule} disabled={sendingToSchedule || sentToSchedule}
               style={{ color: sentToSchedule ? C.textFaint : C.teal, borderColor: sentToSchedule ? C.border : C.teal }}>
               {sentToSchedule ? "✓ Sent to Schedule" : sendingToSchedule ? "Sending..." : "Send to Schedule"}
             </Btn>
           )}
-          {p.status === "Sold" && (
+          {p.status === "Sold" && !isDeductiveTotal(p.total) && (
             <Btn sz="sm" onClick={() => navigate("/sales/invoices", { state: { newInvoiceProposalId: p.id } })}>+ Create Invoice</Btn>
           )}
           {p.status !== "Sold" && p.status !== "Signed" && (
@@ -1125,7 +1331,12 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                         {wtcLabel}{typeName ? ` — ${typeName}` : ""}
                       </div>
                       {/* F44: a rate card shows its hourly T&M rate, not a fixed price (it adds $0 to the proposal total). */}
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.textBody, fontFamily: F.ui, marginTop: 4 }}>{wtc.is_rate_card ? `${rateCardLabel(wtc)} · T&M` : money(price)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.textBody, fontFamily: F.ui, marginTop: 4 }}>{wtc.is_rate_card ? `${rateCardLabel(wtc)} · T&M` : (price < 0 ? `-${money(Math.abs(price))}` : money(price))}</div>
+                      {wtc.cancels_proposal_wtc_id && (
+                        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4, fontFamily: F.ui }}>
+                          Removes sold work{wtc.discount_reason ? ` — ${wtc.discount_reason}` : ""}
+                        </div>
+                      )}
                       {wtc.start_date && wtc.end_date && (
                         <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4, fontFamily: F.ui }}>
                           <span style={{ color: C.textFaint }}>Start</span> {fmtD(wtc.start_date)} — <span style={{ color: C.textFaint }}>End</span> {fmtD(wtc.end_date)}
@@ -1152,7 +1363,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center" }}>
-                    <Btn sz="sm" v="secondary" onClick={() => { setActiveWtcId(wtc.id); setShowWTC(true); }}>Edit WTC</Btn>
+                    {!wtc.cancels_proposal_wtc_id && <Btn sz="sm" v="secondary" onClick={() => { setActiveWtcId(wtc.id); setShowWTC(true); }}>Edit WTC</Btn>}
                     <button onClick={() => setExpandedWtc(isExpanded ? null : wtc.id)} style={{
                       background: "none", border: `1px solid ${C.borderStrong}`, borderRadius: 6, padding: "4px 12px",
                       fontSize: 11, fontWeight: 700, color: C.textFaint, cursor: "pointer", fontFamily: F.display,
@@ -1212,7 +1423,37 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                 </div>
               );
             })}
-            {!isCommitted && <Btn sz="sm" v="ghost" onClick={() => { setActiveWtcId(null); setShowWTC(true); }}>+ Add Work Type</Btn>}
+            {!isCommitted && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Btn sz="sm" v="ghost" onClick={() => { setActiveWtcId(null); setShowWTC(true); }}>+ Add Work Type</Btn>
+                {p.call_log?.is_change_order && (
+                  <Btn sz="sm" v="ghost" onClick={openRemovePanel}>Remove sold work type</Btn>
+                )}
+              </div>
+            )}
+            {removeOpen && (
+              <div style={{ marginTop: 12, background: C.linen, border: `1px solid ${C.borderStrong}`, borderRadius: 8, padding: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>Remove a sold work type</div>
+                <select value={removeId} onChange={e => { setRemoveId(e.target.value); setRemoveError(""); }} style={{ width: "100%", padding: "8px 10px", fontSize: 13, fontFamily: F.ui, border: `1px solid ${C.borderStrong}`, borderRadius: 6, background: C.linenDeep, color: C.textBody, WebkitAppearance: "none", marginBottom: 8 }}>
+                  <option value="">Select the sold work type</option>
+                  {removeTargets.map(t => (
+                    <option key={t.id} value={t.id}>{t.work_types?.name || "Work type"} · {t.locked_line_total != null ? money(t.locked_line_total) : "no locked price"}</option>
+                  ))}
+                </select>
+                <input value={removeReason} onChange={e => { setRemoveReason(e.target.value); setRemoveError(""); }} placeholder="Why the customer removed this" style={{ width: "100%", padding: "8px 10px", fontSize: 13, fontFamily: F.ui, border: `1px solid ${C.borderStrong}`, borderRadius: 6, background: C.linenDeep, color: C.textBody, WebkitAppearance: "none", marginBottom: 8, boxSizing: "border-box" }} />
+                {removeId && (() => {
+                  const t = removeTargets.find(x => x.id === removeId);
+                  const priced = t ? validateCancelTarget({ target: t, parentJobId: removeParentId, coTenantId: removeTenant, existingPointers: removePointers }) : null;
+                  if (!priced?.ok) return null;
+                  return <div style={{ fontSize: 13, fontWeight: 700, color: C.textHead, fontFamily: F.ui, marginBottom: 8 }}>Deduction {`-${money(Math.abs(priced.amount))}`}</div>;
+                })()}
+                {removeError && <div style={{ fontSize: 12, color: C.red, fontFamily: F.ui, marginBottom: 8 }}>{removeError}</div>}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn sz="sm" onClick={saveRemoval} disabled={removeSaving}>{removeSaving ? "Saving..." : "Add deduction"}</Btn>
+                  <Btn sz="sm" v="ghost" onClick={() => setRemoveOpen(false)}>Cancel</Btn>
+                </div>
+              </div>
+            )}
           </div>
           )}
 

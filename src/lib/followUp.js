@@ -22,6 +22,7 @@ import { supabase, archiveDb } from "./supabase";
 import { tod } from "./utils";
 import { STAGES } from "./mockData";
 import { calcProposalTotal, usesExactPricing } from "./calc";
+import { countsAsSoldJob, soldReporting } from "./deductiveCo";
 
 // ── Thresholds (v1 consts; no admin UI yet — plan §4) ──────────────────────
 export const DORMANT_MONTHS = 6;
@@ -159,11 +160,14 @@ export function pipelineStats(snapshot, { repName = "" } = {}) {
     creditedSoldMonth(p, { archiveIdByJob, archiveSoldDateById: snapshot.archiveSoldDateById }) === month
   );
 
+  // Dollars include a later deductive CO (negative bidValue). The count does
+  // not: a deduction is not another job won. Positive COs still count.
+  const sold = soldReporting(soldProps, bidValue);
   return {
     all: activeJobs.length,
     wantsBid: stageAgg("Wants Bid"),
     hasBid: stageAgg("Has Bid"),
-    sold: { count: soldProps.length, amount: soldProps.reduce((s, p) => s + bidValue(p), 0) },
+    sold: { count: sold.count, amount: sold.amount, soldProps },
     soldProps,
   };
 }
@@ -552,7 +556,7 @@ export function homeEngagement(snap, { repName = "", monthlyGoal = 0 } = {}) {
 
   // The exact jobs behind the Sold tile — so tapping it drills into THESE, not the
   // all-time Sold stage list (tile is month + archive-scoped; a stage filter isn't).
-  const soldList = repSoldProps.map(p => {
+  const soldList = repSoldProps.filter(p => countsAsSoldJob(bidValue(p))).map(p => {
     const cl = clById.get(p.call_log_id);
     return { callLogId: p.call_log_id, customerId: p.customer_id || cl?.customer_id || null,
       name: cl?.customer_name || "—", sub: cl?.display_job_number || cl?.job_name || "", value: bidValue(p) };

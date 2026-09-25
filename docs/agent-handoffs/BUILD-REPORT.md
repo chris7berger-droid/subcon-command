@@ -1,116 +1,77 @@
 ## Status
 
-Scheduled Off lifecycle (create → see → edit → remove) complete — waiting on Chris preview accept. **Do not merge.**
+Phase: Build — implementation is on `feat/deductive-change-orders`. This file is the Build gate record. Build vs Plan, Code Review, and Security Review are not written here.
 
-No production `crew_status` rows were migrated. No `assignments` rows are deleted or moved.
+Not merged. Production data was not changed. The migration was not applied. No QuickBooks record was created. No preview URL: a sales-command preview uses production Supabase, and Send to Schedule now reads `cancels_proposal_wtc_id`. That column does not exist in production yet, so a preview would break Send to Schedule.
 
 ## Summary
 
-Scheduled Off is planned availability. The office can:
+A deductive change order cancels one whole sold work type.
 
-1. **Create** a future FROM/TO range without navigating to that week.
-2. **See** gray Mon–Sat compact dots on that week from stored `scheduled-off` rows.
-3. **Edit** a contiguous range from the crew detail view.
-4. **Remove** that range after confirmation.
+The original proposal stays at its sold total. The original `proposal_wtc` row stays. The change-order line points at that row with `cancels_proposal_wtc_id` and carries the negative of the locked sold line price. For the locked example that price is `locked_line_total` 575, so the CO line is −575, the parent current contract is 4334 + −575 = 3759, billed stays 3759, remaining is 0, and percent invoiced is 100.
 
-Sick, Call In, and No Show keep the existing week day-picker. Legacy `off` is not treated as Scheduled Off.
+## Files Changed
 
-## Compact indicators
+sales-command:
 
-Crew chips render M/T/W/T/F/S dots for:
+- `src/lib/deductiveCo.js` — new. Sold-line amount, validation, schedule filter, approve effects, contract chain, sold-job count.
+- `src/lib/deductiveCo.test.mjs` — new. Cases A–K.
+- `src/components/ProposalDetail.jsx` — remove-sold-work-type authoring, lock bypass for a cancellation line, Send to Schedule filter, negative-CO button hide, QuickBooks skip, conditional `job_wtcs` removal.
+- `src/components/CallLogDetail.jsx` — parent Job Totals chain.
+- `src/lib/followUp.js` — sold count excludes a negative value; sold dollars keep it.
+- `src/lib/subconSummary.js` — Jobs YTD excludes a negative CO; Sold YTD keeps the dollars.
+- `src/pages/CallLog.jsx` — Sold tile job filter uses the same count rule.
+- `docs/BACKLOG.md` — F65 In Progress.
+- `docs/agent-handoffs/BUILD-REPORT.md` — this file.
 
-- assigned crew (existing job rows), and
-- unassigned crew who have `scheduled-off` on any day this week.
+command-suite-db:
 
-`scheduled-off` uses legend gray (`sch-cdot-soff` / `sch-dot-of`). Legacy `off` stays the Call In orange dot. Empty days stay the faint unused dot.
+- `supabase/migrations/20260925120000_proposal_wtc_cancels_proposal_wtc_id.sql`
 
-Example: Adam Little `scheduled-off` Oct 12–16 while viewing that week → gray Mon–Fri. Sat Oct 17 is unchanged.
+Not included: pre-existing time-clock edits in `scripts/check-time-clock.mjs`, `src/field/lib/timeClock.js`, and `src/field/views/TimeClock.jsx`.
 
-`crew_status.date` keys are normalized to `YYYY-MM-DD` so timestamp-shaped values still match the week dates.
+## Important Implementation Decisions
 
-## Crew detail
+The authoritative per-WTC sold value is `proposal_wtc.locked_line_total`. `WTCCalculator.handleLock` and `ProposalDetail.toggleWtcLock` both set `proposals.total` from `calcProposalTotal` and snapshot that same `calcWtcPrice` onto `locked_line_total`. Unlock is blocked after Sent, Signed, or Sold. Rate cards contribute 0 to the proposal total, so they cannot be canceled this way. A missing snapshot stops the deduction. It is not replaced with a live recompute.
 
-The existing crew week popup still shows the week STATUS grid.
+The CO line stores the positive snapshot in `discount`, with hours, materials, and travel at zero, so `calcWtcPrice` equals −`locked_line_total`. `discount_reason` holds the cancellation sentence only. The parent id is only in `cancels_proposal_wtc_id`. `cloned_from_wtc_id` is not used.
 
-It also loads that person’s `scheduled-off` rows (not `off` / `sick` / `noshow`) and groups contiguous calendar days:
+Cancellation for execution is derived: a non-deleted Sold line whose `cancels_proposal_wtc_id` equals the original WTC id. There is no status column.
 
-```
-SCHEDULED OFF
-Oct 12 – Oct 16, 2026
-EDIT DATES
-REMOVE SCHEDULED OFF
-```
+A live non-deleted pointer, including a draft, blocks a second deduction of the same WTC. Only a Sold non-deleted pointer hides the original from Schedule.
 
-Separate gaps are separate ranges, each with its own Edit / Remove.
+`job_wtcs` has no inbound foreign key. `daily_production_reports.wtc_id` and `invoice_lines.proposal_wtc_id` point at `proposal_wtc`, which is never deleted. On approve, a matching `job_wtcs` row is deleted only when `sow_revision_count` is 0 and no `pull_tickets.day_keys` entry names that row's id. Otherwise the sale still completes, the row stays, and the screen reports the stop. If no remaining `job_wtcs` row on that job has field-SOW days, `jobs.field_sow` is set null so the legacy fallback cannot show the canceled scope. `jobs.amount` is not rewritten.
 
-## Edit Dates
+When the approved total is negative, `qb-create-job` is not called. Positive totals still call it, except the existing test-job and sister-cohort skips. Approve does not write invoices. Create Invoice and Send to Schedule are hidden when the proposal total is negative.
 
-Opens the existing FROM/TO modal with that range pre-filled.
+Parent Job Totals still use the family sum as the current contract. When the viewed job is not itself a change order and a Sold child change order exists, the ledger shows Original Contract, Change Orders, and Current Contract. Billed, remaining, and percent invoiced use that current contract. A non-CO family sold proposal (a go-back) stays inside the family sum and is shown as its own line only when that amount is not zero, so the displayed lines still add up.
 
-Save updates **only** `scheduled-off` rows belonging to that range:
+Sold dollars include the negative total in the period `approved_at` credits. Sold-job count and Jobs YTD do not count a negative value. A positive CO still counts. Average quoted margin still skips non-positive lines; that filter was already there.
 
-- days added: upsert `scheduled-off` (unless another explicit status is already there)
-- days removed from the range: delete `status = scheduled-off` only
-- other Scheduled Off ranges, `sick`, `off`, `noshow`, and `assignments` are untouched
+## Verification Performed
 
-Expanding onto Sick / Call In / No Show still surfaces a conflict and does not overwrite. Assignments in the new range still warn; they are not deleted or moved.
+`node src/lib/deductiveCo.test.mjs` — passed (A–K, missing locked price, SOW-revision stop, no-CO contract stays 4334).
 
-Example: Oct 12–16 edited to Oct 12–14 → Oct 12–14 remain `scheduled-off`; Oct 15–16 `scheduled-off` rows are deleted.
+`node src/lib/jobsAmount.test.mjs` — passed.
 
-## Remove Scheduled Off
+`node src/lib/nextCoNumber.test.mjs` — passed.
 
-Confirmation:
+Schema check against `command-suite-db` baseline and migrations: `proposal_wtc.id` is uuid; no SQL foreign key references `job_wtcs(id)`; `pull_tickets.day_keys` is the only non-FK payload that can name a schedule WTC.
 
-```
-Remove Adam Little's Scheduled Off
-Oct 12 – Oct 16, 2026?
-```
+No browser pass. The new column is not in the database this app talks to.
 
-Confirm deletes only `crew_status` rows with `status = scheduled-off` for that person and those dates. Cancel writes nothing.
+## Visual Verification
 
-## Storage (unchanged)
-
-| Stored `crew_status.status` | Crew Scheduler | Field Crews |
-|---|---|---|
-| *(no row)* | Available | not an exception |
-| `sick` | Sick (S) | **Called Out** |
-| `off` | Call In (C) | **Called Out** |
-| `scheduled-off` | Scheduled Off (Off) | **Scheduled Off** |
-| `noshow` | No Show (N) | **No Show** |
-
-Not inferred from a missing assignment, punch, or phone activity.
-
-## Files changed (this pass)
-
-- `src/schedule/lib/crewStatus.js` — contiguous ranges, labels, edit add/remove plan, compact-dot kind
-- `src/schedule/lib/crewStatus.test.mjs`
-- `src/schedule/components/ScheduledOffModal.jsx` — pre-filled FROM/TO; edit remove-day note
-- `src/schedule/views/Schedule.jsx` — gray week dots, detail ranges, edit/remove writers
-- `src/schedule/App.css` — detail range actions
-- `docs/agent-handoffs/BUILD-REPORT.md`
-- `docs/BACKLOG.md`
-
-Not changed: Field Command, Sick / Call In / No Show pickers, assignment writers, leftover `off` rows.
-
-## Verification
-
-- `node src/schedule/lib/crewStatus.test.mjs` ✅ (Oct 12–16 gray Mon–Fri / Sat empty; shrink deletes 15–16; sick not overwritten; assignment warning; legacy `off` not deleted)
-- `npx eslint src/schedule/lib/crewStatus.js src/schedule/components/ScheduledOffModal.jsx` ✅
-- `npm run build` ✅
-- Pre-existing unused-var eslint on `Schedule.jsx` not cleaned up
-
-This VM has mock Supabase. Authenticated create → navigate to week → gray dots → detail range → edit → remove is for Chris on the preview.
-
-## Visual verification
-
-CSS reuses Crew Scheduler modal/button language. Live click-through requires preview login.
+Not run. The authoring panel and the Job Totals lines were not opened in a browser. A production-connected preview is the wrong place to open them before the migration is applied somewhere that is not production.
 
 ## Deviations From Handoff
 
-None.
+None on the locked result.
+
+One display line beyond the three named totals: "Other sold family work" appears only when a sold family proposal is neither the parent job nor a change order. Without it, Current Contract would include that amount and would not equal Original Contract + Change Orders. The real 4334 / −575 / 3759 example has no such proposal, so the line stays hidden.
+
+A second deduction is blocked by any non-deleted pointer, not only a Sold one. A draft cannot be duplicated and then both sold.
 
 ## Issues / Follow-up
 
-- Existing `off` person-days still display as Call In / Called Out until marked Scheduled Off.
-- If a production CHECK rejects `scheduled-off`, add that value additively in `command-suite-db`. Do not remap `off`.
-- Assignment + `scheduled-off` coexistence is still a real conflict; this pass does not auto-reassign.
+F65 stays In Progress. Do not apply `20260925120000_proposal_wtc_cancels_proposal_wtc_id.sql` to production from this slice. Do not merge. Build vs Plan, Code Review, and Security Review are still open. Preview waits until that migration can be applied somewhere other than production, or until a preview database has the column.

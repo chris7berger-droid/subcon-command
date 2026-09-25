@@ -4,7 +4,8 @@ import { C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fetchAll } from "../lib/supabaseHelpers";
 import { fmtD, fmt$, over, tod } from "../lib/utils";
-import { pipelineStats, OWED_STAGES } from "../lib/followUp";
+import { pipelineStats, OWED_STAGES, bidValue } from "../lib/followUp";
+import { countsAsSoldJob } from "../lib/deductiveCo";
 import { STAGES, STAGE_C } from "../lib/mockData";
 import SectionHeader from "../components/SectionHeader";
 import PipelinePanel from "../components/PipelinePanel";
@@ -266,7 +267,7 @@ export default function CallLog({ teamMember, setSubPage }) {
   // (id set from the same snapshot/scope), so the list matches the number — incl.
   // Sold = this-month, not the all-time Sold stage.
   const scopedIds = st => new Set(scopedActive.filter(c => c.stage === st).map(c => c.id));
-  const soldMonthIds = new Set(pipe ? pipe.soldProps.map(p => p.call_log_id) : []);
+  const soldMonthIds = new Set(pipe ? pipe.soldProps.filter(p => countsAsSoldJob(bidValue(p))).map(p => p.call_log_id) : []);
   const PIPE_LABEL = { All: "All active", "Wants Bid": "Wants Bid", "Has Bid": "Has Bid", Sold: "Sold this month" };
   const pickPipe = (key, ids) => {
     setPipeFilter({ key, ids });

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { C, F } from "../lib/tokens";
 import { fmt$, fmtD } from "../lib/utils";
 import { sumContractBilled } from "../lib/calc";
+import { parentContractChain } from "../lib/deductiveCo";
 import { selectableWorkTypes } from "../lib/workTypes";
 import Btn from "./Btn";
 import { supabase } from "../lib/supabase";
@@ -11,6 +12,12 @@ import ArchiveProposalModal from "./ArchiveProposalModal";
 import QBActionModal from "./QBActionModal";
 import MergeJobModal from "./MergeJobModal";
 import MultiGCWizard from "./MultiGCWizard";
+
+function fmtSigned(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fmt$(0);
+  return v < 0 ? `-${fmt$(Math.abs(v))}` : fmt$(v);
+}
 
 const STAGES = ["New Inquiry", "Wants Bid", "Has Bid", "Sold", "Lost"];
 
@@ -218,7 +225,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
         if (children) callLogIds.push(...children.map(c => c.id));
       }
       const [{ data: props }, { data: invs }] = await Promise.all([
-        supabase.from("proposals").select("id, status, total, historical_billed_amount, proposal_number, cloned_from_proposal_id, is_archive_proposal, customer_id, sent_at, call_log(display_job_number)").is("deleted_at", null).in("call_log_id", callLogIds).order("created_at"),
+        supabase.from("proposals").select("id, status, total, historical_billed_amount, proposal_number, cloned_from_proposal_id, is_archive_proposal, customer_id, sent_at, call_log_id, call_log(display_job_number, is_change_order)").is("deleted_at", null).in("call_log_id", callLogIds).order("created_at"),
         // Lines are embedded so T&M dollars can be told apart from contract
         // dollars. sumContractBilled works on INVOICES and sums invoice.amount,
         // so it cannot distinguish them — a mixed invoice carries both under one
@@ -890,13 +897,14 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       {/* Job Totals — derived from linkedProposals + linkedInvoices (already family-scoped) */}
       {(() => {
         if (!linkedProposals.length) return null;
-        // SOV contract_sum wins when present (live truth for pay-app jobs);
-        // fall back to proposals.total for non-pay-app jobs.
-        const sold = linkedProposals.filter(p => p.status === "Sold")
-          .reduce((s, p) => {
-            const sov = contractSumByProposalId[p.id] || 0;
-            return s + (sov > 0 ? sov : parseFloat(p.total) || 0);
-          }, 0);
+        // Family sum is still the current contract. A parent with sold change
+        // orders splits that same sum into Original + Change Orders.
+        const chain = parentContractChain(linkedProposals, {
+          parentJobId: job.id,
+          contractSumById: contractSumByProposalId,
+        });
+        const sold = chain.current;
+        const showChain = !job.is_change_order && linkedProposals.some(p => p.status === "Sold" && p.call_log?.is_change_order);
         const historical = linkedProposals.filter(p => p.status === "Sold")
           .reduce((s, p) => s + (parseFloat(p.historical_billed_amount) || 0), 0);
         const billedSC = sumContractBilled(linkedInvoices);
@@ -973,10 +981,33 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
             <div style={{ padding: "18px 22px 16px" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, fontFamily: F.display, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Job Totals</div>
 
-              <div style={ledgerRow}>
-                <span style={ledgerLbl}>Contract</span>
-                <span style={ledgerVal}>{fmt$(sold)}</span>
-              </div>
+              {showChain ? (
+                <>
+                  <div style={ledgerRow}>
+                    <span style={ledgerLbl}>Original Contract</span>
+                    <span style={ledgerVal}>{fmt$(chain.original)}</span>
+                  </div>
+                  <div style={ledgerRow}>
+                    <span style={ledgerLbl}>Change Orders</span>
+                    <span style={ledgerVal}>{fmtSigned(chain.changeOrders)}</span>
+                  </div>
+                  {chain.otherFamilySold !== 0 && (
+                    <div style={ledgerRow}>
+                      <span style={ledgerLbl}>Other sold family work</span>
+                      <span style={ledgerVal}>{fmtSigned(chain.otherFamilySold)}</span>
+                    </div>
+                  )}
+                  <div style={ledgerRow}>
+                    <span style={ledgerLbl}>Current Contract</span>
+                    <span style={ledgerVal}>{fmtSigned(chain.current)}</span>
+                  </div>
+                </>
+              ) : (
+                <div style={ledgerRow}>
+                  <span style={ledgerLbl}>Contract</span>
+                  <span style={ledgerVal}>{fmtSigned(sold)}</span>
+                </div>
+              )}
 
               {hasTM && (
                 <div style={{ ...ledgerRow, alignItems: "flex-start" }}>
@@ -992,10 +1023,12 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                 </div>
               )}
 
-              <div style={{ borderTop: `1px solid ${C.borderStrong}`, marginTop: 8, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: C.textHead, fontFamily: F.display }}>{hasTM ? "Job value to date" : "Job value"}</span>
-                <span style={{ fontSize: 22, fontWeight: 800, color: C.textHead, fontFamily: F.display, fontVariantNumeric: "tabular-nums" }}>{fmt$(jobValue)}</span>
-              </div>
+              {(!showChain || hasTM) && (
+                <div style={{ borderTop: `1px solid ${C.borderStrong}`, marginTop: 8, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: C.textHead, fontFamily: F.display }}>{hasTM ? "Job value to date" : "Job value"}</span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: C.textHead, fontFamily: F.display, fontVariantNumeric: "tabular-nums" }}>{fmt$(jobValue)}</span>
+                </div>
+              )}
             </div>
 
             {/* Stat strip: billed / remaining / % invoiced */}
@@ -1055,7 +1088,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                         <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: sc.bg, color: sc.color, fontFamily: F.ui, textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.status}</span>
                       </span>
                       {p.sent_at && <span style={{ fontSize: 11.5, fontWeight: 600, color: C.textMuted, fontFamily: F.ui }}>Sent {fmtD(p.sent_at)}</span>}
-                      <span style={{ fontSize: 13, fontWeight: 700, color: C.textHead, fontFamily: F.display, fontVariantNumeric: "tabular-nums", marginLeft: "auto" }}>{fmt$((contractSumByProposalId[p.id] > 0 ? contractSumByProposalId[p.id] : parseFloat(p.total)) || 0)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.textHead, fontFamily: F.display, fontVariantNumeric: "tabular-nums", marginLeft: "auto" }}>{fmtSigned(contractSumByProposalId[p.id] > 0 ? contractSumByProposalId[p.id] : (parseFloat(p.total) || 0))}</span>
                     </button>
                   );
                 })}

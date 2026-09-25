@@ -20,6 +20,7 @@
 import { supabase } from "./supabase";
 import { loadSnapshot, pipelineStats, digSummary } from "./followUp";
 import { calcWtcBreakdown, usesExactPricing } from "./calc";
+import { distinctSoldJobCount } from "./deductiveCo";
 import {
   loadJobs, loadAllRows, loadPRTsForCallLogIds, loadMobilizationsByJobId,
   loadBillingSurfaceData, computeHomeDashboard, fmtD, getMonday, wkDates,
@@ -54,8 +55,9 @@ async function loadSalesAndCompany() {
   const soldYTDValue = soldProposals.reduce((s, p) => s + (p.total || 0), 0);
 
   // Jobs YTD — DISTINCT call_log behind the Sold proposals (multi-proposal job
-  // counts once).
-  const jobsYTD = new Set(soldProposals.map(p => p.call_log_id).filter(Boolean)).size;
+  // counts once). A negative deductive CO is not another job won. Its dollars
+  // stay in soldYTD above.
+  const jobsYTD = distinctSoldJobCount(soldProposals, p => Number(p.total) || 0);
 
   // Avg QUOTED margin — blended (Σprofit / Σprice) across the Sold jobs' WTCs.
   // This is margin quoted AT SALE, not realized margin on finished jobs (which
