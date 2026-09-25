@@ -40,7 +40,7 @@ Unchanged in this revision: `DailyLogs.jsx`, `TimeClock.jsx`, `StageJobCard.jsx`
 
 ## Visual Verification
 
-Authenticated Field and Schedule screens were not walked. This environment has no logged-in session.
+Authenticated Field and Schedule screens were not walked. This environment has no logged-in session. The expanded-card spacing was measured in headless Chrome against the Schedule stylesheets.
 
 ## Deviations From Handoff
 
