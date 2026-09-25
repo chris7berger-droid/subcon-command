@@ -1,0 +1,105 @@
+SC Handoff v297 — Crew → Team one-time production backfill — 2026-09-25
+
+SESSION SUMMARY
+Chris explicitly requested a one-time active-crew backfill, with inspection,
+classification, and an exact proposed mapping shown before production writes.
+All mappings were unambiguous, so the authorized transaction proceeded.
+17 active crew: A already linked 1; B existing unlinked Team 0;
+C create Team and link 16; D ambiguous/skipped 0. Complete in production.
+Chris may now add email addresses and send invites through Team himself.
+
+DATABASE CHANGES
+Committed at 2026-09-25 14:16:50 UTC (07:16:50 Pacific), transaction 147672.
+Inserted 16 team_members; updated only 16 existing crew.team_member_id values.
+All created Team records: exact existing crew name; phone NULL (none available);
+email NULL; role Field; active true; apps ["field"]; auth_id NULL.
+Tenant: 246f6551-60de-4965-bb97-9a52971bc05d for all inspected active crew.
+Other Team columns use existing schema defaults, matching Add Without Invite.
+No new crew rows, renames, migrations, schema changes, auth users or invitations.
+
+DECISIONS / SCHEMA
+Production crew has NO id column. Its primary key is name. All exact names,
+tenant ownership, crew metadata and archived_on values were preserved.
+Inspected all 29 crew rows and all 7 prior Team rows, including inactive ones.
+Compared existing IDs, normalized exact names (including Last, First form),
+and normalized phones. All 17 active crew had phone NULL and archived=false.
+Chris Berger was already linked, active, and same-tenant: no change to his
+Admin role, app access, email, auth ID, or any other Team field.
+Other active crew had no Team match. Archived crew were excluded from writes.
+Prior handoffs' no-backfill scope was superseded by this explicit request.
+
+FINAL CREW PRIMARY KEY → TEAM MEMBER ID
+Antonio → c6b51b6b-b2cf-45ee-922c-ed36ce309b0d
+Axel → 4dabe343-34ac-459d-a923-8fb9f41ae30b
+Bash Dave → b1c0b51f-018c-4ad2-8b6d-e76ffc48f479
+Chris Berger → f5a6379d-5457-414c-a13f-d27838674911 (already linked)
+JoseJR → 984fa566-b009-4f4e-a6e0-60b6fa2bc2aa
+Loomis, Jessie → c048417d-218e-4aa1-b2a3-abddd6280513
+Luna, Daniel → 3fc5c812-934e-40fe-b9a6-662f8e6dd2d6
+Medina, Jacob → 330458c1-243c-446b-a188-a8930d86ea6e
+Misa → 0582b0ea-267b-4a3b-95d4-1d0087a959d9
+Quinones, Jaime → a1b67e2c-e3cb-4787-adf3-1dddee36c0a8
+Ramirez, Jorge → 82d1b35c-233c-4f0a-acd9-757e88fc5f2c
+Romero Tamayo, Edgar → edd8f196-38d9-49fc-8058-888589819820
+Simeroth Jr, Eric → b95d58d0-f51a-4c0f-b782-c4e2a342fd9d
+Victor → b7549995-d0c0-4055-907c-abc881444a3d
+Williams, Lucas → e78920f0-8398-4b3d-9067-8bd0d8da126b
+Zomparelli, Kurtis → f90d4c44-5df6-498b-a212-65ce9d3600a5
+Zorn, Ricky → 67907b2c-d7c5-4e4a-bc6c-b2b4b99617da
+
+VERIFICATION
+Transaction used REPEATABLE READ and SHARE ROW EXCLUSIVE locks on crew and
+team_members, with 5-second lock timeout and 90-second statement timeout.
+It compared both complete tables to inspection snapshots before writing,
+used the exact pre-announced UUIDs, asserted insert/update counts, and aborted
+on missing links, wrong tenants, duplicate names, or unexpected field changes.
+All 7 prior Team rows remained byte-for-byte equivalent as JSON. All 29 crew
+rows remained equivalent except the 16 intended team_member_id changes;
+all 12 archived crew were unchanged. Team count rose 7 → 23.
+Before/after row counts and content fingerprints inside the transaction
+matched for all 56 other public tables and auth.users, auth.identities,
+auth.one_time_tokens. Auth users 5; identities 5; invitation tokens 0.
+Preserved assignments 3,535; crew_status 214; jobs 312; mobilizations 325;
+job_changes 494; time_punches 37. Existing assignment identities untouched.
+
+A fresh post-commit production query verified 17/17 active crew linked to
+distinct existing same-tenant Team IDs and all 16 new rows' exact fields.
+Existing Team and crew comparisons passed again. Auth fingerprints matched.
+The later query observed separate production edits to proposals/proposal_wtc
+at 14:17:37 UTC, after this backfill: transaction IDs 147674, 147676, 147677
+(backfill was 147672). Those two table fingerprints therefore changed between
+requests, but both were unchanged within the backfill transaction. Do not
+claim the whole live database was frozen across the verification window.
+
+Team.jsx already loads Team records and permits saving email then inviting;
+no app change is necessary. No browser login or invitation was performed.
+No build/deploy needed for this data operation; only documentation changed.
+
+NEW/CLOSED BACKLOG ITEMS
+Closed IDENT-BACKFILL. IDENT-4 assignment-identity work remains separate.
+
+NOT TOUCHED
+Application code, UI, Field Command, PowerSync, assignment IDs, schedules,
+job relationships, histories, existing names, auth users or invitations.
+Other pending branches and backlog tasks were not resumed.
+
+NEXT SESSION POINTERS
+Backfill is complete. Do not repeat or create these people again.
+Chris can open Team, edit each new member’s email, save, and send an invite.
+No blockers. Archived crew are intentionally outside this backfill.
+
+FILES TO KNOW
+docs/BACKLOG.md
+docs/handoffs/SC_Handoff_v297.txt
+Local audit files (temporary, not source files):
+/private/tmp/crew-team-backfill-before.json
+/private/tmp/crew-team-backfill-plan.json
+/private/tmp/crew-team-backfill-apply.sql
+/private/tmp/crew-team-backfill-receipt.json
+/private/tmp/crew-team-backfill-verify.sql
+/private/tmp/crew-team-backfill-after.json
+/private/tmp/prepare-crew-team-backfill.mjs
+
+GIT STATE
+Started clean on main at abad440, matching the local origin/main reference.
+This closeout changes only BACKLOG and this handoff; no application files.
