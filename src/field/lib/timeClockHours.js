@@ -535,3 +535,42 @@ export function reviewTimePunches(rows, { from, to, today = "" } = {}) {
   for (const row of displayed) explainRow(row, byKey, today);
   return { rows: displayed };
 }
+
+function hundredths(value) {
+  if (value === "" || value == null) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.round(n * 100) : null;
+}
+
+// Scoreboard totals over the rows the table shows. Sums the displayed
+// regular/OT strings so each card matches its column and the CSV.
+export function timeClockScoreboard(rows) {
+  const crew = new Set();
+  const punchedIn = new Set();
+  const onOt = new Set();
+  let regular = 0;
+  let ot = 0;
+  let notCounted = 0;
+  for (const row of rows || []) {
+    const who = row.employeeId || row.employee || row.key;
+    crew.add(who);
+    if (row.statusLabel === STATUS_IN_PROGRESS) punchedIn.add(who);
+    const reg = hundredths(row.regularHours);
+    const over = hundredths(row.otHours);
+    if (reg == null && over == null) {
+      notCounted += 1;
+      continue;
+    }
+    regular += reg || 0;
+    ot += over || 0;
+    if (over > 0) onOt.add(who);
+  }
+  return {
+    crewCount: crew.size,
+    punchedIn: punchedIn.size,
+    crewOnOt: onOt.size,
+    regularHours: (regular / 100).toFixed(2),
+    otHours: (ot / 100).toFixed(2),
+    notCounted,
+  };
+}

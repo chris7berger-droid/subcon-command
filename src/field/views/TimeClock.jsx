@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { C, F } from "../../lib/tokens";
-import FieldScreen, { StatusChip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
+import FieldScreen, { StatusChip, StatStrip, ErrorNote, PlainTable, RefreshBtn } from "../components/FieldScreen";
 import { fetchTimeClockAudit, fetchTimeClockEmployees, fetchTimeClockReview, searchTimeClockJobs } from "../lib/queries";
 import { reviewRowsToCsv } from "../lib/timeClockCsv";
-import { formatDurationHours, reviewTimePunches, STATUS_IN_PROGRESS } from "../lib/timeClockHours";
+import { formatDurationHours, reviewTimePunches, STATUS_IN_PROGRESS, timeClockScoreboard } from "../lib/timeClockHours";
 import { applyTimePunchCorrection, TIME_CLOCK_WRITES_REASON, timeClockWritesAvailable, timePunchCorrectionArgs } from "../lib/timeClockWrites";
 import {
   assertPunchDateRange,
@@ -82,6 +82,20 @@ function statusTone(label) {
   if (label === STATUS_IN_PROGRESS) return "teal";
   if (label) return "amber";
   return "muted";
+}
+
+function scoreboardItems(board, published) {
+  const show = (value) => (published ? value : "—");
+  const notCounted = published && board.notCounted
+    ? `${board.notCounted} ${board.notCounted === 1 ? "shift" : "shifts"} not counted — open or missing punches`
+    : "";
+  return [
+    { label: "Crew count", value: show(board.crewCount) },
+    { label: "Punched in", value: show(board.punchedIn) },
+    { label: "Crew on OT", value: show(board.crewOnOt), tone: "amber" },
+    { label: "Total regular hours", value: show(board.regularHours), hint: notCounted },
+    { label: "Total OT hours", value: show(board.otHours), tone: "amber", hint: notCounted },
+  ];
 }
 
 function shiftColumns(tableView, selectedKey, setSelectedKey) {
@@ -246,6 +260,7 @@ export default function TimeClock({ teamMember }) {
     () => filterTimeClockRows(review.rows, { jobId: selectedJobId, employeeId: selectedEmployeeId, customerId: selectedCustomerId }),
     [review.rows, selectedJobId, selectedEmployeeId, selectedCustomerId]
   );
+  const board = useMemo(() => timeClockScoreboard(shownShifts), [shownShifts]);
   const filtered = selectedJobId || selectedEmployeeId || selectedCustomerId;
   const selected = shownShifts.find((row) => row.key === selectedKey) || null;
 
@@ -290,6 +305,7 @@ export default function TimeClock({ teamMember }) {
         </div>
       }
     >
+      <StatStrip items={scoreboardItems(board, published)} />
       <div
         style={{
           display: "flex",
