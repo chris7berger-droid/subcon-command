@@ -70,14 +70,15 @@ export default function CallLog({ teamMember, setSubPage }) {
       supabase.from("tenant_config").select("archive_after_months, archive_stages").limit(1).single(),
     ]);
 
-    // Auto-archive: mark old jobs matching tenant criteria
+    // Preview deployments share production data: never archive on page load there.
+    // Production keeps the existing tenant-driven auto-archive behavior.
     const months = config?.archive_after_months ?? 12;
     const stages = config?.archive_stages ?? ["Lost"];
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - months);
     const cutoffStr = cutoff.toISOString().slice(0, 10);
 
-    if (stages.length > 0) {
+    if (import.meta.env.VITE_VERCEL_ENV !== "preview" && stages.length > 0) {
       const { data: toArchive } = await supabase
         .from("call_log")
         .select("id")
