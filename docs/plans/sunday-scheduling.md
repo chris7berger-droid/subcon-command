@@ -7,10 +7,10 @@ In this plan each tag names its source:
 - `[DERIVED]` — T1's reading of source, or an implementation detail T1 derived from the direction. Not ratified by Chris; T2 verifies it and may challenge it. `[DERIVED · coordinator]` — the coordinator's implementation interpretation (Beat 9 only).
 - `[DESIGN-OPEN]` — none in scope. `[BLOCKED]` — none.
 
-**Status:** DRAFT for T2 (original). **Not locked by Chris personally** — see §A.
+**Status:** REVISION 1 for T2 — answers the round-1 audit (Revision notes, before the audit manifest). **Not locked by Chris personally** — see §A.
 **Author:** T1 / `t1-sunday-parity` (Claude Code session `1470cf53-cb8c-459b-a4a2-787383448af0`, https://claude.ai/code/session_018Y4LCyxKSLJCHkcmpDoV4w) · 2026-10-01
 **Slice:** backlog F60 · repo `subcon-command` (formerly `sales-command`) · branch `feat/sunday-saturday-parity`, isolated worktree · base `origin/main` @ `3145a7a49984015cbfa30013f502d24c45c9358a`
-**Type:** feature · UI slice (AIOS dev protocol §14 applies) · **Phase:** Planning → Plan Audit (T2, independent). The Planning lock is not recorded as met (§A). No later gate is skipped by this plan.
+**Type:** feature · UI slice (AIOS dev protocol §14 applies) · **Phase:** Planning → Plan Audit (T2, independent). Round 1 returned NOT CONVERGED on `745a291` (gate recorded in `docs/AUDIT_LOG.md`); this revision goes to an independent delta review. The Planning lock is not recorded as met (§A). No later gate is skipped by this plan.
 **Replaces** the PARKED stub of 2026-09-06 in this same file (`git log -- docs/plans/sunday-scheduling.md`). Related: `docs/plans/calendar-modernization.md` §2.1.
 
 ---
@@ -23,11 +23,13 @@ T1 has not seen Chris's own messages. Everything below is relayed by the coordin
 2. **Scope wording** — the same packet, coordinator's words: "Make Sunday function exactly like Saturday NOW across relevant scheduling. Preserve current Saturday rules, including bulk Select all and staffing/capacity defaults. OPTIONAL-WEEKEND/SELECT-ALL REFORM IS EXPLICITLY DEFERRED. Do not silently implement the earlier proposed weekdays-only default."
 3. **Gate** — coordinator follow-up to T1, 2026-10-01 15:37 PDT: "Chris already chose exact Saturday parity and then said 'Okay go launch that work in AIOS.' He subsequently authorized consolidating Sunday first and mobile afterward into one workstream. Proceed under that existing implementation authorization; do not ask him to repeat the scope or authorize the same work again. Do not fabricate a fresh personal plan-lock event, preview acceptance, or merge authorization. … The concrete plan is now subject to the independent review already authorized as part of this work."
 4. **Week links** — the same follow-up: include the week-link fix (Beat 9, S10) as "the coordinator's implementation interpretation of the approved goal, not a new quote or personal decision from Chris. No other adjacent fixes are included."
+5. **Revision 1** — coordinator instruction to T1, 2026-10-01 15:54 PDT: "Make exactly the six plan-body corrections requested by independent T2 … No scope expansion, new product decision, code, audit-manifest edit, repeated source inventory, or user approval question. … No new personal plan lock or preview acceptance is claimed."
 
 What this does and does not establish:
 - **User-settled:** the direction in item 1 — Sunday matches Saturday now; optional weekends and "choose all" come later.
 - **Not user-settled:** the surface-by-surface scope, the constraints and the acceptance bar below. They are T1's derivations from that direction (and, for Beat 9, the coordinator's interpretation).
 - **No personal plan lock by Chris was observed, asked for or recorded.** T1 drafted a lock question and did not put it to him; the coordinator directed this revision to independent T2 instead. That departs from the Planning gate (repo `docs/DEVELOPMENT_PROTOCOL.md`, Planning; AIOS dev protocol §3, T1). It is recorded here as a departure, not resolved by T1.
+- Revision 1 changes no `[LOCKED]` decision and no scope. It answers T2's six round-1 findings and nothing else.
 - Nothing here is preview acceptance, merge approval or release approval. Chris Acceptance after the preview is unchanged.
 
 ---
@@ -49,7 +51,7 @@ What this does and does not establish:
 
 | # | Surface | Saturday today | Sunday today |
 |---|---|---|---|
-| 1 | Crew Schedule board, `views/Schedule.jsx` | Sixth column. Labels end at `Sa` / `Sat` (`:18–19`). Grid `260px repeat(6, 1fr)` (`App.css:1103`). Week reads of `assignments` and `crew_status` end at `dates[5]` (`:250–251`). Board rows use the window `wsStr…weStr`, `weStr = dates[5]` (`:205`, `:332`). A day is inside a trip by plain date comparison, no weekday rule (`crewScheduleRows.js:23–25`, `allocations.js:61–68`), so a Saturday inside a trip's dates shows the needs-crew marker (`:917–918`) and can be staffed. **Select all** = every in-range day in `dates` where the person is available and assignable (`:461–465`). Day sites over `dates`: header `:1356–1361`, cells `:881–928`, deferred-start chips `:1022–1030`, crew day header and toggles `:1143`, `:1154–1167`, status picker `:1394–1402`, assign picker `:1438–1465`, pool dots and letters `:1216–1225`, `:1237`, `:1257`, crew week popup `:1497–1536` (inline `repeat(6, 1fr)` at `:1497`), Prev/Next pulse `:359–366`. | No column. Not loaded. Not assignable. A trip whose dates touch only Sunday overlaps no board week (`allocations.js:50–57`), so it never appears and cannot be staffed. |
+| 1 | Crew Schedule board, `views/Schedule.jsx` | Sixth column. Labels end at `Sa` / `Sat` (`:18–19`). Grid `260px repeat(6, 1fr)` (`App.css:1103`). Week reads of `assignments` and `crew_status` end at `dates[5]` (`:250–251`). Board rows use the window `wsStr…weStr`, `weStr = dates[5]` (`:205`, `:332`). A day is inside a trip by plain date comparison, no weekday rule (`crewScheduleRows.js:23–25`, `allocations.js:61–68`), so a Saturday inside a trip's dates shows the needs-crew marker (`:917–918`) and can be staffed. **Select all** = every in-range day in `dates` where the person is available and assignable (`:461–465`). Day sites over `dates`: header `:1356–1361`, cells `:881–928`, deferred-start chips `:1022–1030`, crew day header and toggles `:1143`, `:1154–1167`, status picker `:1394–1402`, assign picker `:1438–1465`, pool dots and letters `:1216–1225`, `:1237`, `:1257`, crew week popup `:1497–1536` (inline `repeat(6, 1fr)` at `:1497`), Prev/Next pulse `:359–366`. A pool chip is greyed and cannot be dragged only when the person is out on **every** loaded day (`:1191–1193`, `:1272–1273`); its Sick / Call In / No Show buttons hide on the same test (`:1282–1288`). | No column. Not loaded. Not assignable. A trip whose dates touch only Sunday overlaps no board week (`allocations.js:50–57`), so it never appears and cannot be staffed. |
 | 2 | Weekly Crew Capacity strip, `components/HomeCapacityStrip.jsx` | Six day cards: labels `MON…SAT` (`:6`), grid `repeat(6, 1fr)` (`App.css:6768`). On the board the numbers come from `crewWeekCapacity` + `crewWeekSummary` over the board's `dates` (`CrewWeekCapacity.jsx:14–16`). Elsewhere from `computeHomeDashboard` (`WeeklyCapacityBand.jsx:17–43`, `Jobs.jsx:252–255`). | No card. Not counted. |
 | 3 | Schedule Home, Jobs, Subcon Home summary | `computeHomeDashboard` over the canonical week (`lib/queries.js:1807–1997`): per-day capacity (`:1845–1864`), crew assignments, schedule completion % (`:1911–1922`), short on crew, conflicts (`:1886–1897`). Home's Crew Capacity % is the mean of the day percentages (`Home.jsx:142–146`). Week reads run `dates[0]…dates.at(-1)` (`Home.jsx:46–56`, `Jobs.jsx:142–145,150–162`, `subconSummary.js:89–103`). `getJobMultiWeekAlert` checks six days per later week (`queries.js:973–978`, used at `Jobs.jsx:300`). | Not counted. |
 | 4 | Calendar, `views/Calendar.jsx` | Month grid is Sun–Sat, seven columns (`:70–82`). Week view is Mon–Sat from canonical `wkDates` (`:375–376`). | Month: shown. Week: a Sunday column appears **before Monday**, only when that Sunday has crew (`:368–374`); the week's fetch range is the Sunday before through Saturday (`:218–231`). |
@@ -69,7 +71,7 @@ What this does and does not establish:
 **0.4 Dead code `[DERIVED]`:** `components/StatsBar.jsx` is imported nowhere; its `.statsbar` rule (`App.css:386–394`), the unused `.sch-stats-bar` rule (`App.css:752–760`) and `wkEnd` (`Schedule.jsx:52–56`, never called) hold six-day logic that no screen runs.
 
 **0.5 Adjacent defect found while tracing week links `[DERIVED, reproduced 2026-10-01]`**
-The board turns `?week=<date>` into a week by rounding days ÷ 7 (`Schedule.jsx:121–127`, `:186–195`). A date that is a Friday, Saturday or Sunday therefore opens the **following** week. Reproduced by running that arithmetic for each weekday. One caller passes a raw date: **Open Crew Schedule** in a job's Trips panel (`TripsPanel.jsx:100`). The other callers pass a Monday (`jobCardSchedule.js:22–36`, `HomePanels.jsx:42`, `Schedules.jsx:78`). See Beat 9.
+The board turns `?week=<date>` into a week by rounding days ÷ 7, in two places: the initial state (`Schedule.jsx:121–127`) and a mount effect that computes it again and overwrites the first (`:186–195`). A date that is a Friday, Saturday or Sunday therefore opens the **following** week. Reproduced by running that arithmetic for each weekday. One caller passes a raw date: **Open Crew Schedule** in a job's Trips panel (`TripsPanel.jsx:100`). The other callers pass a Monday (`jobCardSchedule.js:22–36`, `HomePanels.jsx:42`, `Schedules.jsx:78`). See Beat 9.
 
 **0.6 Recorded decisions this plan changes**
 1. This file, 2026-09-06, §1 `[LOCKED]`: "Sunday remains the default day off; this is the exception path made real." Also its §2 option of an on-demand Sunday column.
@@ -115,7 +117,7 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 **The rule.** Wherever the Schedule module shows, selects, loads or totals a week as Monday–Saturday, it uses Monday–Sunday, and Sunday gets the treatment Saturday has on that surface today.
 
 **By surface**
-- **S1 Crew Schedule board.** A seventh day column, `SUN mm/dd`, in the header and every row, with Saturday's cell rules: crew count, `need N`, `need ?`, double-booked marking, needs-crew marker, today highlight, deferred-start coloring, drop target. The assign picker, the per-person day toggles, the deferred-start chips and the Sick / Call In / No Show picker each include Sunday. **Select all** and **Clear all** cover Sunday by Saturday's rule: inside the trip's dates, person available, person assignable that date. The pool's dots and day letters and the crew week popup show seven days. The week label reads Monday – Sunday. `assignments` and `crew_status` are loaded Monday through Sunday, so a trip that touches only Sunday is on that week's board.
+- **S1 Crew Schedule board.** A seventh day column, `SUN mm/dd`, in the header and every row, with Saturday's cell rules: crew count, `need N`, `need ?`, double-booked marking, needs-crew marker, today highlight, deferred-start coloring, drop target. The assign picker, the per-person day toggles, the deferred-start chips and the Sick / Call In / No Show picker each include Sunday. **Select all** and **Clear all** cover Sunday by Saturday's rule: inside the trip's dates, person available, person assignable that date. The pool's dots and day letters and the crew week popup show seven days. A pool chip is greyed only when the person is out on all seven days, so a person out Monday–Saturday with Sunday open is a normal chip that can be dragged (0.2 row 1). The week label reads Monday – Sunday. `assignments` and `crew_status` are loaded Monday through Sunday, so a trip that touches only Sunday is on that week's board.
 - **S2 Weekly Crew Capacity strip** (the board, Jobs, and the band on Calendar, Daily and Materials — `ScheduleLayout.jsx:85`). Seven day cards. Sunday's card is computed like Saturday's. Jobs Starting, Jobs Ending, Jobs Needing Crew and "crew requirements unclear" run over Monday–Sunday.
 - **S3 Schedule Home, Jobs, Subcon Home summary.** Every "this week" number runs over Monday–Sunday. The Jobs multi-week alert counts Sunday crew.
 - **S4 Calendar.** Week view shows Monday through Sunday, seven columns, always, Sunday last. Bars keep today's rule. Month view does not change.
@@ -124,7 +126,7 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 - **S7 Crew texts.** Midweek Update covers today through Sunday; the five phone strings say Sunday. Empty days are still omitted, coworkers still come from the same trip, and the Scheduled Off line keeps its rule. Weekly send does not change.
 - **S8 Scheduled Off.** **This Week** and **Next Week** fill Monday through Sunday. The custom range, the review step and the writes do not change.
 - **S9 Finance / Billing.** Week labels on the Billing header and the 90-day forecast read Monday – Sunday. No row, status, amount or forecast bucket changes; `billingForecast.js` is not edited (0.2 row 9).
-- **S10 Week links (Beat 9).** Opening the board with `?week=<any date>` shows the week that contains that date. So **Open Crew Schedule** on a Sunday-start trip opens that trip's own week. The same fix corrects Friday- and Saturday-start trips, which open one week late today (0.5).
+- **S10 Week links (Beat 9).** Opening the board with `?week=<any date>` shows the week that contains that date. The fix is on the board, at both places it reads the link (`Schedule.jsx:121–127`, `:186–195`); `TripsPanel.jsx:100` keeps passing the trip's start date and is not edited. So **Open Crew Schedule** on a Sunday-start trip opens that trip's own week. The same fix corrects Friday- and Saturday-start trips, which open one week late today (0.5). A link that already carries a Monday opens the same week as today, whether the clock or the target date is in standard or daylight time.
 
 **Constraints**
 - **C1 `[LOCKED · user]`** No Saturday scheduling rule changes. No Monday–Friday rule changes. One exception, from S10: the week a `?week=` link opens for a Friday or Saturday date.
@@ -142,6 +144,7 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
   - A trip that spans a weekend shows Sunday as needing crew, and Jobs Needing Crew lists the Sunday.
   - Sunday is a counted day. Its capacity card shows the whole roster as free unless people are marked off. Home's Crew Capacity % and Schedule completion % include Sunday, so they read lower in weeks with no Sunday crew.
   - Time off already saved as Monday–Saturday does not cover Sunday; that person shows free on Sunday. Scheduled Off's This Week and Next Week buttons run through Sunday from now on.
+  - For the same reason, a person whose saved time off covers Monday–Saturday is no longer greyed out in the crew pool. Their chip is a normal one that can be dragged, with six off days and an open Sunday. Someone off all seven days is greyed as before.
   - The Calendar week view always shows Sunday, at the end of the week. The Sunday column before Monday is gone.
   - The Midweek Update runs through Sunday.
   - Billing and forecast week labels read Monday – Sunday. No billing number changes.
@@ -163,13 +166,19 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 - `src/schedule/views/Daily.jsx`; `src/schedule/lib/exports.js`.
 - `src/schedule/lib/crewWeekText.js` (`crewMidweekDates`); `src/schedule/views/CrewPhone.jsx` (five strings).
 - `src/schedule/lib/crewStatus.js` and `src/schedule/components/ScheduledOffModal.jsx` — the two presets.
-- S10: the `?week=` handling in `Schedule.jsx` (`:121–127`, `:186–195`) or its caller `components/TripsPanel.jsx:100`.
+- S10: `Schedule.jsx`, both `?week=` sites (`:121–127`, `:186–195`). Board-side only.
 
-**Four existing checks encode the six-day week and must state the new one:** `scripts/check-crew-midweek-text-model.mjs` (`:6–15`, `:144`), `scripts/check-crew-phone.mjs` (`:130–133`), `scripts/check-crew-week-summary.mjs` (Monday–Saturday labels at `:64–172`, six day cards at `:79`), `src/schedule/lib/crewStatus.test.mjs` (`:38–42`). A fifth, `scripts/check-legacy-trip-conversion-preview.mjs:90–99`, walks six day cells of a saved production snapshot; whether it still runs is U2. New focused checks for §5 follow the repo's `scripts/check-*.mjs` practice.
+**Four existing checks encode the six-day week and must state the new one:**
+- `scripts/check-crew-midweek-text-model.mjs` — the date lists at `:6–15`. `:54` must stop excluding `SUN 9/13`. The exact text at `:58–64` gains a last line, `SUN 9/13 — JOB #1842`: the fixture has a Sunday row at `:32`, and the line has no "with" part because nobody else is on that trip that day. The summary message at `:144`.
+- `scripts/check-crew-phone.mjs` — with its Tuesday 2026-09-08 clock the Midweek text gains `SUN 9/13 — JOB #6618` (the fixture's Sunday row at `:19`). `:130` and `:149` must stop excluding `SUN 9/13`. `:133` reads `SUN 9/13 · today through Sunday`.
+- `scripts/check-crew-week-summary.mjs` — Monday–Saturday labels at `:64–172`, six day cards at `:79`.
+- `src/schedule/lib/crewStatus.test.mjs` — `:38–42`.
+
+A fifth, `scripts/check-legacy-trip-conversion-preview.mjs:90–99`, walks six day cells of a saved production snapshot; whether it still runs is U2. New focused checks for §5 follow the repo's `scripts/check-*.mjs` practice.
 
 **Expected zero diff — these read the shared helpers or the passed `dates` (T2: confirm no index-5 assumption hides in them):** `views/Home.jsx`, `views/Jobs.jsx`, `views/Billing.jsx`, `views/Schedules.jsx`, `components/WeeklyCapacityBand.jsx`, `components/CrewWeekCapacity.jsx`, `components/BillingForecast.jsx`, `src/lib/subconSummary.js`.
 
-**Zero diff — rules to preserve (§5 E1):** `src/schedule/lib/{workdays,trips,allocations,scheduleCrew,assignmentIdentity,crewScheduleRows,crewWeekSummary,jobCardSchedule,calendarBars,billingForecast}.js`, `src/schedule/components/{DaysModal,StatsBar}.jsx`, `src/field/**`, `src/ar/**`, `src/pages/**`, `src/components/**`, `supabase/**`, `package.json`, `package-lock.json`.
+**Zero diff — rules to preserve (§5 E1):** `src/schedule/lib/{workdays,trips,allocations,scheduleCrew,assignmentIdentity,crewScheduleRows,crewWeekSummary,jobCardSchedule,calendarBars,billingForecast}.js`, `src/schedule/components/{DaysModal,StatsBar,TripsPanel}.jsx`, `src/field/**`, `src/ar/**`, `src/pages/**`, `src/components/**`, `supabase/**`, `package.json`, `package-lock.json`.
 
 **T3's records:** `docs/agent-handoffs/BUILD-REPORT.md` with the Brand check; the F60 row in `docs/BACKLOG.md` (its text still describes the exception path) and the stale note at `docs/BACKLOG.md:9`; the next handoff, numbered from fetched state (the mobile branch already carries v299).
 
@@ -201,12 +210,13 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 **Harness.** Repo practice: focused `scripts/check-*.mjs` browser checks and model checks. Synthetic names only. Every backend request is answered inside the browser from an in-memory fixture. The only writes a check may trigger are `POST` / `DELETE rest/v1/assignments` and the `crew_status` upsert, answered from the fixture; any other non-read request fails the run. No agent signs in anywhere or reads or writes production. Clock fixed to Thursday 2026-10-01, `America/Los_Angeles`, unless stated. Desktop 1440×900. "Matches base" means equal to what `3145a7a` shows for the same fixture.
 
 **Fixture.** Week W = Mon 2026-09-28 … Sun 2026-10-04.
-- Job A: trip A1 2026-09-28 → 2026-10-09, needs 3; trip A2 2026-10-03 → 2026-10-04, needs 2. Job B: trip B1, Saturday 2026-10-03 only, needs 2. Job C: trip C1, Sunday 2026-10-04 only, needs 2, status Ongoing. Job N: one trip 2026-09-28 → 2026-10-09, no weekend crew. Job M: own dates 2026-09-28 → 2026-10-11, no trips. Job R: partly billed, with its end date and `partial_bill_date` on Sunday 2026-10-04.
-- People: P1 Team-linked and free; P2 unlinked and free; P3 Scheduled Off on Sunday; P4 Sick on Saturday; P5 on A1 and B1 on Saturday; P6 on A1 and C1 on Sunday; X on A1 and A2 on both Saturday and Sunday.
+- Job A: trip A1 2026-09-28 → 2026-10-09, needs 3; trip A2 2026-10-03 → 2026-10-04, needs 2. Job B: trip B1, Saturday 2026-10-03 only, needs 2. Job C: trip C1, Sunday 2026-10-04 only, needs 2, status Ongoing. Job N: one trip 2026-09-28 → 2026-10-09, no weekend crew. Job M: own dates 2026-09-28 → 2026-10-11, no trips. Job R: partly billed, with its end date and `partial_bill_date` on Sunday 2026-10-04. Job D: trip D1, Sunday 2026-11-08 only.
+- People: P1 Team-linked and free; P2 unlinked and free; P3 Scheduled Off on Sunday; P4 Sick on Saturday; P5 on A1 and B1 on Saturday; P6 on A1 and C1 on Sunday; P7 on C1 on Sunday 2026-10-04 and on D1 on Sunday 2026-11-08, and on nothing else; X on A1 and A2 on both Saturday and Sunday; P8 Scheduled Off, saved Monday 2026-09-28 through Saturday 2026-10-03, nothing on Sunday, no crew days; P9 Scheduled Off Monday 2026-09-28 through Sunday 2026-10-04.
+- So C1's Sunday crew is P6 (double-booked that day) and P7 (not).
 
 **M — model checks (node, `TZ=America/Los_Angeles`)**
 - M1. `fmtWk('2026-09-28')` is "Sep 28 – Oct 4, 2026"; `fmtWk('2026-12-28')` is "Dec 28 – Jan 3, 2027".
-- M2. `crewMidweekDates('2026-10-01')` is 10-01, 10-02, 10-03, 10-04. `crewMidweekDates('2026-10-04')` is 10-04 only. A person on C1 gets `SUN 10/4 — JOB #… — with …` naming exactly C1's other crew that day. A person with nothing on Sunday gets no Sunday line. Scheduled Off on Sunday with no assignment gives `SUN 10/4 — (OFF — MAY CHANGE)`. The existing Saturday fixture lines in `check-crew-midweek-text-model.mjs:121–141` are unchanged.
+- M2. `crewMidweekDates('2026-10-01')` is 10-01, 10-02, 10-03, 10-04. `crewMidweekDates('2026-10-04')` is 10-04 only. P7 gets `SUN 10/4 — JOB #<job C's number> — with <P6>`: P6 is C1's only other crew that day. A line carries `— with …` only when that trip has other crew that day (`crewWeekText.js:128–131`); a person alone on a trip gets the line ending at the job number. A person with nothing on Sunday gets no Sunday line. Scheduled Off on Sunday with no assignment gives `SUN 10/4 — (OFF — MAY CHANGE)`. The existing Saturday fixture lines in `check-crew-midweek-text-model.mjs:121–141` are unchanged.
 - M3. The Scheduled Off presets from 2026-10-01: this week 2026-09-28 → 2026-10-04; next week 2026-10-05 → 2026-10-11. From Sunday 2026-10-04, this week is still 2026-09-28 → 2026-10-04.
 - M4. Billing, today 2026-10-01: `buildBillingSurface` returns rows, totals and a forecast deep-equal to base for a fixture that includes job R. Job R has a row on both.
 - M5. Job M with its only W+1 crew day on Sunday 2026-10-11 raises no multi-week alert (base: one). With that day on Saturday 2026-10-10 instead, the result matches base.
@@ -224,9 +234,10 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 - B9. Scheduled Off. This Week fills 2026-09-28 → 2026-10-04; Next Week fills 2026-10-05 → 2026-10-11. For X the review lists the Saturday and Sunday assignments and changes neither.
 - B10. Capacity strip. Seven cards, MON 28 … SUN 4. SUN 4's assigned / available, free, out and percent equal the fixture's Sunday truth, computed as SAT 3's are. Its click opens "SUN 10/4" with the Available, Assigned and Out lists. Jobs Starting and Jobs Ending each include job C. Job A's Needing Crew detail lists Sunday Oct 4 next to Saturday Oct 3.
 - B11. Pool and popup. An assigned person's chip shows seven dots under M T W T F S S. The crew week popup has seven day columns, the last SUN 04. The deferred-start chips on A include Su.
-- B12. Week edges. `?week=2026-10-26` ends SUN 11/01 (clocks fall back). `?week=2026-12-28` ends SUN 01/03 with the label "Dec 28 – Jan 3, 2027". `?week=2027-03-08` ends SUN 03/14 (clocks spring forward). Each shows seven consecutive dates with none repeated or skipped, and reads `lte` that Sunday. From week 2026-09-28, Next loads 2026-10-05 … 2026-10-11, and the 2026-10-04 crew days are not on it.
-- B13. Monday–Saturday. Every Monday–Saturday cell, count and marker on the board matches base.
-- B14. Existing Sunday rows. On first load, before any check writes, the fixture's saved Sunday rows — P6's and X's crew days and P3's Scheduled Off — already show in the Sunday column, the pool dots and the SUN 4 card. Only reads are sent.
+- B12. Week edges. `?week=2026-10-26` ends SUN 11/01 (clocks fall back). `?week=2026-12-28` ends SUN 01/03 with the label "Dec 28 – Jan 3, 2027". `?week=2027-03-08` ends SUN 03/14 (clocks spring forward). Each shows seven consecutive dates with none repeated or skipped, and reads `lte` that Sunday. From week 2026-09-28, Next loads 2026-10-05 … 2026-10-11, and the 2026-10-04 crew days are not on it. (These are Monday links with the clock in daylight time. W3 covers the clock in standard time.)
+- B13. Monday–Saturday. Every Monday–Saturday cell, count and marker on the board matches base, apart from P8's pool chip (B15).
+- B14. Existing Sunday rows. On first load, before any check writes, the fixture's saved Sunday rows — P6's, P7's and X's crew days and P3's and P9's Scheduled Off — already show in the Sunday column, the pool dots and the SUN 4 card. Only reads are sent.
+- B15. Monday–Saturday time off. P8's chip is not greyed, can be dragged, and shows its Sick / Call In / No Show buttons; on base it is greyed and cannot be dragged. Its dots show six Scheduled Off days and an open Sunday. Dragged onto A1, the picker marks Monday–Saturday as Scheduled Off and leaves Sunday open. P9, off all seven days, is greyed and cannot be dragged.
 
 **H — Home and Jobs**
 - H1. `/schedule/jobs` and the band on `/schedule/calendar`: seven capacity cards; SUN 4 is computed as SAT 3 is.
@@ -234,12 +245,13 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 
 **K — Calendar, `/schedule/calendar`**
 - K1. Week view of 2026-09-28: seven columns in the order Mon 28, Tue 29, Wed 30, Thu 1, Fri 2, Sat 3, Sun 4. No column sits before Monday. The label reads "Sep 28 – Oct 4, 2026". A week with no Sunday crew shows the same seven columns.
-- K2. Job C's crew draws a bar in Sun 4. Job A's bar runs through Sat 3 and Sun 4, where crew is assigned. Job N's bar stops Friday and resumes Monday, as on base.
+- K2. Week view of 2026-09-28: job C's crew draws a bar in Sun 4. Job A's bar runs through Sat 3 and Sun 4, where crew is assigned. Job N's bar covers Mon 28 – Fri 2 and nothing on Sat 3 or Sun 4. Week view of 2026-10-05: job N's bar covers Mon 5 – Fri 9. Both of job N's segments match base, and Month view shows the same two segments (K3).
 - K3. Month view for October 2026 matches base.
+- K4. A week whose Sunday is outside the month grid. Open Week view with October 2026 in view (it lands on 2026-09-28), then press Next five times to the week of 2026-11-02. October's month grid ends Saturday 2026-11-07, so Sunday 2026-11-08 is outside it. The `assignments` read carries `lte 2026-11-08`, and job D's crew draws a bar in Sun 8.
 
 **D — Daily, `/schedule/daily`**
 - D1. Seven day columns, Mon 9/28 … Sun 10/4. The label reads "Sep 28 - Oct 4, 2026". The reads include 2026-10-04.
-- D2. Job C's card shows ✓ under Sun for its crew. Job A's staffing row shows Sunday the way it shows Saturday. P3 is listed under Scheduled Off with Off under Sun. P6 shows 2X under Sun.
+- D2. Job C's card shows ✓ under Sun for P7 and 2X under Sun for P6: a double-booked day shows 2X in place of ✓ (`Daily.jsx:225–226`). Job A's staffing row shows Sunday the way it shows Saturday. P3 is listed under Scheduled Off with Off under Sun.
 
 **X — Print (Actions → Export)**
 - X1. Week Schedule: the subtitle reads "Sep 28 - Oct 4, 2026"; job C is listed with its Sunday crew; the `assignments` read ends `lte 2026-10-04`. (The print lists Ongoing and On Hold jobs only, as today.)
@@ -254,6 +266,8 @@ Intent: Sunday works exactly like Saturday does today — same column, same assi
 
 **W — Week links (S10)**
 - W1. From a job's Trips panel, **Open Crew Schedule** on a trip starting Fri 2026-10-02, Sat 2026-10-03 or Sun 2026-10-04 opens the week of 2026-09-28 with that row in view. A Monday-start trip opens the same week as on base.
+- W2. Direct links, clock Thursday 2026-10-01. `/schedule/schedule?week=2026-10-04` opens the week of 2026-09-28: the label reads "Sep 28 – Oct 4, 2026" and the reads run `gte 2026-09-28`, `lte 2026-10-04`. `?week=2026-10-02` and `?week=2026-10-03` open the same week. `?week=2026-10-05` opens 2026-10-05, as on base. Each week is still showing after the page settles, so both read sites agree.
+- W3. Clock in standard time, Tuesday 2026-12-01. Monday links to daylight-time dates open their own week, as on base: `?week=2026-10-26` (past) opens 2026-10-26 and `?week=2027-03-15` (future) opens 2027-03-15. Monday links to standard-time dates do the same: `?week=2026-11-30` and `?week=2027-03-08`. Other days open the week that contains them: `?week=2026-11-01` opens 2026-10-26, `?week=2027-03-21` opens 2027-03-15, `?week=2026-12-06` opens 2026-11-30. The three callers that already pass a Monday (`jobCardSchedule.js:30–31`, `HomePanels.jsx:42`, `Schedules.jsx:78`) land on the same week as base under this clock.
 
 **F — Desktop layout and brand, 1440×900 and 1280×800**
 - F1. The board, the capacity strip, Daily and the Calendar week view show all seven day columns with no sideways page scroll and no clipped or overlapping label, count, `need N`, percent or TODAY tag.
@@ -287,6 +301,25 @@ Completion claims stay separate: code built · data applied (none) · authentica
 Agent elapsed time to a tested Vercel preview: about 60–90 minutes of build and local checks, then about 15 minutes for the Smoke Test, the push and the deployment. The reviews (T2, T4, T5, T6) are separate.
 
 Uncertain: U1 and F4 (whether seven columns stay readable at 1280); U2; how the mobile slice's rebase onto the Sunday commit goes.
+
+## Revision notes
+
+**Revision 1 — 2026-10-01.** Answers T2 round 1: NOT CONVERGED on `745a291` (manifest `54f4849`; reviewer `t2-sunday-parity` / `471c2a52-fb03-4034-ac24-0dcf72bf2f23`; gate recorded in `docs/AUDIT_LOG.md`). Plan body only. No `[LOCKED]` decision and no scope changed. T1 re-checked each finding against source at `3145a7a` before answering it. The audit manifest below is not edited.
+
+| Finding | Sev | Resolution | Where |
+|---|---|---|---|
+| A1 — no check with the clock in standard time and a Monday link in daylight time | Med | Fixed | §5 W3: clock 2026-12-01, Monday links past and future must match base, the three Monday callers named. S10's last sentence. B12's note. |
+| A2 — where the week-link fix goes was left open | Med | Fixed | S10 and §3 are board-side, at both sites (`Schedule.jsx:121–127`, `:186–195`). "Or its caller" is removed. `TripsPanel.jsx` joins the zero-diff list (E1). §5 W2 is the direct non-Monday check. 0.5 names the overwrite. |
+| B1 — the fixture could not satisfy D2 and M2 | Med | Fixed | The fixture adds P7 to C1, not double-booked. D2 and M2 are restated to what that yields. B14 is updated. |
+| C1 — the Calendar fetch-range edit was untested; K2's view was unstated | Med | Fixed | §5 K4: the week of 2026-11-02, whose Sunday is outside October's grid, with the read bound and the bar asserted (fixture job D). K2 names the views. |
+| D1 — the pool chip changes for saved Monday–Saturday time off | Low | Fixed: stated as an expected consequence, and checked | 0.2 row 1. S1. Expectation check. §5 B15 (fixture P8, P9). B13's cross-reference. |
+| D2 — midweek model check lines were missing | Low | Fixed | §3 check list: `check-crew-midweek-text-model.mjs` `:54` and `:58–64` with the new last line `SUN 9/13 — JOB #1842`. The same for `check-crew-phone.mjs`: `:130`, `:133`, `:149` and `SUN 9/13 — JOB #6618`. |
+
+The expected values added in this revision were computed with the base helpers on 2026-10-01: the week-link dates in W2 and W3, and both new Sunday lines.
+
+T2's three adjacent items — Select all replacing an already-saved out-of-range day, a status save overwriting Scheduled Off, and the Prev/Next pulse reading the loaded week — behave the same for Saturday today. This plan does not cause them. They stay out of scope (§4), with no plan change.
+
+D1 is a visible change Chris has not seen (§A). It is recorded as an expected consequence of Sunday becoming a loaded day, not as one he has accepted.
 
 ---
 
