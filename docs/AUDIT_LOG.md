@@ -347,3 +347,77 @@ Reviewer's limits (verbatim):
 - Nothing was built or run beyond reading and throwaway date arithmetic. Production was not probed (U4 stays open).
 - The plan still states that Chris has not personally locked this artifact, and that the D1 pool-chip change is expected but not accepted by him. This verdict does not change either.
 - This was a delta review only; unchanged sections were not re-audited.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r1-verdict-20261001.md`), followed by its limits, punch list, source-read passes and brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: NO-GO.** One layout check fails, and several required checks could not be verified because this session could not run commands.
+
+```
+Role:        T4 Build vs Plan · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a..adf27b4 (source 3f6b3cf8ac3df2ceef39654e10a429ca14f1a086)
+Checks:      passed by source read: S1–S10 logic, C4, C5, E3
+             failed: F1/B11 crew-pool day dots (P1 below)
+             unverified: reviewed revision, E1, E2 (diff), E4, E5, live run of M/B/H/K/D/X/T/L/W
+             deferred: P (preview), N (native device), U4 (production Sunday rows)
+Brand check: sources and 1280 screenshots verified; one unreported deviation (P1);
+             picker, popup, toggle and print evidence missing
+Verdict:     NO-GO — P1 fails; the unverified checks above must be closed in a session that can run git and the checks
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+No personal plan lock is claimed; the plan's §A provenance stands as written.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### Limits of this review
+
+- **No shell:** Bash was denied, so there was no `git diff`, no `npm run build`, no ESLint and no check run.
+- **Procedure not read:** `/Users/chrisberger/.claude/commands/buildvsplan.md` was denied, so I followed the T4 card and protocol §9 and §14 only.
+- **Revision not confirmed:** I could not read the worktree HEAD, so I reviewed the working tree as found; it matches the build report's description.
+- **Repo invariants not read:** I did not open the repo `CLAUDE.md` or `docs/DEVELOPMENT_PROTOCOL.md`.
+
+#### Punch list
+
+**P1 — fails F1/B11; caused by this build.** The seventh day dot overflows the crew-pool chip.
+- `src/schedule/App.css:959` fixes the dots block at 125px, which is exactly a 62px label plus six 8px dots with 3px gaps.
+- Seven dots need 136px, so the row spills 11px, about 3px past the chip's right edge.
+- It shows in `after/board-1280.png` and `after/board-1440.png`: the last dot and the last "S" sit on or over the chip border.
+- The plan's edit list named only `App.css:1103` and `:6768`, and the new check's clipping test does not cover the pool dots (`scripts/check-sunday-parity.mjs:170`).
+- The build report's "no clipped" and "deviations: none" claims are wrong on this point.
+
+**P2 — brand evidence gap.** The screenshots cover the board, strip, Daily and Calendar week only. Nothing shows the seven-chip assign and Sick pickers, the crew week popup, the expanded-row day toggles or the prints.
+
+**P3 — E5 holds only in the weakened form the report states.** `check-crew-week-summary.mjs` and `check-overlapping-crew-trips.mjs` fail on base and on the build, so they give no trip-ownership coverage. These are original failures, not regressions.
+
+#### Passed by source read
+
+- **Sunday row ownership (C4):** assign and remove still go through `changeRowAssignments` with the trip id as `mobilization_id` and deletes by row id (`Schedule.jsx:483–526`).
+- **One week list (E3):** columns, pickers, dots, popup, both reads and the strip all follow `dates`, with ends at `.at(-1)` (`Schedule.jsx:197–205`, `:250–251`).
+- **Capacity:** the strip is seven cards, and the screenshot's SUN 4 (3 / 8, 38%, 5 free, 2 out) matches the fixture by Saturday's formula.
+- **Read ranges:** the board, Daily (`Daily.jsx:100`, `:180`) and both prints (`exports.js:72`, `:153`) run Monday through Sunday.
+- **Calendar boundary (K4):** the week fetch is Monday–Sunday unioned with the month grid, so the week of 11-02 reads through 11-08 (`Calendar.jsx:218–229`). Sunday is the last column, with none before Monday (`:366`).
+- **Week links and DST (S10, W2, W3):** both read sites use `weekOffsetFor`, which rounds the difference between two local Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). The check asserts no other week's read is sent (`check-sunday-parity.mjs:643–652`).
+- **Select all and time off (C5, B15):** Select all still skips out days (`Schedule.jsx:461–465`). The chip greys only when out on all seven days (`:1191–1193`), and the screenshot shows the Monday–Saturday person as a normal chip.
+- **Other surfaces:**
+  - Multi-week alert counts seven days (`queries.js:974`).
+  - Midweek text runs through Sunday (`crewWeekText.js:110–114`).
+  - The five phone strings say Sunday (`CrewPhone.jsx:151–210`).
+  - Presets fill Monday to Sunday (`crewStatus.js:65–73`).
+  - `fmtWk` ends on Monday+6 (`weeks.js:32–39`).
+- **Seventh-column fit at 1280:** the board, strip, Daily and Calendar week each show seven columns with no visible clipping of headers, counts, `need N`, percent or the TODAY tag.
+- **Dead six-day code left alone, as planned:** `wkEnd`, `StatsBar.jsx`, `App.css:391` and `:757`.
+
+#### Brand check
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and the report correctly claims no column-count match.
+- **Sunday treatment:** in the four screenshots Sunday's column and card carry Saturday's treatment, with no new colour, type or radius visible.
+- **Gaps:** P1 is an unreported deviation, and P2 is missing evidence.
