@@ -18,6 +18,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-07-02 | feat/invoice-email-attachments @ c0764d2 · invoice_email_attachments.md (Round 1) | 14 (6 top / 4 over-cap / 4 adjacent) | 2H/8M (top-6: 2H 4M) | accepted-pending-changes | copied-mechanism-misfit |
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
 | 2026-09-30 | Mobile web preview — T5 Code Review · build 34af375..db14d25 (app source cc4d733) | 6 | 0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING | zero blockers — review ends; non-blockers to backlog | focus-management-gaps |
+| 2026-09-30 | Mobile web preview — T6 Security Review · build 34af375..db14d25 (app source cc4d733) | 1 | 0 BLOCKS-SHIP, 1 HARDENING | zero exploitable-today — review ends; non-blocker to backlog | clean |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -239,3 +240,18 @@ Acceptance: standing (§9). Ordinary verdict, zero BLOCKS-SHIP. No scope change;
 ```
 
 Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its six non-blocking findings are backlog row O13. Full review: `t5-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T6 Security Review
+
+```text
+    Role:        T6 Security Review · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not plan, build, or run T4/T5 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    changed surface (no query/RPC/auth/session/storage/schema/config/dependency line) · route guards and sidebar gating unchanged · sign-out reachable · no new injection sink or external CSS load · QA harness isolation (Supabase answered locally, writes refused, other origins aborted, sockets and service workers off, no hook in app source)
+    Limits:      ~/.claude-commands audit.md and security-review-limiter.md unreadable (tags per task definition and repo SKILL.md rubric) · no git verification of range, HEAD or 3704b9c · nothing executed · repo CLAUDE.md read in part · most changed files read from the frozen diff only · preview deployment not reviewed (pending)
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 HARDENING (backlog)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary verdict, zero exploitable-today and zero BLOCKS-SHIP. No security or tenant-isolation decision is made by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its one HARDENING finding (machine-specific paths in the two scripts) is already item 4 of backlog row O13; no new row. Full review: `t6-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
