@@ -255,3 +255,37 @@ Acceptance: standing (§9). Ordinary verdict, zero exploitable-today and zero BL
 ```
 
 Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its one HARDENING finding (machine-specific paths in the two scripts) is already item 4 of backlog row O13; no new row. Full review: `t6-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+
+### Mobile web preview — T5 archive guard delta
+
+```text
+    Role:        T5 Code Review (delta recheck, archive guard) · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not author this change)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    guard correctness · production preservation · security-relevant implication. No baseline, brand or UI review.
+    Limits:      no git verification of HEAD, diffstat or secrets claim · nothing executed · Vercel setting and compiled builds not checked by this reviewer
+    Verdict:     0 BLOCKS-SHIP · 1 SHOULD-FIX · 1 HARDENING
+    Date:        2026-09-30
+    Next:        T7 → T6 delta · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T5 delta recheck · preview auto-archive guard (working tree on 099f279) | 2 | 0 BLOCKS-SHIP, 1 SHOULD-FIX, 1 HARDENING | zero blockers — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
+
+
+### Mobile web preview — T6 archive guard delta
+
+```text
+    Role:        T6 Security Review (delta recheck, archive guard) · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not author this change; did not run T4/T5)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    bundle exposure (environment name only) · no auth/session/policy/guard/setting change · guard placement over query, update and banner · production/development/empty preserve the original condition · test script local and stub-only
+    Limits:      no git verification of HEAD or scope · nothing executed · compiled-build results and Vercel setting taken from the packet · no live requests
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 SHOULD-FIX (verify deployed preview bundle carries "preview" before first sign-in)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T6 delta recheck · preview auto-archive guard (working tree on 099f279) | 1 | 0 BLOCKS-SHIP, 1 SHOULD-FIX | zero exploitable-today — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
