@@ -134,7 +134,7 @@ export default function SearchSelect({ value, onChange, options, placeholder = "
 
   return (
     <div>
-      <button
+      <button className="cl-select-trigger"
         ref={triggerRef}
         type="button"
         onClick={() => { setOpen(!open); setSearch(""); }}

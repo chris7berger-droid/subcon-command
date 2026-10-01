@@ -1,4 +1,4 @@
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 export default function Btn({ children, onClick, v = "primary", sz = "md", disabled }) {
   const style = {
@@ -18,7 +18,7 @@ export default function Btn({ children, onClick, v = "primary", sz = "md", disab
   }[sz];
 
   return (
-    <button
+    <button className={`cl-button cl-button-${v}`}
       onClick={onClick}
       disabled={disabled}
       style={{

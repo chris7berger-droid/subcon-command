@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fetchAll } from "../lib/supabaseHelpers";
 import { fmtD, fmt$, over, tod } from "../lib/utils";
@@ -311,7 +311,7 @@ export default function CallLog({ teamMember, setSubPage }) {
   const scrollToCommand = () => commandRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   const scrollToList = () => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   const navPill = (label, active, onClick) => (
-    <button onClick={onClick} style={{
+    <button className="cl-tab" aria-pressed={active} onClick={onClick} style={{
       padding: "6px 16px", borderRadius: 20,
       border: `1.5px solid ${active ? C.teal : C.border}`,
       background: active ? C.dark : "transparent",
@@ -324,8 +324,8 @@ export default function CallLog({ teamMember, setSubPage }) {
   return (
     <>
       {wizardEl}
-      <div ref={commandRef} style={{ display: "flex", flexDirection: "column", gap: 20, scrollMarginTop: 12 }}>
-        <SectionHeader title="Call Log" action={<Btn sz="sm" onClick={() => setShowModal(true)}>+ New Inquiry</Btn>} />
+      <div className="cl-command" ref={commandRef} style={{ display: "flex", flexDirection: "column", gap: 20, scrollMarginTop: 12 }}>
+        <SectionHeader title="Call Log" action={<Btn v="teal" sz="md" onClick={() => setShowModal(true)}>+ New Inquiry</Btn>} />
         {/* Page-level nav: Command Center (top) ↔ All Jobs (list). Active reflects scroll. */}
         <div style={{ display: "flex", gap: 8, marginTop: -8 }}>
           {navPill("Command Center", !atList, scrollToCommand)}
@@ -343,7 +343,7 @@ export default function CallLog({ teamMember, setSubPage }) {
             {isManager && (
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 {[["me", "Just me"], ["company", "Whole company"]].map(([v, l]) => (
-                  <button key={v} onClick={() => setIntelScope(v)} style={{
+                  <button className="cl-tab" aria-pressed={intelScope === v} key={v} onClick={() => setIntelScope(v)} style={{
                     padding: "6px 14px", borderRadius: 20,
                     border: `1.5px solid ${intelScope === v ? C.teal : C.border}`,
                     background: intelScope === v ? C.dark : "transparent",
@@ -371,13 +371,14 @@ export default function CallLog({ teamMember, setSubPage }) {
           </div>
         )}
         {/* ── Strong break: this is the ALL JOBS workspace, a deliberate second section ── */}
+        <section className="cl-jobs" aria-label="All jobs">
         <div ref={listRef} style={{ display: "flex", alignItems: "baseline", gap: 12, borderTop: `2px solid ${C.borderStrong}`, paddingTop: 18, marginTop: 8, scrollMarginTop: 12 }}>
           <span style={{ fontSize: 20, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>All Jobs</span>
           <span style={{ fontSize: 12, fontWeight: 700, color: C.tealDeep, fontFamily: F.ui, letterSpacing: "0.06em", textTransform: "uppercase" }}>{activeRows.length} Active</span>
         </div>
         {/* Active / Old Jobs toggle */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => setShowOld(false)} style={{
+          <button className="cl-tab" aria-pressed={!showOld} onClick={() => setShowOld(false)} style={{
             padding: "7px 18px", borderRadius: 20,
             border: `1.5px solid ${!showOld ? C.teal : C.border}`,
             background: !showOld ? C.dark : "transparent",
@@ -387,7 +388,7 @@ export default function CallLog({ teamMember, setSubPage }) {
           }}>
             Active Jobs <span style={{ opacity: 0.6, marginLeft: 4 }}>({activeRows.length})</span>
           </button>
-          <button onClick={() => setShowOld(true)} style={{
+          <button className="cl-tab" aria-pressed={showOld} onClick={() => setShowOld(true)} style={{
             padding: "7px 18px", borderRadius: 20,
             border: `1.5px solid ${showOld ? C.teal : C.border}`,
             background: showOld ? C.dark : "transparent",
@@ -400,7 +401,7 @@ export default function CallLog({ teamMember, setSubPage }) {
         </div>
         {/* Archive banner — shown once when auto-archive runs */}
         {archiveBanner && !showOld && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: "rgba(48,207,172,0.10)", border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: C.tealGlow, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.tealDeep, fontFamily: F.ui }}>
               {archiveBanner} old job{archiveBanner !== 1 ? "s" : ""} moved to Old Jobs. You can find them anytime by tapping "Old Jobs" above.
             </span>
@@ -414,25 +415,25 @@ export default function CallLog({ teamMember, setSubPage }) {
           </div>
         )}
         {digFilter && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: "rgba(48,207,172,0.10)", border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: C.tealGlow, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.tealDeep, fontFamily: F.ui }}>Showing: {DIG_LABEL[digFilter]} ({filtered.length})</span>
             <button onClick={() => setDigFilter(null)} style={{ background: "none", border: `1.5px solid ${C.tealBorder}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: C.tealDeep, cursor: "pointer", fontFamily: "inherit" }}>✕ Show All</button>
           </div>
         )}
         {pipeFilter && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: "rgba(48,207,172,0.10)", border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: C.tealGlow, border: `1.5px solid ${C.tealBorder}`, borderRadius: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.tealDeep, fontFamily: F.ui }}>Showing: {PIPE_LABEL[pipeFilter.key]} ({filtered.length})</span>
             <button onClick={() => setPipeFilter(null)} style={{ background: "none", border: `1.5px solid ${C.tealBorder}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: C.tealDeep, cursor: "pointer", fontFamily: "inherit" }}>✕ Show All</button>
           </div>
         )}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <input placeholder="Search job # or name…" value={q} onChange={e => setQ(e.target.value)}
+          <input aria-label="Search jobs" placeholder="Search job # or name…" value={q} onChange={e => setQ(e.target.value)}
             style={{ padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.borderStrong}`, background: C.linenLight, fontSize: 13.5, outline: "none", width: 240, color: C.textBody, fontFamily: F.ui }} />
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {["All", ...STAGES].map(st => {
               const count = st === "All" ? visibleRows.length : visibleRows.filter(r => r.stage === st).length;
               return (
-                <button key={st} onClick={() => setFilter(st)} style={{ padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${filter === st ? C.teal : C.border}`, background: filter === st ? C.dark : "transparent", color: filter === st ? C.teal : C.textMuted, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: F.display, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                <button className="cl-tab" aria-pressed={filter === st} key={st} onClick={() => setFilter(st)} style={{ padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${filter === st ? C.teal : C.border}`, background: filter === st ? C.dark : "transparent", color: filter === st ? C.teal : C.textMuted, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: F.display, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                   {st} <span style={{ opacity: 0.6, marginLeft: 4 }}>({count})</span>
                 </button>
               );
@@ -487,7 +488,7 @@ export default function CallLog({ teamMember, setSubPage }) {
                       </span>
                     )}
                     {row._gcCount >= 2 && (
-                      <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(48,207,172,0.12)", color: C.tealDeep, padding: "2px 7px", borderRadius: 10, fontFamily: F.ui }}>{row._gcCount} GCS</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, background: C.tealGlow, color: C.tealDeep, padding: "2px 7px", borderRadius: 10, fontFamily: F.ui }}>{row._gcCount} GCS</span>
                     )}
                   </div>
                 )},
@@ -518,9 +519,10 @@ export default function CallLog({ teamMember, setSubPage }) {
             </div>
           </>
         )}
+        </section>
       </div>
       {/* Floating cue — flips direction with scroll: down to the list, up to the center */}
-      <button
+      <button className="cl-jump"
         onClick={atList ? scrollToCommand : scrollToList}
         title={atList ? "Back to the command center" : "Jump to your job list"}
         style={{

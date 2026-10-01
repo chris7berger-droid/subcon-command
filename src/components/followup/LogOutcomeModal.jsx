@@ -4,7 +4,7 @@
 // who called. Corrections are a NEW superseding row (no edit/delete) — logging a
 // newer outcome undoes a mis-tap (supersede rule, N8).
 import { useState } from "react";
-import { C, F } from "../../lib/tokens";
+import { CALLLOG_C as C, F } from "../../lib/tokens";
 import { logOutcome, OUTCOMES } from "../../lib/followUp";
 import Btn from "../Btn";
 
@@ -32,7 +32,7 @@ export default function LogOutcomeModal({ item, loggedBy, onClose, onLogged }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(28,24,20,0.65)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
          onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: C.linenCard, borderRadius: 14, padding: 28, width: 460, maxWidth: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
+      <div className="cl-dialog" onClick={e => e.stopPropagation()} style={{ background: C.linenCard, borderRadius: 14, padding: 28, width: 460, maxWidth: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.03em", textTransform: "uppercase" }}>Log Outcome</div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: C.textFaint }}>✕</button>

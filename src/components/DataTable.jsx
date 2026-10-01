@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 // focusKey: identity of the row to highlight + scroll to (e.g. the record you just
 // came back from). rowKey maps a row to that identity — defaults to row.id.
@@ -50,7 +50,7 @@ export default function DataTable({ cols, rows, onRow, defaultSort = null, focus
   }, [focusKey, sortedRows]);
 
   return (
-    <div style={{
+    <div className="cl-table" style={{
       overflowX: "auto",
       borderRadius: 10,
       border: `1px solid ${C.borderStrong}`,

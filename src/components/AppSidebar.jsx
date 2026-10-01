@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { SalesCommandMark, AppWordmark } from "./Logo";
 import { signOut } from "../lib/auth";
 import {
@@ -111,6 +111,7 @@ export default function AppSidebar({
         )}
       </div>
 
+      {open && <div className="cl-mission">COMMAND THE WORK.<br />COMMAND THE MARGIN.</div>}
       <div style={{ padding: "8px 5px", borderTop: `1px solid ${C.darkBorder}`, flexShrink: 0 }}>
         <button onClick={() => setOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 11px", borderRadius: 7, border: "none", background: "transparent", color: "rgba(255,255,255,0.28)", cursor: "pointer", fontFamily: F.display, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
           <span style={{ fontSize: 11 }}>{open ? "◀" : "▶"}</span>

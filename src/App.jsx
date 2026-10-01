@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import PublicSigningPage from "./pages/PublicSigningPage";
-import { C, F, GLOBAL_CSS } from "./lib/tokens";
+import { C, F, GLOBAL_CSS, CALLLOG_THEME } from "./lib/tokens";
 import { supabase } from "./lib/supabase";
 import { getSession, onAuthStateChange, getCurrentTeamMember } from "./lib/auth";
 import Login from "./pages/Login";
@@ -10,6 +10,7 @@ import FeatureDetailPage from "./pages/FeatureDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import Home from "./pages/Home";
 import CallLog from "./pages/CallLog";
+import "./styles/calllog-brand.css";
 import Leads from "./pages/Leads";
 import WTCCalculator from "./pages/WTCCalculator";
 import Proposals from "./pages/Proposals";
@@ -391,11 +392,12 @@ function AppShell({ open, setOpen, displayName, displayRole, displayInitials, te
   const active = sectionFromPath(location.pathname);
   const group = groupFromPath(location.pathname);
   const onSubconHome = location.pathname === SUBCON_HOME.path;
+  const callLogBrand = location.pathname.replace(/\/$/, "") === "/sales/calllog";
   const activeLabel = resolveNavTarget(active)?.label;
   return (
     <>
       <style>{GLOBAL_CSS}</style>
-      <div data-app-shell style={{ display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
+      <div data-app-shell className={callLogBrand ? "sc-calllog" : undefined} style={{ ...(callLogBrand ? CALLLOG_THEME : {}), display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
 
         <AppSidebar
           open={open} setOpen={setOpen}
