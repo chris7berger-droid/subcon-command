@@ -18,6 +18,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-07-02 | feat/invoice-email-attachments @ c0764d2 · invoice_email_attachments.md (Round 1) | 14 (6 top / 4 over-cap / 4 adjacent) | 2H/8M (top-6: 2H 4M) | accepted-pending-changes | copied-mechanism-misfit |
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
 | 2026-10-01 | feat/sunday-saturday-parity @ 745a291 · sunday-scheduling.md (Round 1) | 6 (6 top / 0 over-cap) + 3 adjacent | 0H/4M/2L | accepted-pending-changes | acceptance-bar-gaps |
+| 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -301,3 +302,48 @@ Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no 
 Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · Verdict NOT CONVERGED — 6 caused-by (4 Med, 2 Low), 0 regressions, no scope-cut · Date 2026-10-01
 Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
 ```
+
+### 2026-10-01 — F60 Sunday parity — T2 Plan Audit, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record, gate block, two non-blocking notes and stated limits (`t2-sunday-parity`, emitted to `/tmp/sunday-t2-r2-verdict-20261001.md`). Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's gate block (verbatim):
+
+```
+Role:        T2 Plan Audit · agent/session t2-sunday-parity · 471c2a52-fb03-4034-ac24-0dcf72bf2f23
+Audited:     subcon-command · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · round 2 (delta since 745a291) · manifest d431a3497ae7a15b365a7729840c44accfd84b5f
+Verdict:     CONVERGED  (proposed)
+Findings:    none in cap · regressions 0 · over-cap 0 · adjacent 0 new · 2 non-blocking notes (B13 carve-out, W2 wording)
+Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no scope-cut). Open provenance: no personal plan lock by Chris is recorded (§A).
+Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+Reviewer's two non-blocking notes (verbatim):
+
+The reviewer tagged both Low / caused-by. Under the T2 card any counted caused-by finding blocks convergence, so this is a judgment call that acceptance can overrule.
+
+1. **B13's carve-out names only P8's pool chip.**
+   - What also changes: a person whose only crew days that week are on Sunday (P7) becomes a Booked chip, and the pool's "N free this week" count drops by one (`Schedule.jsx:429–436`, `:1307`).
+   - Why it doesn't block: this is exactly how a Saturday-only person behaves today, and B14 already says those Sunday rows show in the pool dots. Only the count is unstated.
+   - For T3: read B13 as the Monday–Saturday day columns.
+2. **W2's "so both read sites agree" is looser than it sounds.**
+   - What slips through: a build that fixes only the mount effect still settles on the right week and passes W2, after one wasted fetch of the wrong week.
+   - Why it doesn't block: S10 and §3 both instruct the fix at both sites, the diff reviews read both, and the stale-response guard (`:260`, `:278–283`) keeps the wrong week from being shown.
+   - For T3: a tighter W2 would assert that no read for another week is sent.
+
+A third round for these would change check wording only, not what gets built.
+
+Reviewer's limits (verbatim):
+
+- Nothing was built or run beyond reading and throwaway date arithmetic. Production was not probed (U4 stays open).
+- The plan still states that Chris has not personally locked this artifact, and that the D1 pool-chip change is expected but not accepted by him. This verdict does not change either.
+- This was a delta review only; unchanged sections were not re-audited.
