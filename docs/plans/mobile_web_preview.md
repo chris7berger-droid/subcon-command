@@ -1,6 +1,6 @@
 # Mobile web preview — phone shell and sales phone flow
 
-**Status:** DRAFT — revision 1, for T2 audit. **Not locked by Chris personally.** The plan-lock pause is waived by the authorization quoted in §A, which makes independent T2 agreement the gate before build.
+**Status:** REVISION 1 for T2 — answers the round-1 audit of `7efcebb` (see Revision notes). **Not locked by Chris personally.** The plan-lock pause is waived by the authorization quoted in §A, which makes independent T2 agreement the gate before build.
 **Author:** T1 / `t1-mobile-plan` (Claude Code session `6eec194e-6dce-4608-99a5-140945e49feb`) · 2026-09-30
 **Slice:** `mobile-web-preview` · branch `feat/mobile-web-preview` · **build base `34af3751f1c72895e2d416ac36ebeda702961f98`** (Call Log brand preview commit). This slice's handoff is v299.
 **Phase:** Planning → next gate Plan Audit (T2, independent). Mode: FOCUSED. No later gate is skipped by this plan.
@@ -21,11 +21,12 @@ The words as they reached this T1 session. T1 has not seen the root request itse
 2. Session message, 2026-09-30 17:38 PDT: "Parent/user clarification: User explicitly authorized plan then build; independent T2 agreement is gate within this request, no artificial user plan-lock pause. Inventory all key route families and assess achievable breadth; do not prematurely restrict scope just because sibling starts CallLog. Practical useful preview, explicit tested scope vs remaining limitations. Preserve complex scheduling interactions; no generic CSS claim. No App edits before sibling SHA. No additional architecture."
 3. Session message, 17:48 PDT: "Sibling complete and pushed:34af3751f1c72895e2d416ac36ebeda702961f98, clean. … Source base changes accepted dependency. Include final build base34af375; handoffv298 exists, mobile usesv299."
 4. Session message, 17:53 PDT: "Existing root request authorizes your scope judgment then independent T2 approval before build. Preserve no backend/auth/data/prod changes. Write plan and stop; coordinator will commit it. Do not wait for another personal plan-lock approval…"
+5. Session message, 18:16 PDT, directing this revision (its opening was cut off in delivery): "…never acquire/reuse user cookie. Push by coordinator after independent reviews authorized preview, exactSHAReady then hostedfixture tests if accessible. Directory responsive overlay in scope, explicit high modal layering, allow drawer UIhandlers whilebusiness handlers unchanged, Backwhereexisting. P2 remains coherent useful partial with per-screen acceptance/clearly deferred failedones. Managerfixture for Managerroute. CSS screen-only media to protectprint. Preserve existing branch/file no-touch. … No personal approval is needed for false attributed lock or prohibited production writes."
 
 What this establishes, and what it does not:
 - It replaces the Planning lock step (`docs/DEVELOPMENT_PROTOCOL.md` Planning gate; AIOS dev protocol §3) with T2 agreement, for this request. T1 followed it and records the departure here instead of resolving it silently.
 - The AIOS brand rule asks T1 to settle unsettled brand decisions with Chris before lock. That was not done; the decisions are made under the delegation and shown in ID8 beats 3–6.
-- No personal lock, acceptance or approval of this document by Chris is recorded or claimed. Items 2–4 are relayed wording. T2/T7 can check the root request at its source.
+- No personal lock, acceptance or approval of this document by Chris is recorded or claimed. Items 2–5 are relayed wording. T2/T7 can check the root request at its source.
 - Chris Acceptance after the Vercel preview is unchanged and still required before any merge.
 
 ---
@@ -54,34 +55,34 @@ What this establishes, and what it does not:
 ### 0.3 The sales phone flow at 360 / 390 / 430
 - **New Inquiry** (`NewInquiryWizard.jsx`): the dialog shrinks to the full viewport width with no margin. The Next/Save control is placed at `right: calc(50% - 364px)` (`:879`) and sits outside the viewport: x = 496–544, 511–559, 531–579. The page cannot scroll sideways to reach it. Back mirrors it (`:871`). A step without an auto-advancing choice cannot be passed. At 768 both are on screen (Next at 700–748). By the same arithmetic they are off screen below 728px `[DERIVED]`.
 - **Call Log detail** (`CallLogDetail.jsx`): the header row (`:520–578`) does not wrap. Its action group (`:533`) starts off screen; all five actions for an Admin (Edit, + New Proposal, + Add CO, Merge Job, Move to Old Jobs) are reached only by scrolling the page sideways (overflow 391 / 361 / 321px). Field grids are fixed two-column (`:589`, `:721`, `:758`). Linked-proposal rows carry a fixed 340px label (`:1053`). The totals strip is fixed three-column (`:1002`). It fits at 768.
-- **Call Log list**: the table has 8 columns (`CallLog.jsx:476–510`), an 850px minimum (`calllog-brand.css:103`) and its own horizontal scroller (`DataTable.jsx:53–54`). The Call Log theme already stacks its panels at ≤900 and tightens padding at ≤600 (`calllog-brand.css:123–133`). The rest of the page needs about 290px `[DERIVED]`.
-- **Homes**: Subcon Home needs about 308px of content width, Sales Home about 286px (usable width + measured overflow). Both fit a 360 viewport once the sidebar leaves the flow.
+- **Call Log list**: the table has 8 columns (`CallLog.jsx:476–510`), an 850px minimum (`calllog-brand.css:103`) and its own horizontal scroller (`DataTable.jsx:53–54`). The Call Log theme already stacks its panels at ≤900 and tightens padding at ≤600 (`calllog-brand.css:123–133`). Outside the table the page needs about 185px `[DERIVED]`.
+- **Homes**: Subcon Home needs 340px of content width (its `minmax(340px, 1fr)` grid, `SubconHome.jsx:311`), Sales Home about 318px. With 16px side padding a 360 viewport offers 328px: Sales Home fits; Subcon Home is 12px over at 360 and fits from 390.
 - **Login** fits at every width. Inputs are 14px (`Login.jsx:142`). iPhone Safari zooms the page when a focused field is under 16px; the repo already overrides this for `/crew` (`App.jsx:238`).
 - Text fields under 16px: Call Log list 7 of 7, detail 8 of 8 (`NewInquiryWizard.jsx:15`, `CallLogDetail.jsx:20`, `calllog-brand.css:99`).
 
 ### 0.4 Route-family inventory
-Widths are the content width a screen needs, measured at `34af375` with synthetic fixtures.
+Widths are the content width a screen needs (usable width + measured overflow + right padding), measured at `34af375` with synthetic fixtures. After the shell change a viewport offers 328 / 358 / 398px at 360 / 390 / 430.
 
 | Family | Routes | Observed | This slice |
 |---|---|---|---|
-| Shell | `/` Subcon Home | ~308px | P1 |
-| Sales | `/sales/home` | ~286px | P1 |
-| Sales | `/sales/calllog` | ~290px + 850px table in its own scroller | P1 |
-| Sales | `/sales/calllog/:id` | 459px; actions off screen | P1 |
+| Shell | `/` Subcon Home | 340px | P1 |
+| Sales | `/sales/home` | ~318px | P1 |
+| Sales | `/sales/calllog` | ~185px + 850px table in its own scroller | P1 |
+| Sales | `/sales/calllog/:id` | 491px; actions off screen | P1 |
 | Sales | New Inquiry / Change Order wizard (modal) | Back/Next off screen below 728px | P1 |
 | Pre-auth | `/login` | fits; 14px inputs | P1 (input size only) |
-| Sales | `/sales/leads` (needs `leads_enabled`) | 152px; table 604px, 7 columns | P2 |
-| Sales | `/sales/proposals` | 331px; table 1140px, 11 columns | P2 |
-| Sales | `/sales/invoices` | 196px; table 872px, 9 columns | P2 |
-| Sales | `/sales/customers`, `/sales/customers/:id` | 146px (table 448px, 5 columns); 211px | P2 |
-| Sales | `/sales/proposals/:id` + WTC calculator, PDF/send, Multi-GC | 744px — overflows at 768 too | Remaining |
-| Sales | `/sales/invoices/:id` + new-invoice and pay-app modals | 424px | Remaining |
-| Sales | `/sales/team`, `/sales/archive` (+ import wizards), `/sales/managers` | 218px, 213px; Managers not measured (Manager role only) | Smoke only |
-| Global | `/settings` | 312px; holds QuickBooks and billing actions | Smoke only |
+| Sales | `/sales/leads` (needs `leads_enabled`) | 184px; table 604px, 7 columns | P2 |
+| Sales | `/sales/proposals` | 363px; table 1140px, 11 columns | P2 |
+| Sales | `/sales/invoices` | 228px; table 872px, 9 columns | P2 |
+| Sales | `/sales/customers`, `/sales/customers/:id` | 178px (table 448px, 5 columns); 243px, with three 352px tables in `overflow: hidden` frames (`Customers.jsx:679`, `:702`, `:726`) | P2 |
+| Sales | `/sales/proposals/:id` + WTC calculator, PDF/send, Multi-GC | 776px — overflows at 768 too | Remaining |
+| Sales | `/sales/invoices/:id` + new-invoice and pay-app modals | 456px | Remaining |
+| Sales | `/sales/team`, `/sales/archive` (+ import wizards), `/sales/managers` | 250px, 245px; Managers not measured (Manager role only, `App.jsx:335`) | Smoke only |
+| Global | `/settings` | 344px; holds QuickBooks and billing actions | Smoke only |
 | Global | `/import` (standalone, Admin) | document is 502px wide at 360–430 | Untouched; remaining |
 | Schedule | 11 routes: home, jobs, schedule, calendar, daily, materials, billing, production-rate, schedules, import, settings | Empty fixtures only. Content reaches ~825px (Crew Schedule), ~567px (Home), ~410px (Jobs), 198–289px elsewhere. Crew Schedule assigns crew by HTML5 drag-and-drop (`Schedule.jsx:894–896`, `:1129–1131`, `:1273–1275`); `src` has no touch or pointer handlers. Calendar sizes its grid from window height (`Calendar.jsx:275`). | Smoke only; zero code diff |
-| Field web | 6 routes: today, jobs, crews, timeclock, dailylogs, loadouts | 103–259px with empty fixtures; not measured with data. Time Clock has add/edit/void flows. | Smoke only; zero code diff |
-| AR | 6 tabs (data is browser-local, from a QuickBooks export) | ~459px with a seeded synthetic report | Smoke only; zero code diff |
+| Field web | 6 routes: today, jobs, crews, timeclock, dailylogs, loadouts | 135–291px with empty fixtures; not measured with data. Time Clock has add/edit/void flows. | Smoke only; zero code diff |
+| AR | 6 tabs (data is browser-local, from a QuickBooks export) | ~491px with a seeded synthetic report | Smoke only; zero code diff |
 | Phone page | `/crew`, `/crew-texts` | already fits 360–430 | Untouched; regression check |
 | Public / pre-auth | `/sign/:token`, `/invoice/:token`, `/invoice-paid`, `/suite`, `/features/:slug`, `/checkout`, `/qb/callback`, Welcome screen, password-recovery mode | not assessed | Untouched |
 
@@ -89,6 +90,8 @@ Widths are the content width a screen needs, measured at `34af375` with syntheti
 These decide how "blocked writes" must be built.
 - `/sales/invoices`: `POST functions/v1/qb-auth`, body `{action:"status"}` (`Invoices.jsx:3251`). A read.
 - `/sales/archive`: `POST rest/v1/rpc/get_filter_options` (`HistoryLocker/ArchiveSearchView.jsx`). A read.
+- `/settings`: `POST functions/v1/create-billing-session`, body `{action:"status"}` (`Settings.jsx:477–479`). A read.
+- Call Log list with `leads_enabled` on: `HEAD rest/v1/leads` for a count (`CallLog.jsx:128–131`). A read. Cross-origin calls also send `OPTIONS` preflights.
 - Call Log detail: storage list for attachments (`CallLogDetail.jsx:159–161`). A read.
 - Call Log list: selects archive candidates and, if any exist, sends `PATCH call_log` (`CallLog.jsx:81–90`). **A real write, in any signed-in session.** Unchanged by this slice.
 - Schedule Home and Jobs open Supabase realtime WebSockets (`schedule/views/Jobs.jsx:232–243`, `schedule/views/Home.jsx:103–104`).
@@ -105,6 +108,11 @@ Registry: `assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md` in the AIOS ch
 - Visual Brand Guide `.docx`: text extracted from the DOCX by T1 and found identical to the registry's reading copy (265 paragraphs); DOCX sha256 `9833d17f…0a80` matches the hash the copy records.
 - Canonical image `visual/crew-schedule-canonical.png` opened; byte-identical to the DOCX's embedded image. It is a 1672×941 desktop composition.
 - **No governing document defines a phone layout, a breakpoint, a phone navigation pattern or a touch-target size.** A phone-width brand comparison cannot be performed; no reference exists.
+
+### 0.8 The Vercel preview, and overlay layers
+- **Preview and production share one database.** `SC_Handoff_v188.txt:80–81`: "Preview + prod share the one Supabase DB, so a save made on the preview is already in prod data."
+- Previews sit behind Vercel deployment protection. An earlier slice reached one with a stored Vercel cookie (`SC_Handoff_v258.txt:57–58`). This slice does not (Beat 10).
+- Layers today: the wizard is z 100–101 (`NewInquiryWizard.jsx:869–879`), the jump button z 150, the page badge z 90, the Directory overlay a fixed 640px panel at z 200 with a ✕ close (`TableOfContents.jsx:429–454`). At phone widths T1 measured the Directory panel shrinking to the full viewport width with no margin.
 
 ---
 
@@ -124,9 +132,12 @@ Registry: `assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md` in the AIOS ch
 - **Beat 5 — Tables on phones `[LOCKED · delegated]`:** tables stay tables. Every column, sort header and row action is kept. The table scrolls sideways inside its own frame; the page never does. A card layout is deferred (§4).
 - **Beat 6 — Sizes on phones `[LOCKED · delegated]`:** menu button, drawer rows, drawer close, Sign out and the wizard's Back/Next/Save/Close are at least 44×44 CSS px. Other buttons on P1 screens are at least 36px tall. Text-entry controls on P1 screens and Login are at least 16px. The 36–44 range is borrowed from UI standard §10, which states it for desktop.
 - **Beat 7 — Breadth `[LOCKED · delegated]`:** P0 shell on every in-shell route; P1 the sales phone flow; P2 sales read lists, verify-first; everything else smoke only. Reason: the P1/P2 screens were measured with data and either fit or have a bounded fix. Schedule, Field and AR were measured only empty, or need 420–825px, or carry interactions this slice must not touch.
-- **Beat 8 — Mechanism `[LOCKED · user]`:** only what §0.6 lists. No new dependency, framework, component library, state library, router change, service worker, manifest or viewport-meta change. One new piece of UI state: drawer open/closed, reusing `open` (`App.jsx:141`).
+- **Beat 8 — Mechanism:** `[LOCKED · user]` the words "No additional architecture". `[LOCKED · delegated]` T1's reading of them:
+  - What §0.6 lists, plus one viewport listener (`matchMedia` at 768px — a browser API, no dependency) and one new boolean for the phone drawer. No new dependency, framework, component library, state library, router change, service worker, manifest or viewport-meta change.
+  - State model: the desktop sidebar state (`open`, `App.jsx:141`, expanded or collapsed) and the phone drawer state (open or closed) are independent. The drawer starts closed on load and whenever the viewport enters ≤768px, and always shows the expanded sidebar content. Drawer actions never change `open`.
+  - Every rule this slice adds sits in a `@media screen` query, so print output is untouched.
 - **Beat 9 — Theme `[LOCKED · brand + repo]`:** no re-theming. New chrome uses the tokens the route already uses: the Call Log theme on `/sales/calllog`, the legacy palette elsewhere. `.sc-calllog` is not extended to other routes (handoff v298). No new colors, fonts or radii. No logo or mark asset is added, redrawn or generated.
-- **Beat 10 — QA `[LOCKED · user]`:** synthetic fixtures; all backend traffic intercepted; writes blocked. No agent signs in with real credentials anywhere, including the Vercel preview.
+- **Beat 10 — QA `[LOCKED · user]`:** synthetic fixtures; all backend traffic intercepted; writes blocked. No agent signs in with real credentials anywhere, including the Vercel preview, and none acquires or reuses a user's cookie or session. The coordinator pushes the branch, after the independent reviews; hosted checks run only if the preview can be reached without one.
 - **Beat 11 — Preserve `[LOCKED · user]`:** business logic, auth, data, table columns and actions, selected-job context, scheduling interactions.
 
 ---
@@ -141,7 +152,7 @@ Intent: Chris can open a Vercel preview on a phone and work the sales loop — s
 
 ### P0 — Phone shell (≤768px, every in-shell route)
 1. The sidebar leaves the layout. The content region spans the full viewport width. The sidebar becomes a drawer over the content, closed on load.
-2. A menu button in the header opens it. It closes on choosing a destination, tapping outside it, Escape, or its close control.
+2. A menu button in the header opens it. It closes on choosing a destination or the Directory action, tapping outside it, Escape, or its close control.
 3. The drawer is the existing sidebar: same groups, items, order, app/role/flag gating, active marker, Directory action, Settings, user block and Sign out. Nothing is added, removed, renamed or reordered. The desktop Collapse control is not shown in drawer mode.
 4. Opening or closing the drawer never remounts the page. Unsaved input, filters, scroll position, the selected job and the URL stay as they were.
 5. Accessible: the menu button has a name and exposes its expanded state; the drawer is exposed as navigation; while closed nothing in it is focusable or announced; focus moves into it on open and back to the menu button on close; focus is visible; sizes per Beat 6.
@@ -150,16 +161,24 @@ Intent: Chris can open a Vercel preview on a phone and work the sales loop — s
 8. At ≤600px side padding is 16px, except where a route already sets its own (Schedule's zero padding, `schedule/App.css:478`; the Call Log theme's, `calllog-brand.css:128`).
 9. The page badge and the Call Log jump button stop overlapping at ≤768px, and each can be tapped.
 10. Motion stays inside UI standard §13 and respects reduced-motion.
+11. The Directory overlay, opened from the drawer or the page badge, fits the viewport at ≤768px. Its close control is visible and tappable. Its content scrolls inside it.
+12. Layer order at ≤768px, lowest to highest: page · page badge and Call Log jump button · drawer scrim · drawer · modal dialogs (New Inquiry, Directory, Log Outcome, job lists). Nothing floats above an open modal or the open drawer.
+13. Sidebar and drawer state follow Beat 8. After 1440 → 390 → 1440 the desktop sidebar is as it was before.
 
 ### P1 — Sales phone flow
 - **Subcon Home, Sales Home:** read top to bottom with no sideways page scroll. Numbers do not overflow their boxes or collide.
 - **Call Log list:** no sideways page scroll. The table follows Beat 5.
 - **Call Log detail:** every header action is in view without sideways scrolling. Field grids are one column at ≤600px. Linked proposal and invoice rows show label, status and amount. The three totals are readable.
-- **New Inquiry wizard** (also the Change Order path and lead conversion — same component): the dialog sits inside the viewport. Back, Next/Save and Close are always visible and tappable on every step at ≤768px. Step content scrolls inside the dialog.
+- **New Inquiry wizard** (also the Change Order path and lead conversion — same component): the dialog sits inside the viewport. Next/Save and Close — and Back on the steps that show it today — are always visible and tappable at ≤768px. Step content scrolls inside the dialog.
 - **Login:** inputs are at least 16px at ≤600px. Nothing else changes.
 
-### P2 — Sales read lists (verify-first)
-Leads, Proposals list, Invoices list, Customers list, Customer detail: no sideways page scroll at 360–768; tables follow Beat 5. The measurements predict the shell change alone achieves this, except Proposals at 360 (needs ~331px, 328 available). If a list needs a fix that would touch a no-touch file (§3), the fix is not made; that list is recorded as remaining (AIOS dev protocol §8, outcome 2).
+### P2 — Sales read lists (per screen)
+Leads, Proposals list, Invoices list, Customers list, Customer detail. Each has its own check in §5 D. Predicted from §0.4:
+- Leads, Invoices and Customers lists pass on the shell change alone.
+- Proposals needs a list-level fix at 360 and 390 (363px against 328 and 358).
+- Customer detail needs its three table frames made scrollable.
+
+A screen that can pass only by editing a no-touch file (§3) is not fixed. It is marked **deferred** in the build report and the backlog with its measurement, and its D check and its part of G no longer apply. A screen that fails for any other reason is a failure. P0 and P1 are never deferred.
 
 ### Everything else in the shell
 Still loads and navigates at 390 and 768 with no error. No other claim.
@@ -168,13 +187,14 @@ Still loads and navigates at 390 and 768 with no error. No other claim.
 - `[LOCKED · user]` No change to data fetching, backend calls, auth, guards, routing, validation, save handlers, calculations, or table columns and actions.
 - `[LOCKED · user]` Rules that alter a screen's inner layout are scoped to the named P1/P2 screens. No app-wide phone rule for inputs, tables or grids.
 - `[LOCKED · user]` ≥769px is unchanged.
+- `[LOCKED · user]` New CSS applies to screen media only. Print output is unchanged.
 
 ### Expectation check
 What the phone preview will show:
 - Sign-in fits and does not zoom. The app uses the full screen width. A menu button opens the same sidebar as a drawer.
 - Both home screens and Call Log read without sideways page scrolling. The job table scrolls inside its own frame with every column.
 - A job opens with all its actions visible and its fields in one column.
-- A new inquiry can be walked to its last step with Back/Next always on screen.
+- A new inquiry can be walked to its last step with its step controls always on screen.
 - Proposals, Invoices, Customers and Leads lists open and behave like the Call Log table.
 
 What it will not do:
@@ -241,12 +261,12 @@ Also out:
 ## §5 Acceptance bar
 
 ### Harness — applies to every check
-- H1. The checks are one script, run against the local build and against the Ready Vercel preview URL. Its path, the result file and the screenshots are named in `BUILD-REPORT.md`. Results and screenshots hold synthetic names only and follow repo practice on what is committed (handoff v298 kept them out of the repo).
+- H1. The checks are one script, following the repo's `scripts/check-*.mjs` practice and adding no dependency. It runs against a local build of the reviewed commit, and against the hosted preview under G. Its path, the result file and the screenshots are named in `BUILD-REPORT.md`. Results and screenshots hold synthetic names only and follow repo practice on what is committed (handoff v298 kept them out of the repo).
 - H2. Chrome with touch/mobile emulation at 360×740, 390×844, 430×932, 768×1024; desktop at 1440×1000. Clock fixed; animations disabled for screenshots.
-- H3. No request reaches a Supabase host: HTTP is answered inside the browser from fixtures, WebSockets are mocked. Nothing else leaves the machine except the app origin and fonts.
-- H4. Every non-GET is refused and logged, except three named reads answered synthetically: `qb-auth` with `action: "status"`, `rpc/get_filter_options`, storage `object/list`. The Call Log archive-candidate query returns no rows. **Any refused write in the log during the walk fails the run.** The walk never activates a save, send, delete or invite control.
-- H5. Fixtures: an Admin with all four apps, and a non-manager with Sales only; at least six jobs across stages, one with a 40-character name, one change order, one without a site address; a proposal total of at least $1,000,000; `leads_enabled` on with at least one lead.
-- H6. No agent signs in with real credentials, on any URL.
+- H3. Default-deny. A request to any host other than the app origin is aborted, except GET to the two Google Fonts hosts. A request to a Supabase host is never forwarded: HTTP is answered inside the browser from fixtures and WebSockets are mocked. Service workers are blocked.
+- H4. Method plus allowlist. `GET`, `HEAD` and `OPTIONS` to a Supabase host are answered from fixtures. Four `POST` reads are answered synthetically: `functions/v1/qb-auth` and `functions/v1/create-billing-session` with body `action: "status"`, `rest/v1/rpc/get_filter_options`, `storage/v1/object/list/*`. Every other request is refused and logged, and **fails the run**. The Call Log archive-candidate query returns no rows. The walk never activates a save, send, delete or invite control.
+- H5. Fixtures: an Admin with all four apps, a Manager with all four apps, and a non-manager with Sales only; at least six jobs across stages, one with a 40-character name, one change order, one without a site address; a proposal total of at least $1,000,000; `leads_enabled` on with at least one lead.
+- H6. No real credentials and no user cookie, on any URL. The session is a synthetic object written to the Supabase client's storage key in the browser before the app loads; `auth/v1/user` is answered from the fixture; a call to `auth/v1/token` fails the run. No agent signs in. None acquires, exports or reuses a user's Vercel or Supabase cookie or session.
 
 "No sideways page scroll" means `document.documentElement.scrollWidth === window.innerWidth` and `[data-app-content]` has `scrollWidth === clientWidth`.
 
@@ -254,33 +274,43 @@ Also out:
 - A1. On load the content region's width equals the viewport width and no part of the sidebar is visible.
 - A2. The header is one 50px row. The menu button is visible, at least 44×44, has an accessible name, and reports its expanded state. The page name is not truncated.
 - A3. Tapping the menu button opens the drawer. For each fixture user its groups and items — text, order, active marker — equal the 1440 sidebar's for that user. Rows, close and Sign out are at least 44px tall. At 360 at least 44px of the page remains tappable beside the drawer.
-- A4. The drawer closes on item tap (URL changes, new page shown), outside tap, Escape and its close control. Focus returns to the menu button. While closed, Tab from the menu button does not enter the drawer and its controls are absent from the accessibility tree.
+- A4. The drawer closes on item tap (URL changes, new page shown), on the Directory action (the overlay opens), on outside tap, Escape and its close control. Focus returns to the menu button. While closed, Tab from the menu button does not enter the drawer and its controls are absent from the accessibility tree.
 - A5. State survives the drawer. On a job in edit mode with text typed in Notes, open and close the drawer: text and URL unchanged. On the Call Log list with a stage tab and search text set: both unchanged.
 - A6. Shell height equals the viewport height. The last row of the Call Log table can be scrolled clear of the jump button.
 - A7. On Call Log the badge and the jump button do not intersect, and a tap at each one's centre lands on it.
-- A8. Smoke: every in-shell route in §0.4 loads at 390 and 768 with no error screen and no page error, and can be left through the drawer. `/crew` still has no sideways scroll at 360–430.
+- A8. Smoke: every in-shell route in §0.4 loads at 390 and 768 with no error screen and no page error, and can be left through the drawer. `/sales/managers` is loaded with the Manager fixture. `/crew` still has no sideways scroll at 360–430.
+- A9. Directory overlay, opened from the drawer and from the badge: its edges are inside the viewport; its close is at least 44×44 and a tap at its centre lands on it; its content scrolls inside it.
+- A10. Layers: with the drawer open, a tap at the centre of the badge or of the jump button does not reach them. With the wizard or the Directory open, a tap at the centre of each of its controls lands on that control.
 
 ### B. Desktop — 1440
 - B1. Screenshots of `/`, `/sales/home`, `/sales/calllog`, `/sales/calllog/:id`, the open New Inquiry dialog, `/sales/proposals`, `/sales/invoices`, `/sales/customers`, `/schedule/schedule`, `/schedule/calendar`, `/field/timeclock`, `/ar/triage` and `/settings` differ from base `34af375` by no more than base differs from itself (expected: zero pixels).
 - B2. No menu button is visible. Collapse still toggles the sidebar between 228 and 56px.
-- B3. Resizing 1440 → 390 → 1440 in one session does not remount the page and leaves no stuck overlay.
+- B3. Resizing 1440 → 390 → 1440 in one session does not remount the page, leaves no stuck overlay, and returns the sidebar to the state it had before: 228px by default, 56px if it had been collapsed.
 
 ### C. P1 screens — 360, 390, 430 (768 where stated)
 - C1. Subcon Home and Sales Home: no sideways page scroll. With the $1,000,000 fixture no number overflows its box or intersects a neighbour. A "Your Book" tile opens Call Log with that stage and rep applied.
 - C2. Call Log list: no sideways page scroll. "+ New Inquiry" is in view. A pipeline number filters the table and the count shown matches. The table's header cells, in order, equal the 1440 table's. The table scrolls sideways inside its frame. A job number opens that job; "View" is reachable by scrolling the table.
 - C3. Call Log detail: no sideways page scroll. Every header action present at 1440 for the same user and job is present and fully inside the viewport. In edit mode Save Changes and Cancel are in view. Field grids are one column. Each linked row shows label, status and amount inside the viewport. Billed, Remaining on contract and % Invoiced show in full with a seven-digit fixture. Back returns to where the job was opened from.
-- C4. New Inquiry, at 360, 390, 430, 640 and 768: the dialog's edges are inside the viewport. On each of the ten standard steps, and on the Change Order path opened from "+ Add CO", Back, Next and Close are fully inside the viewport and at least 44×44. No step scrolls sideways. A step taller than the viewport scrolls inside the dialog. The last step shows an enabled Save, which the walk does not press. The job-number preview updates as it does at 1440.
+- C4. New Inquiry, at 360, 390, 430, 640 and 768: the dialog's edges are inside the viewport. On each of the ten standard steps, and on the Change Order path opened from "+ Add CO", Next and Close — and Back on the steps where 1440 shows it (`NewInquiryWizard.jsx:872`) — are fully inside the viewport, at least 44×44, and a tap at each one's centre lands on it. No step scrolls sideways. A step taller than the viewport scrolls inside the dialog. The last step shows an enabled Save, which the walk does not press. The job-number preview updates as it does at 1440.
 - C5. On P1 screens and Login every text input, select and textarea computes to at least 16px, and every button is at least 36px tall.
 - C6. Login at 360 has no sideways scroll and its submit button is in view (signed-out context; no sign-in is performed).
 
-### D. P2 lists — 360, 390, 430, 768
-Leads, Proposals, Invoices, Customers, Customer detail: no sideways page scroll; table header cells equal the 1440 table's; the table scrolls inside its frame; the screen's main header action is in view; opening a row lands on its detail route with no error. Proposal and Invoice detail are judged on nothing more than that.
+### D. P2 screens — 360, 390, 430, 768
+Common to each: no sideways page scroll; every table's header cells, in order, equal the 1440 table's; every table is fully visible or scrolls inside its frame.
+- D1. Leads: the common checks only.
+- D2. Proposals list: "+ New Proposal" is in view; opening a row lands on the proposal route with no error.
+- D3. Invoices list: its header actions are in view; opening a row lands on the invoice route with no error.
+- D4. Customers list: "+ Add Customer" is in view; opening a row lands on Customer detail.
+- D5. Customer detail: Back, Merge, Delete and Edit are in view; no column of its three tables is clipped.
+
+Proposal and Invoice detail are judged on "loads with no error" only. A screen deferred under §2 P2 is listed as deferred in the results, with its measurement; its check is then not required.
 
 ### E. Preservation
 - E1. `git diff 34af375..HEAD` shows zero changes in the §3 no-touch list.
-- E2. In touched files the diff adds or changes only markup attributes, style values, layout wrappers, the menu button, the scrim, and the drawer's state and closing rules. No fetch, backend call, handler body, validation, guard, route or computed value changes (read from the diff by T4).
+- E2. In touched files the diff adds or changes only markup attributes, style values, layout wrappers, the menu button, the scrim, and drawer UI handlers: open, close, Escape, outside tap, focus move and return, close on route change, and the wrapping that makes a drawer item or the Directory action (`AppSidebar.jsx:87`) also close the drawer. A wrapped handler still calls the same function with the same arguments. No fetch, backend call, save, validation, guard, route or computed value changes (read from the diff by T4).
 - E3. `npm run build` passes. Full ESLint reports no more than 176 errors and 43 warnings, with no new finding in a touched file.
 - E4. `/settings` still shows "Not authorized" for the non-manager fixture.
+- E5. Every media query this slice adds includes `screen`.
 
 ### F. Brand check (in `BUILD-REPORT.md`)
 The block names the documents and sections checked (§0.7) and the changed surfaces. It states:
@@ -289,13 +319,18 @@ The block names the documents and sections checked (§0.7) and the changed surfa
 - no new color, font, radius or mark asset was introduced;
 - a phone-width comparison against a brand reference was **not performed**, because none exists.
 
-### G. Vercel preview
-A Ready preview deployment exists for the branch. The same script passes A, C and D at 390 and 768 against the preview URL under H3 and H6. The URL is recorded.
+### G. Vercel preview — after the reviews
+A–F are the Smoke Test: run locally on the reviewed commit once Build vs Plan, Code Review and Security Review are clear. A run during Build is a self-check and does not count.
+- G1. The coordinator pushes the reviewed commit to `feat/mobile-web-preview`, under the root request's preview authorization. No push before the reviews; never to `main`; never forced.
+- G2. The Vercel deployment whose commit SHA equals the reviewed commit is Ready. SHA and URL are recorded.
+- G3. If the preview can be reached without a user cookie or session, the same script passes A, C and the non-deferred D checks at 390 and 768 against it, under H3–H6. If it cannot, G3 is recorded as **not performed**, with the reason.
+- G4. A commit after the reviews re-opens them, and G re-runs on the new reviewed commit.
 
 ### What a pass does not prove
 - **Real devices.** Emulated Chrome cannot show iPhone Safari's toolbar, on-screen keyboard, safe areas or focus zoom, nor Android Chrome's. Chris's own look on a phone is the check; it is his step.
 - **Real data and access.** Fixtures prove layout and interaction. They do not prove signed-in users see their records (repo `CLAUDE.md` Workflow Rule 10). No data path changes here, so authenticated access is unchanged rather than re-verified.
-- **The preview's backend.** T1 did not establish which backend the Vercel preview is configured against. A real sign-in there runs real data paths, including the Call Log archive write.
+- **The preview writes to production.** Preview and production share one database (§0.8). A real sign-in on the preview runs the Call Log archive update on load, exactly as production does. Save, Send, Delete, Move to Old Jobs and Invite change real records. A look on a phone should be read-only: open, scroll, navigate; in New Inquiry stop at the last step and close without Save. No agent performs that walk.
+- **Narrow desktop windows.** A desktop window under 769px gets the drawer layout.
 - **Other widths.** Only the five named widths, plus 640 for the wizard, are checked.
 - **Smoke-only screens.** "Loads without error" is the whole claim.
 
@@ -305,12 +340,39 @@ Completion claims stay separate: code built · data applied (none) · authentica
 
 ## §6 Estimate
 
-Agent elapsed time, to a preview that has passed §5: about 45–60 minutes of build and local smoke, plus about 10 minutes for the preview deployment and its run. Review phases are separate.
+Agent elapsed time: about 45–60 minutes of build and local self-check. The reviews follow and are separate. After them, about 10 minutes for the local Smoke Test, the push, the deployment and the hosted run.
 
 Uncertainties:
 - whether the P2 lists pass on the shell change alone;
 - how the wizard's controls behave with the on-screen keyboard, which cannot be checked locally;
-- whether the preview needs Vercel access steps before the script can reach it.
+- whether the preview can be reached without a user cookie; if not, the hosted run is not performed.
+
+---
+
+## Revision notes
+
+### Revision 1 — response to round 1
+Audit of `7efcebb` by T2 `t2-mobile-audit` (manifest `b268478`): NOT CONVERGED, 7 in cap (0C/4H/3M/0L). Findings: `task-3/qa/t2-review.txt`. Directions for the fixes: §A item 5.
+
+| Finding | Outcome | Where |
+|---|---|---|
+| A1 High — preview shares the production database | Fixed | §0.8; H3; "What a pass does not prove" |
+| A2 High — write rule failed required routes | Fixed | §0.5; H4; H6 |
+| A3 High — protected preview, unnamed push, G before reviews | Fixed | Beat 10; H1; H6; G1–G4; §6 |
+| B1 High — one boolean, no permitted viewport detection | Fixed | Beat 8; P0.13; B3 |
+| B2 Med — preservation rule forbade required handlers; Back not on every step | Fixed | P0.2; A4; C4; E2 |
+| C1 Med — P2 bar contradicted its escape clause; no Manager fixture | Fixed | §2 P2; D1–D5; H5; A8 |
+| C2 Med — Directory overlay and layer order unspecified | Fixed | §0.8; P0.11–P0.12; A9; A10; C4 |
+
+Also changed:
+- **Print (O3, over cap), by direction:** screen-only media — Beat 8, §2 constraint, E5.
+- **T1 correction:** the "width needed" figures in `7efcebb` left out the 32px right padding, and the Call Log figure came from the wrong route. §0.3 and §0.4 are corrected. Effect: Subcon Home is 12px over at 360, and Proposals is over at 360 and 390. Both were already in scope under a check that catches them (O5).
+
+Not changed: scope, breadth, the no-touch list. The other over-cap items and the adjacent items are left for the backlog.
+
+On the two human gates T2 raised:
+- **B1 / Beat 8.** The `[LOCKED · user]` tag on the mechanism detail was T1's mis-attribution. The user's words were "No additional architecture"; the detail was T1's reading. It is re-tagged; no decision of Chris's is changed.
+- **A1 / production data.** The plan now bars any agent sign-in or write on the preview. It neither asks for nor records approval of a production write.
 
 ---
 
