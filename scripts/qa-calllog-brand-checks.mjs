@@ -66,6 +66,8 @@ export async function runChecks(page,context,output,base){
   // a separate responsive task owns changes to that shared navigation behavior.
   if(width===390){await page.getByRole('button',{name:/Collapse/}).click();await page.waitForFunction(()=>parseFloat(getComputedStyle(document.querySelector('[data-app-sidebar]')).width)<57);}
   await page.locator('[data-app-content]').evaluate(el=>el.scrollTop=0);
+  await page.waitForLoadState('networkidle');
+  await waitForHomePhoto(page);
   await page.screenshot({animations:'disabled',path:output+`/calllog-${width}.png`});
   const dims=await page.locator('[data-app-content]').evaluate(el=>({client:el.clientWidth,scroll:el.scrollWidth}));
   assert.ok(dims.scroll<=dims.client+1,`${width}px page overflow ${JSON.stringify(dims)}`);
@@ -153,4 +155,18 @@ async function checkInteriors(page,output,base,pass){
  pass('Job/proposal/WTC tablet and phone: no content overflow');
  await page.goto(base+'/sales/calllog');
  await page.getByText('Where To Hunt',{exact:true}).waitFor();
+}
+
+// CSS backgrounds may still be decoding after the app data and even networkidle.
+// Require the approved photo to decode before any home visual assertion/capture.
+export async function waitForHomePhoto(page){
+ return page.evaluate(async()=>{
+  const bg=getComputedStyle(document.querySelector('[data-app-shell]')).backgroundImage;
+  const match=bg.match(/url\("([^"]+)"\)/);
+  if(!match)throw new Error('Home background photo URL is missing');
+  const img=new Image();img.src=match[1];await img.decode();
+  if(img.naturalWidth!==1672||img.naturalHeight!==941)throw new Error('Unexpected home photo dimensions');
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  return {width:img.naturalWidth,height:img.naturalHeight};
+ });
 }

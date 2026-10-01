@@ -40,3 +40,7 @@ Local server uses `VERCEL_ENV=preview` plus synthetic Supabase URL/key. For exac
 ## Review limits
 
 Preview still targets production Supabase. Autoarchive is disabled in Preview, but the app is not read-only: do not save/send/approve/merge, open Billing or create financial records while reviewing. No main/production/database/settings/auth changes. Recovery worktree and unrelated duplicate file untouched.
+
+## Deployed verification follow-up
+
+The first Ready app build at `3406670` passed the full synthetic flow against its actual Vercel assets, including all checked phone/tablet interiors and the expired-job archive guard: zero errors/writes. Its emitted Call Log archive query/write branch is absent. Photo bytes fetched from that deployment match the approved original. Initial screenshots preceded CSS background decoding; the durable harness now explicitly decodes/verifies the1672×941 background and waits for paint before home captures. The corrected deployed screenshot shows the expected photo/glass result. This follow-up changes tests/docs only; app source is unchanged. Final Ready SHA/URL are in the task receipt.

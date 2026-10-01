@@ -1,3 +1,4 @@
+import { waitForHomePhoto } from './qa-calllog-brand-checks.mjs';
 import process from 'node:process';
 // Synthetic-only UI regression. See SC_CallLog_Brand_Revision_Build.md for invocation.
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -65,6 +66,9 @@ page.on('pageerror',e=>errors.push(e.message));
 await page.goto(base+'/sales/calllog');
 try { await page.getByRole('heading',{name:'Call Log',exact:true}).waitFor({timeout:15000}); } catch(e) { await page.screenshot({path:output+'/deployment-blocker.png'});console.log(JSON.stringify({url:page.url(),title:await page.title(),text:(await page.locator('body').innerText()).slice(0,1500),oidcAvailable:!!process.env.VERCEL_OIDC_TOKEN,errors}));await browser.close();throw e; }
 await page.getByText('Where To Hunt',{exact:true}).waitFor();
+await page.waitForLoadState('networkidle');
+await page.evaluate(()=>document.fonts.ready);
+console.log('PHOTO_DECODE',await waitForHomePhoto(page));
 await page.screenshot({animations:'disabled',path:output+'/'+(process.env.QA_LABEL||'baseline')+'.png',fullPage:true});
 console.log(JSON.stringify({title:await page.title(),headings:await page.locator('h2').allTextContents(),errors,writes}));
 if(process.env.QA_INTERACTIVE==='1'){
