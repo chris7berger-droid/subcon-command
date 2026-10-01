@@ -1,0 +1,41 @@
+SUBCON COMMAND — HANDOFF v300 — 2026-10-01
+Call Log branding preview: automatic archive safety follow-up
+
+PROBLEM AND CHANGE
+Actual deployed preview and production bundles both resolve to Supabase project
+pbgvgjjuhnpsumnowuym. Opening Call Log previously ran its archive mutation even
+in Preview. Backported the exact three-file code patch from shared commit
+44a94bd554ffd3bdafd519961a4c5812355ca6f0. vite.config.js exposes only VERCEL_ENV
+as VITE_VERCEL_ENV. CallLog skips its entire automatic archive query/write in
+Preview. Production, development and blank environment retain prior behavior.
+No environment settings, database/schema/data or production code were changed.
+Branch feat/calllog-brand-preview, preceding branding commit 34af375.
+
+VALIDATION
+scripts/check-preview-autoarchive.mjs passes independently on this branch:
+preview zero calls; production/development/blank match the original query,
+write and banner behavior; empty configured stages remain a no-op. Vite mapping
+verified for all four environments. Focused config/script lint and diff check
+pass. Separate Preview and Production builds pass. Local Chrome exercised both
+compiled builds with the same expired synthetic Lost record: Preview zero
+archive requests; Production exactly one intercepted PATCH. Every backend
+request was intercepted and every write blocked; no live records were accessed.
+Full branding and interaction checks remain recorded in v298. Final exact SHA,
+Ready deployment and deployed-bundle guard verification are in the task receipt.
+
+REVIEW LIMITS
+The old immutable sales-command-divokrb58 preview at 34af375 is UNGUARDED;
+use the new guarded immutable URL from the completion receipt instead.
+This patch does not make the app read-only or isolate its backend. Manual
+save actions and automatic mutations on other routes can still touch live data.
+No actual authenticated Supabase/RLS access is asserted by fixture checks.
+Only preview publication is authorized; no merge to main or production release.
+Mobile task has the same patch separately. Do not overwrite its shared UI work.
+An unrelated untracked src/pages/CallLog 2.jsx appeared in this checkout during
+the follow-up; it is left untouched and excluded from this commit.
+
+FILES
+src/pages/CallLog.jsx
+vite.config.js
+scripts/check-preview-autoarchive.mjs
+docs/BACKLOG.md
