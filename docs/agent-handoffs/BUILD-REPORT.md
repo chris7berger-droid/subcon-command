@@ -2,7 +2,7 @@
 
 **B124 — password-recovery lifecycle fix. Code, tests, both reviews and the Vercel preview are complete. Not merged. Not in production.**
 
-Pending, in order: Bugbot · Chris's acceptance · explicit merge / production approval.
+Pending, in order: Bugbot result (invoked, pending) · Chris's acceptance · explicit merge / production approval.
 
 | | |
 |---|---|
@@ -136,4 +136,5 @@ None. Beyond the first diagnosis, and inside "recovery links must also work": th
 - While a sign-out keeps failing, Back and Request a new code stay blocked. Fail-closed by design.
 - An abandoned recovery-link tab (opened, nothing submitted) leaves a session a new tab would admit. Pre-existing; B125 item 3.
 - The browser script needs Playwright, which is not a repo dependency (same as the other `scripts/check-*.mjs`).
-- Bugbot has not run.
+- Bugbot was invoked on PR #73 by the coordinator (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940); its result was pending when this was written.
+- **Test-server cleanup caveat.** The build terminal stopped its local test servers with pattern kills (`pkill -f` on `vite --port 5197`, `vite --port 5198`, `vite preview --outDir`), not by PID. Existing office dev servers were seen running afterwards, but it cannot be shown that no other matching process was interrupted. Detail in handoff v298.

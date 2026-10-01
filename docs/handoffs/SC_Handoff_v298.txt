@@ -91,11 +91,24 @@ Nothing closed. B77 invite half unchanged.
 NOT TOUCHED
 Edge functions (reset-password, invite-user), email templates and sending,
 Supabase auth settings, Vercel config and protection, migrations,
-lib/auth.js, invite/WelcomeScreen flow, native apps, other worktrees, the
-original sales-command checkout and its running dev servers.
+lib/auth.js, invite/WelcomeScreen flow, native apps, other worktrees' files,
+and the original sales-command checkout's files.
+
+OPERATIONAL CAVEAT — test-server cleanup
+While restarting its own local test servers the build terminal used pattern
+kills: pkill -f "vite --port 5197", pkill -f "vite --port 5198", and
+pkill -f "vite preview --outDir" (twice). These were not limited to its own
+PIDs. Existing office dev servers on 127.0.0.1:5173, :5199, :5201 and :5387
+were seen running afterwards, but that does not prove no other matching
+process was interrupted. If a `vite preview` server, or a dev server on 5197
+or 5198, was found dead around 15:30-15:55 UTC on 2026-10-01, this is the
+likely cause. No pattern kills were used after that; none in the preview
+step.
 
 NEXT SESSION POINTERS
-1. Bugbot on PR #73 (required before merge for app changes).
+1. Bugbot on PR #73: invoked by the coordinator with parent authorization,
+   https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940
+   Result PENDING when this was written. Read it before merge.
 2. Chris walks the preview and accepts, or not. Then explicit merge and
    production approval. Nothing here is that approval.
 3. A real customer password save and login is Jacob's action AFTER a
@@ -122,8 +135,12 @@ GIT STATE
 Branch fix/recovery-save-stability on origin/main 90f890d:
   36ce1c0 build · bf13720 T5 r1 gate · e508736 T5 fix · 3031f0c T5 r2 gate ·
   2a132f2 T6 gate · then this closeout commit (docs only).
-origin has through 3031f0c; 2a132f2 and the closeout commit are not pushed
-by the build terminal — the coordinator pushes.
+Closeout commit 7a711810fec019ff1a18b99bb1ab13efd7d665f7 is pushed: local
+HEAD and origin/fix/recovery-save-stability both resolved to it after a
+fetch. This correction commit follows it, docs only, and is not pushed by
+the build terminal — the coordinator pushes after the Bugbot result.
+No source change and no test rerun since e508736 / the preview run.
 Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
-(node_modules installed there, untracked; .review/ is the coordinator's
-temporary input, untracked).
+(node_modules installed there, untracked). The coordinator's temporary
+.review/ inputs were removed after review; the worktree was clean before
+this commit. No deployment, no merge.
