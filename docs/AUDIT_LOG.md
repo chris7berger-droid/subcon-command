@@ -148,3 +148,39 @@ Migration `20260513000000_multi_gc_allocation` applied to prod (`pbgvgjjuhnpsumn
 **Post-apply smokes:** Smoke 1 (read path on scmybiz.com) — DEFERRED to next session per session-close. Smoke 2 (UX guard) — moot, guard reverted in `44f7c59` before smoke run. Smoke 3 (trigger NO-OP on real parent intro edit + DB query for `locally_edited_fields = {}`) — DEFERRED to next session. Migration is additive + IF NOT EXISTS-guarded + scratch-validated; smokes are due-diligence rather than risk-mitigating, low-priority deferral.
 
 Scratch project (`ibalavttrqjyijrnkwmd`, sc-scratch-multi-gc-1a) deleted post-validation per H5/S1 cleanup pattern.
+
+
+## Gate records
+
+### Mobile web preview — independent plan reviews
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 7efcebb · round 1 · manifest b268478
+    Verdict:     NOT CONVERGED  (proposed)
+    Findings:    top-7 0C/4H/3M/0L · regressions 0 · over-cap 10 · adjacent 6
+      A1 · High · CAUSED-BY · §5 / §1 / H3 · preview backend is production, plan says unknown · real writes on sign-in and Save · state it, default-deny, do-not-Save guidance
+      A2 · High · CAUSED-BY · H4 vs A8/C2/H5 · write rule fails required routes · gate unexecutable · method + allowlist
+      A3 · High · CAUSED-BY · G / H6 / §6 / Phase · protected preview, unnamed push, G before reviews · gate unexecutable or stale · name access, push, actor, re-run
+      B1 · High · CAUSED-BY · Beat 8 [LOCKED · user] / A1 / B2 / B3 · one boolean, no permitted viewport detection · builder must break a lock · state model + authorise detection
+      B2 · Med  · CAUSED-BY · E2 vs P0.2/P0.5/A4/C4 · preservation rule forbids required handlers; Back not on every step · checks cannot pass · widen E2, reword C4
+      C1 · Med  · CAUSED-BY · §2 P2 vs D/G/A8/H5 · escape clause contradicts bar; D misfits two screens; no Manager fixture · pass/fail undecidable · per-screen D, fixture
+      C2 · Med  · CAUSED-BY · P0.3/P0.9/A3/A4/C4 · Directory overlay and layer order unspecified · unusable overlay, occluded Save passes · scope it, state layers
+    Human gate:  [LOCKED] change + §11 production data — B1 changes a decision locked in Chris's name (Beat 8); A1 means the preview walk signs into production data. Both need Chris personally. No plan lock by Chris is recorded; this audit ran on the delegated plan-then-build authorization and claims no acceptance.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 7efcebb · Verdict NOT CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+Acceptance: Historical proposed result; not accepted as a personal gate. The user directly instructed this task to correct the false user-lock attribution and concrete issues in one revision on 2026-10-01. No production-data authorization is claimed.
+```
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 87e820f · round 2 (delta) · manifest e3e1aa7
+    Verdict:     CONVERGED  (proposed)
+    Findings:    none in cap · regressions 0 · over-cap 8 carried from round 1 · adjacent 6
+    Human gate:  none for this verdict. No plan lock by Chris is recorded; the audit ran on the delegated plan-then-build authorization. Chris Acceptance after the preview is unchanged.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 87e820f · Verdict CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance (standing) → T3 transcription → T7 re-reads the gate → T3 Build
+Acceptance: standing (§9). Ordinary converged verdict; no scope change or production-data gate.
+```
+
+Transcribed verbatim by Codex coordinator in task-3, which did not author either review. T1 plan-lock pause is waived by the explicit plan-then-build task instruction; no personal plan lock or final user acceptance is claimed. Plan at87e820f; subsequent e3e1aa7 changes only the T2 audit manifest.
