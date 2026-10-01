@@ -17,6 +17,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-06-01 | feat/retention-invoice-process @ e831912 · retention_invoice_process.md (Loop #30 per-invoice retention release; 3-round audit, R1 6→R2 plateau→R3 1) | 1 (doc nit; cut verified) | 1 Low | converged — build-ready | converged |
 | 2026-07-02 | feat/invoice-email-attachments @ c0764d2 · invoice_email_attachments.md (Round 1) | 14 (6 top / 4 over-cap / 4 adjacent) | 2H/8M (top-6: 2H 4M) | accepted-pending-changes | copied-mechanism-misfit |
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
+| 2026-09-30 | Mobile web preview — T5 Code Review · build 34af375..db14d25 (app source cc4d733) | 6 | 0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING | zero blockers — review ends; non-blockers to backlog | focus-management-gaps |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -223,3 +224,18 @@ Reviewer's B1 exception, verbatim:
 ```
 
 Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. App source unchanged at `cc4d733`; reviewed build `db14d25`. Reviewer's full recheck, including its evidence gaps: `t4-verdict-round2.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T5 Code Review
+
+```text
+    Role:        T5 Code Review · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not plan, build or run T4 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    drawer lifecycle/focus/layering · scoped CSS · route/job/draft and desktop preservation · business/data/auth unchanged · QA harness one bounded pass for silent fail-open
+    Limits:      limiter and audit command files unreadable (tags per _protocol.md §9) · no git verification of range, HEAD or 82b61fa · nothing executed · repo CLAUDE.md / CLAUDE_RLS.md not opened
+    Verdict:     0 BLOCKS-SHIP · 2 SHOULD-FIX · 4 HARDENING
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded. B1 stays as T4 carried it; this review does not waive it.
+Acceptance: standing (§9). Ordinary verdict, zero BLOCKS-SHIP. No scope change; B1 is not waived by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its six non-blocking findings are backlog row O13. Full review: `t5-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
