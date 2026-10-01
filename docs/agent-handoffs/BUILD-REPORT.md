@@ -1,17 +1,18 @@
 ## Status
 
-Mobile web preview (F65) — built on `feat/mobile-web-preview`, **not pushed**. T4 Build vs Plan round 1 was **NO-GO** (recorded in `docs/AUDIT_LOG.md`, Gate records). This revision answers its finding 2 (acceptance checks missing from the script) and finding 7 (wrong base in this report). App source is unchanged since `cc4d733`. T4 recheck, T5, T6, Smoke Test and the Vercel preview are still open. **Do not merge.**
+Mobile web preview (F65) — built, reviewed and smoke-tested on `feat/mobile-web-preview`, **not pushed**. T4, T5 and T6 are recorded clear in `docs/AUDIT_LOG.md`. The formal Smoke Test ran on the reviewed source: **166 of 167 checks passed; the one failure is B1 (desktop pixels), which fails as written and is not waived.** Next is the coordinator's push for the Vercel preview, then Chris's acceptance. **Do not merge.**
 
-    Role:        T3 Build · mode: build (fixes for T4) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
+    Role:        T3 Build · mode: build (smoke) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
                  (continues builder session 0dd426b3-d40d-4c3a-97af-393dc105f6f3, which wrote most of the source)
-    Plan:        docs/plans/mobile_web_preview.md @ 87e820f · gates: T2 CONVERGED and T4 NO-GO (round 1) recorded in docs/AUDIT_LOG.md `## Gate records`
-                 · plan diff 87e820f → working tree is inside `## Audit manifest` only
+    Plan:        docs/plans/mobile_web_preview.md @ 87e820f · plan diff 87e820f → working tree is inside `## Audit manifest` only
                  · T1: no personal lock exists; build authorised by Chris directly (plan §A)
-    Branch:      feat/mobile-web-preview · slice base 34af375 · app source cc4d733 · report correction 32fe67a · T4 gate record 8cd3f62 · this commit (scripts and docs only)
-    Outcome:     acceptance bar met except B1, which fails as written (see "Desktop at 1440"). Build self-check; not the Smoke gate.
+    Gates:       T2 CONVERGED (a4b831b) · T4 NO-GO round 1 (8cd3f62) → GO round 2, B1 carried unwaived (82b61fa)
+                 · T5 0 BLOCKS-SHIP (3704b9c) · T6 0 exploitable-today (307feb8) — all in docs/AUDIT_LOG.md `## Gate records`
+    Branch:      feat/mobile-web-preview · slice base 34af375 · app source cc4d733 · reviewed build db14d25 (src and scripts byte-identical since) · this commit (docs only)
+    Outcome:     Smoke: every acceptance check passes except B1, which fails as written (see "Formal Smoke Test")
     Completion:  code built yes · data applied n.a. (none) · access verified no (not exercised) · Chris accepted: not T3's to claim
     Push:        not pushed
-    Next:        T7 → targeted T4 recheck
+    Next:        T7 → coordinator preview push (plan G1–G4)
 
 ## Summary
 
@@ -26,15 +27,30 @@ No data fetching, backend call, auth, guard, route, validation, save handler, ca
 - **Dialog semantics** — `role="dialog" aria-modal="true"` and a name on the existing containers of New Inquiry, the Directory, Log Outcome, the job-list modal and the Hunt results modal. Attributes only.
 - **New Inquiry (P1)** — dialog inside the viewport; Back/Next/Save pinned at the bottom; the title row is sticky so Close stays on screen while a tall step scrolls. The customer picker's search box (rendered on `<body>` by `SearchSelect`) is 16px while the wizard is open.
 - **P1/P2 screens** — class hooks plus scoped rules in `src/styles/mobile-shell.css`: one-column field grids, wrapping header actions and KPI rows, 16px text entry and 36px buttons on P1 screens and Login, scrollable table frames on Customer detail, wrapping status tabs on Proposals.
-- **QA scripts** — `scripts/check-mobile-preview.mjs`, `scripts/mobile-preview-fixtures.mjs` (written by the coordinator; extended by T3 for T4 finding 2), `scripts/capture-mobile-preview-desktop.mjs` (the coordinator's capture procedure, committed). Playwright is loaded from an existing local runtime via `PLAYWRIGHT_MODULE`; no dependency or `package.json` change.
+- **QA scripts** — `scripts/check-mobile-preview.mjs`, `scripts/mobile-preview-fixtures.mjs` (both written by the coordinator and first committed in `cc4d733`). In `db14d25` T3 extended `check-mobile-preview.mjs` only, for T4 finding 2, and added `scripts/capture-mobile-preview-desktop.mjs` (the coordinator's capture procedure). The fixtures file has not changed since `cc4d733`. Playwright is loaded from an existing local runtime via `PLAYWRIGHT_MODULE`; no dependency or `package.json` change.
 
 P2 deferrals: none. No screen needed a no-touch file.
 
-## Evidence
+## Formal Smoke Test
+
+Run by T3 after T6 cleared, on T7's routing, against the coordinator's compiled build of the reviewed source served locally at `http://127.0.0.1:5195` (build log `qa/mobile-compiled-build.log`). `src` and `scripts` are byte-identical to the reviewed commit `db14d25`. Fully synthetic: fixture data, backend default-deny, no sign-in, no real credential, cookie or token. No save, send, delete, merge or invite control was activated.
+
+**Result — `qa/mobile-smoke/results.json`, console in `qa/mobile-smoke/console.log`** (widths 360, 390, 430, 640, 768):
+
+- 167 checks: **166 passed, 1 failed (B1)**. 0 page errors, 0 attempted writes, 0 refused requests.
+- The script exited non-zero because of B1 alone. No waiver bound was set for this run.
+
+**B1, as run for Smoke:** one desktop capture (`qa/mobile-smoke/desktop`, made once with `scripts/capture-mobile-preview-desktop.mjs`) against base `qa/desktop-base-final`, noise floor `qa/desktop-base-repeat`. 12 of 13 screens exact. **Call Log differs by 9 pixels, max channel difference 1**, against a floor of 0. New Inquiry is exact (floor 30 px). B1 therefore **fails as written**. The plan's Smoke gate is "every acceptance check passes", so the gate is not met literally; that is for T7 and the coordinator to dispose of, on the dispositions listed under "Desktop at 1440" below. Chris has not accepted it.
+
+**Login buttons, measured by hand** (agreed with T7 because the reviewed script measures Login inputs only; the reviewed scripts were not changed). Signed-out fixture context at 360, compiled build, no sign-in: Remember me 36px, Sign In 41px, Forgot password? 36px — all ≥36px, all inside the viewport and tappable at their centre; Sign In is in view; no sideways scroll; 0 errors, 0 writes. Evidence: `qa/mobile-smoke/login-buttons.json`, `login-360.png`, and the one-off probe `login-buttons.mjs` beside them.
+
+Not covered by Smoke: real devices, real data, authenticated access, and the hosted preview (plan G1–G4).
+
+## Evidence (pre-review build self-check)
 
 One script carries the acceptance checks (plan H1): `scripts/check-mobile-preview.mjs`, with its fixtures in `scripts/mobile-preview-fixtures.mjs`. Desktop screenshots for B1 are captured by `scripts/capture-mobile-preview-desktop.mjs` and compared by the check script. All runs are synthetic: local dev server, fixture data, backend default-deny, service workers blocked, WebSockets mocked, no sign-in. They are a build self-check — **not** the Smoke gate, a review or a hosted walk. Results and screenshots stay in the task's local `qa/` directory and are not committed (handoff v298 practice).
 
-**Current run — `qa/mobile-acceptance/results.json`, console in `qa/mobile-acceptance/console.log`** (run by T3 on the source at `cc4d733`, widths 360, 390, 430, 640, 768):
+**Pre-review run — `qa/mobile-acceptance/results.json`, console in `qa/mobile-acceptance/console.log`** (run by T3 on the source at `cc4d733`, widths 360, 390, 430, 640, 768):
 
 - 167 checks: **166 passed, 1 failed (B1)**. 0 page errors, 0 attempted writes, 0 refused requests.
 - A refused request now fails the run, not only a write (T4 finding 6). The fixtures were not loosened.
@@ -68,7 +84,7 @@ Local checks by T3: `npm run build` passed at `cc4d733` (no app source change si
 
 B1 asks that the 13 screens differ from base `34af375` by no more than base differs from itself. **That is not met, and it is carried here as a failure, not a pass.** No threshold was changed and Chris has not accepted it.
 
-Four captures of this build, each compared with the base capture (`qa/desktop-base-final`; its repeat `qa/desktop-base-repeat` is the noise floor):
+Captures of this build before the reviews (the Smoke capture is a fifth: Call Log 9 px, max 1, 12 of 13 exact), each compared with the base capture (`qa/desktop-base-final`; its repeat `qa/desktop-base-repeat` is the noise floor):
 
 | Capture of this build | Screens exact | Differences from base |
 |---|---|---|
@@ -143,4 +159,6 @@ Not performed:
 
 ## Remaining
 
-Targeted T4 recheck of findings 2 and 7 · a recorded disposition for B1 · T5 → T6 · Smoke Test (plan §5 A–F) on the reviewed commit · coordinator push and Vercel preview (G1–G4), SHA and URL to be added by the coordinator · Chris's acceptance. T4's non-blocking findings 3–6 are backlog row O12.
+A recorded disposition for B1 · coordinator push and Vercel preview (G1–G4), SHA and URL to be added by the coordinator · Chris's look on a real phone and his acceptance. Non-blocking review findings are backlog rows O12 (T4) and O13 (T5, T6).
+
+**The preview is not a test sandbox.** It runs against the production database (plan §0.8): signing in loads real records, and Save, Send, Delete, Move to Old Jobs and Invite change them. A look on a phone should be read-only.

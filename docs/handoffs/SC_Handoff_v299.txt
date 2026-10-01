@@ -76,6 +76,25 @@ and not a hosted walk. Authenticated access to real records was not exercised.
 Screenshots and result files are in the task's local qa directory, not
 committed.
 
+REVIEWS AND FORMAL SMOKE (same day)
+All recorded in docs/AUDIT_LOG.md "Gate records":
+  T4 Build vs Plan  round 2 GO, B1 carried as an unwaived failure (82b61fa)
+  T5 Code Review    0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING       (3704b9c)
+  T6 Security       0 exploitable-today, 1 HARDENING                (307feb8)
+Non-blockers: backlog O12 (T4) and O13 (T5, T6). None was fixed.
+Formal Smoke, run by T3 on T7's routing against the coordinator's compiled
+build of the reviewed source (local port 5195; src and scripts byte-identical
+to db14d25). qa/mobile-smoke: 167 checks, 166 passed, 0 page errors,
+0 writes, 0 refused requests. The one failure is B1: Call Log differs from
+base by 9 pixels, max channel 1; 12 of 13 screens exact. B1 fails as written,
+so the Smoke gate is not met literally. It is not waived and Chris has not
+accepted it.
+Login buttons were measured by hand at 360, signed out (the script measures
+Login inputs only): 36, 41 and 36px, Sign In in view and tappable.
+Evidence qa/mobile-smoke/login-buttons.json.
+Correction: the fixtures script was first committed in cc4d733 and has not
+changed since; only check-mobile-preview.mjs was extended in db14d25.
+
 NOT TOUCHED
 main, production, the Vercel project, database/schema/RLS/auth, edge
 functions, package.json and build config, src/schedule, src/field, src/ar,
@@ -83,9 +102,7 @@ Invoices.jsx and the other money-path files, tokens.js, the logo, native Field
 Command, AIOS.
 
 NEXT SESSION POINTERS
-Targeted T4 recheck of findings 2 and 7 on the latest commit, then T5 Code
-Review and T6 Security Review, each by a session that did not build it. Then Smoke Test (plan section 5 A-F) on the
-reviewed commit, then the coordinator pushes for the Vercel preview and adds
+Reviews and Smoke are done. Next the coordinator pushes for the Vercel preview and adds
 the SHA and URL here. A commit after the reviews re-opens them.
 The preview shares the production database: a phone look should be read-only.
 Chris's look on a real phone is his step; emulated Chrome cannot show Safari's
