@@ -676,7 +676,7 @@ function CustomerDetail({ customer, onBack, onEdit, onNavigateJob, onNavigatePro
       {loading ? (
         <div style={{ color: C.textFaint, fontFamily: F.ui, fontSize: 13 }}>Loading...</div>
       ) : tab === "jobs" ? (
-        <div style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
+        <div className="sc-table-frame" style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: F.ui }}>
             <thead><tr style={{ background: C.dark }}>
               <th style={thStyle}>Job #</th><th style={thStyle}>Job Name</th><th style={thStyle}>Sales Rep</th><th style={thStyle}>Status</th>
@@ -699,7 +699,7 @@ function CustomerDetail({ customer, onBack, onEdit, onNavigateJob, onNavigatePro
           </table>
         </div>
       ) : tab === "proposals" ? (
-        <div style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
+        <div className="sc-table-frame" style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: F.ui }}>
             <thead><tr style={{ background: C.dark }}>
               <th style={thStyle}>Proposal #</th><th style={thStyle}>Work Type</th><th style={thStyle}>Status</th><th style={{ ...thStyle, textAlign: "right" }}>Amount</th><th style={thStyle}>Date</th>
@@ -723,7 +723,7 @@ function CustomerDetail({ customer, onBack, onEdit, onNavigateJob, onNavigatePro
           </table>
         </div>
       ) : (
-        <div style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
+        <div className="sc-table-frame" style={{ borderRadius: 10, border: `1px solid ${C.borderStrong}`, overflow: "hidden", boxShadow: "0 2px 10px rgba(28,24,20,0.08)" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: F.ui }}>
             <thead><tr style={{ background: C.dark }}>
               <th style={thStyle}>Invoice #</th><th style={thStyle}>Job</th><th style={thStyle}>Work Type</th><th style={thStyle}>Status</th><th style={{ ...thStyle, textAlign: "right" }}>Amount</th><th style={thStyle}>Sent</th>

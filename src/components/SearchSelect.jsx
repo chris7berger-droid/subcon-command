@@ -72,6 +72,7 @@ export default function SearchSelect({ value, onChange, options, placeholder = "
 
   const dropdown = open && createPortal(
     <div
+      className="sc-searchselect-panel"
       ref={(el) => { panelRef.current = el; panelEl.current = el; }}
       style={{
         position: "fixed", top: pos.top, left: pos.left, width: pos.width,

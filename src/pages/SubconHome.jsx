@@ -111,7 +111,7 @@ function CommandCard({ group, tagline, accent, cells, quickLinks }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: SP.md }}>{cells}</div>
+      <div className="sc-home-kpis" style={{ display: "flex", gap: SP.md }}>{cells}</div>
 
       <button
         type="button"
@@ -250,9 +250,9 @@ export default function SubconHome({ teamMember, displayRole }) {
   const co = data?.company;
 
   return (
-    <div style={{ maxWidth: 1240, display: "flex", flexDirection: "column", gap: SP.xl }}>
+    <div className="sc-m-p1" style={{ maxWidth: 1240, display: "flex", flexDirection: "column", gap: SP.xl }}>
       {/* ── Welcome hero ── */}
-      <div style={{ position: "relative", borderRadius: R.hero, overflow: "hidden", background: `${HERO_SCRIM}, url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center", padding: "36px 40px", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: SP.xl, flexWrap: "wrap" }}>
+      <div className="sc-home-hero" style={{ position: "relative", borderRadius: R.hero, overflow: "hidden", background: `${HERO_SCRIM}, url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center", padding: "36px 40px", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: SP.xl, flexWrap: "wrap" }}>
         <div style={{ maxWidth: 660 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: C.teal, fontFamily: F.ui, marginBottom: 4 }}>Welcome to</div>
           <div style={{ fontSize: FS.hero, lineHeight: 0.98, fontWeight: 900, fontFamily: F.display, letterSpacing: "0.01em" }}>
@@ -308,7 +308,7 @@ export default function SubconHome({ teamMember, displayRole }) {
           </Panel>
 
           {/* ── Needs Attention + What's Happening ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: SP.lg }}>
+          <div className="sc-home-split" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: SP.lg }}>
             <Panel title="Needs Attention" action={data?.attention?.length ? "View All" : null} onAction={() => navigate("/schedule/jobs")}>
               {loading ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: SP.sm }}>{[0, 1, 2].map(i => <Skeleton key={i} w="100%" h={20} />)}</div>

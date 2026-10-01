@@ -1,0 +1,113 @@
+/* Phone shell + sales phone flow (plan: docs/plans/mobile_web_preview.md).
+   Every rule sits in a `screen` media query at <=768px (phone/tablet-portrait)
+   or <=600px (phone details), so desktop (>=769px) and print are untouched.
+   Inner-layout rules are scoped to class hooks on the named P1/P2 screens —
+   there is no app-wide input, table or grid override here. Colors reuse the
+   values the touched surfaces already carry; nothing new is introduced. */
+
+@media screen and (max-width: 768px) {
+  /* ── P0 shell ─────────────────────────────────────────────────────────── */
+  @supports (height: 100dvh) {
+    [data-app-shell] { height: 100dvh !important; }
+  }
+
+  /* The sidebar leaves the layout and becomes an off-canvas drawer. Layers,
+     low to high: page · badge + jump (40) · scrim (60) · drawer (70) · modals
+     (100+, unchanged). */
+  /* Embedded apps carry their own sticky headers at z 99–100 (AR's top bar).
+     While the drawer is open the content column becomes one layer under the
+     scrim, so nothing inside a page can cover the drawer. An open modal
+     dialog lifts that, which keeps it above the drawer. */
+  [data-app-shell]:has([data-app-sidebar][data-drawer='open']) > [data-app-main]:not(:has([aria-modal='true'])) {
+    position: relative; z-index: 0;
+  }
+  [data-app-sidebar][data-drawer] {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 70;
+    width: min(264px, calc(100vw - 56px)) !important;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1), visibility 0s linear 200ms !important;
+  }
+  [data-app-sidebar][data-drawer='open'] {
+    transform: none; visibility: visible;
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1), visibility 0s !important;
+  }
+  [data-app-scrim] { position: fixed; inset: 0; z-index: 60; background: rgba(28,24,20,0.65); }
+  [data-app-sidebar][data-drawer] button { min-height: 44px; }
+  [data-app-sidebar][data-drawer] .sc-drawer-close { width: 44px; min-width: 44px; margin-left: auto; }
+  [data-app-sidebar][data-drawer] .sc-signout { display: inline-flex; align-items: center; min-width: 44px; }
+  .sc-menu-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  [data-app-sidebar][data-drawer] button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+
+  /* One 50px header row: page name always whole, group label may truncate. */
+  [data-app-header] { padding: 0 12px !important; }
+  .sc-crumbs { flex: 1; min-width: 0; }
+  .sc-crumb-group { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sc-crumb-page { flex-shrink: 0; white-space: nowrap; }
+
+  /* Page badge and Call Log jump button: stacked, never overlapping, and under
+     the drawer scrim. Extra bottom room lets the last table row clear both. */
+  .sc-page-badge { z-index: 40 !important; min-height: 36px; }
+  [data-app-shell] .cl-jump { z-index: 40 !important; bottom: 68px !important; min-height: 44px; }
+  .sc-calllog [data-app-content] { padding-bottom: 136px !important; }
+
+  /* Directory overlay fits the viewport; its content already scrolls inside. */
+  .sc-toc-panel { width: min(640px, calc(100vw - 24px)) !important; }
+  .sc-toc-close { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+
+  /* ── P1 New Inquiry wizard: dialog inside the viewport, step controls
+        pinned below it so they are always on screen ───────────────────────── */
+  .sc-inquiry { padding: 12px 12px 80px; }
+  .sc-inquiry .sc-inquiry-dialog { width: 100% !important; max-width: 620px; max-height: 100% !important; padding: 20px 16px !important; }
+  .sc-inquiry-nav { top: auto !important; bottom: 16px !important; transform: none !important; }
+  .sc-inquiry-nav-back { left: 16px !important; }
+  .sc-inquiry-nav-next { right: 16px !important; }
+  .sc-inquiry .sc-inquiry-close { min-width: 44px; min-height: 44px; }
+  /* Title row stays put while a tall step scrolls under it, so Close is
+     always on screen. It spans the dialog's padding and carries its surface. */
+  .sc-inquiry .sc-inquiry-head {
+    position: sticky; top: 0; z-index: 2; background: inherit;
+    margin: -20px -16px 8px !important; padding: 20px 16px 8px;
+  }
+  .sc-inquiry :is(input, select, textarea) { min-width: 0; }
+
+  /* ── P2 sales read lists ──────────────────────────────────────────────── */
+  .sc-tabs-row { flex-wrap: wrap; }
+  .sc-table-frame { overflow-x: auto !important; }
+}
+
+@media screen and (max-width: 600px) {
+  /* Schedule's zero padding and the Call Log theme's own padding keep winning
+     (both are more specific). */
+  [data-app-content] { padding: 16px !important; }
+
+  /* P1 screens + Login: 16px text entry (no iPhone focus zoom), 36px buttons. */
+  .sc-m-p1 :is(input, select, textarea),
+  [data-app-shell] .sc-m-p1 :is(input, select, textarea),
+  .sc-inquiry :is(input, select, textarea) { font-size: 16px !important; }
+  .sc-m-p1 button, .sc-inquiry button { min-height: 36px; }
+  /* The wizard's customer picker renders its search box on <body>, outside
+     .sc-inquiry; reach it only while the wizard is open. */
+  body:has(.sc-inquiry) > .sc-searchselect-panel input { font-size: 16px !important; }
+  [data-app-shell] .sc-m-p1 .cl-jobs input[type='date'] { width: 164px !important; }
+
+  /* Subcon Home */
+  .sc-home-hero { padding: 24px 20px !important; }
+  .sc-home-split { grid-template-columns: minmax(0, 1fr) !important; }
+  /* KPI cells keep their full number: a cell that does not fit wraps to the
+     next line instead of overflowing the card. */
+  .sc-home-kpis { flex-wrap: wrap; }
+  .sc-home-kpis > * { flex: 1 1 auto !important; min-width: max-content !important; }
+
+  /* Call Log detail */
+  .sc-cld-nav, .sc-cld-head { flex-wrap: wrap; }
+  .sc-cld-actions { margin-left: 0 !important; flex: 1 1 100%; flex-wrap: wrap; }
+  .sc-cld :is(input, select, textarea) { min-width: 0; }
+  .sc-cld-grid, .sc-cld-stats { grid-template-columns: minmax(0, 1fr) !important; }
+  .sc-cld-stats > div + div { border-left: 0 !important; border-top: 1px solid rgba(255,255,255,0.12); }
+  .sc-cld-linkrow { flex-wrap: wrap; row-gap: 4px; }
+  .sc-cld-linklabel { flex: 1 1 100%; width: auto !important; min-width: 0 !important; white-space: normal !important; }
+}
+
+@media screen and (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  [data-app-sidebar][data-drawer] { transition: none !important; }
+}

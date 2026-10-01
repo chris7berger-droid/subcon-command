@@ -324,7 +324,7 @@ export default function CallLog({ teamMember, setSubPage }) {
   return (
     <>
       {wizardEl}
-      <div className="cl-command" ref={commandRef} style={{ display: "flex", flexDirection: "column", gap: 20, scrollMarginTop: 12 }}>
+      <div className="cl-command sc-m-p1" ref={commandRef} style={{ display: "flex", flexDirection: "column", gap: 20, scrollMarginTop: 12 }}>
         <SectionHeader title="Call Log" action={<Btn v="teal" sz="md" onClick={() => setShowModal(true)}>+ New Inquiry</Btn>} />
         {/* Page-level nav: Command Center (top) ↔ All Jobs (list). Active reflects scroll. */}
         <div style={{ display: "flex", gap: 8, marginTop: -8 }}>

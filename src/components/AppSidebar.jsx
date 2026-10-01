@@ -14,9 +14,13 @@ import {
 export default function AppSidebar({
   open, setOpen, displayName, displayRole, displayInitials, onOpenDirectory,
   teamMember, cfg,
+  drawer, onDrawerClose, drawerRef,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  // Phone drawer (`drawer` is "open" | "closed", undefined on desktop): choosing
+  // a destination — including the current one — or the Directory also closes it.
+  const go = (path) => { navigate(path); onDrawerClose?.(); };
 
   const visInputs = { tenantApps: cfg?.apps, memberApps: teamMember?.apps };
   const visibleGroups = GROUPS.filter(g => groupVisible(g, visInputs));
@@ -34,11 +38,14 @@ export default function AppSidebar({
   const settingsVisible = !SETTINGS.roles || SETTINGS.roles.includes(displayRole);
 
   return (
-    <div data-app-sidebar style={{ width: open ? 228 : 56, flexShrink: 0, background: C.dark, display: "flex", flexDirection: "column", transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)", overflow: "hidden", borderRight: `1px solid ${C.darkBorder}` }}>
+    <div data-app-sidebar id="app-sidebar" ref={drawerRef} data-drawer={drawer} inert={drawer === "closed"} role={drawer ? "navigation" : undefined} aria-label={drawer ? "Main navigation" : undefined} style={{ width: open ? 228 : 56, flexShrink: 0, background: C.dark, display: "flex", flexDirection: "column", transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)", overflow: "hidden", borderRight: `1px solid ${C.darkBorder}` }}>
 
       <div style={{ padding: open ? "18px 16px 14px" : "18px 10px 14px", borderBottom: `1px solid ${C.darkBorder}`, display: "flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
         <div style={{ flexShrink: 0 }}><SalesCommandMark size={34} /></div>
         {open && <AppWordmark size={13} />}
+        {drawer && (
+          <button data-drawer-close className="sc-drawer-close" aria-label="Close navigation" onClick={onDrawerClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "rgba(255,255,255,0.82)" }}>✕</button>
+        )}
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "8px 5px" }}>
@@ -46,7 +53,7 @@ export default function AppSidebar({
         {/* Subcon Home — always at top */}
         <SidebarLeaf
           icon={SUBCON_HOME.icon} label={SUBCON_HOME.label} open={open} active={onSubconHome}
-          onClick={() => navigate(SUBCON_HOME.path)}
+          onClick={() => go(SUBCON_HOME.path)}
         />
 
         {/* Empty-state: a member with a non-empty, non-Sales apps array sees no
@@ -84,7 +91,7 @@ export default function AppSidebar({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => item.action === "directory" ? onOpenDirectory() : navigate(item.path)}
+                    onClick={() => { if (item.action === "directory") { onOpenDirectory(); onDrawerClose?.(); } else go(item.path); }}
                     aria-current={active ? "page" : undefined}
                     title={item.label}
                     style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 11px 7px 22px", borderRadius: 7, border: "none", background: active ? C.tealGlow : "transparent", color: active ? C.teal : "rgba(255,255,255,0.42)", cursor: "pointer", textAlign: "left", marginBottom: 2, transition: "all 0.12s", fontFamily: F.display, borderLeft: active ? `2px solid ${C.teal}` : "2px solid transparent" }}
@@ -105,7 +112,7 @@ export default function AppSidebar({
           <div style={{ marginTop: 8 }}>
             <SidebarLeaf
               icon={SETTINGS.icon} label={SETTINGS.label} open={open} active={onSettings}
-              onClick={() => navigate(SETTINGS.path)}
+              onClick={() => go(SETTINGS.path)}
             />
           </div>
         )}
@@ -113,17 +120,19 @@ export default function AppSidebar({
 
       {open && <div className="cl-mission">COMMAND THE WORK.<br />COMMAND THE MARGIN.</div>}
       <div style={{ padding: "8px 5px", borderTop: `1px solid ${C.darkBorder}`, flexShrink: 0 }}>
-        <button onClick={() => setOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 11px", borderRadius: 7, border: "none", background: "transparent", color: "rgba(255,255,255,0.28)", cursor: "pointer", fontFamily: F.display, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-          <span style={{ fontSize: 11 }}>{open ? "◀" : "▶"}</span>
-          {open && <span>Collapse</span>}
-        </button>
+        {!drawer && (
+          <button onClick={() => setOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 11px", borderRadius: 7, border: "none", background: "transparent", color: "rgba(255,255,255,0.28)", cursor: "pointer", fontFamily: F.display, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <span style={{ fontSize: 11 }}>{open ? "◀" : "▶"}</span>
+            {open && <span>Collapse</span>}
+          </button>
+        )}
         {open && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px 4px" }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.tealGlow, border: `1.5px solid ${C.tealBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 900, color: C.teal, flexShrink: 0, fontFamily: F.display }}>{displayInitials}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,0.82)", fontFamily: F.display, letterSpacing: "0.04em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName}</div>
               <div style={{ fontSize: 10.5, color: C.teal, fontFamily: F.ui, opacity: 0.65 }}>{displayRole}</div>
-              <button onClick={signOut} style={{ marginTop: 4, fontSize: 10, fontFamily: "'DM Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.2)", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase", padding: 0 }}>
+              <button onClick={signOut} className="sc-signout" style={{ marginTop: 4, fontSize: 10, fontFamily: "'DM Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.2)", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase", padding: 0 }}>
                 Sign out
               </button>
             </div>

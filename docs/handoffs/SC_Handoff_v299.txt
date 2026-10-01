@@ -1,0 +1,87 @@
+SC Handoff v299 — Mobile web preview (F65), T3 build — 2026-09-30
+
+SESSION SUMMARY
+Chris asked for a practical mobile-browser preview of Subcon Command. This is
+the T3 build of docs/plans/mobile_web_preview.md @ 87e820f (T2 CONVERGED,
+recorded in docs/AUDIT_LOG.md "Gate records" @ a4b831b). Built on
+feat/mobile-web-preview from the Call Log brand commit 34af375. Local status
+only: not pushed, no preview yet, reviews not run. Do not merge.
+
+CHANGES BUILT
+Phone shell at <=768px: the sidebar becomes a drawer opened from a header menu
+button. It closes on a destination, the Directory, the scrim, Escape or its
+close control; it is inert while closed; focus moves in and back out. The
+desktop sidebar state is separate and survives a resize.
+Layers: page, badge + jump, scrim, drawer, modals. While the drawer is open the
+content column sits under the scrim, so AR's sticky top bar no longer covers
+the drawer. An open aria-modal dialog stays above the drawer.
+Sales phone flow: both homes, Call Log list and detail, New Inquiry (Back/Next/
+Save pinned, Close always visible on tall steps, 16px text entry including the
+customer picker search box), Login 16px inputs.
+Sales read lists: Proposals tabs wrap; Customer detail tables scroll inside
+their frames; Leads, Invoices and Customers lists pass on the shell alone.
+All new CSS is in src/styles/mobile-shell.css inside screen media queries at
+<=768px or <=600px. Desktop markup changes are attributes and class names.
+
+DECISIONS
+Drawer and scrim keep z 70 / 60. Raising them above AR's z 100 header would
+have put the drawer over sixteen z-100 modals, several in no-touch files, so
+the content column is demoted while the drawer is open instead.
+Log Outcome, job-list and Hunt results modals got role="dialog" aria-modal and
+a name so that rule's modal exception covers them. Attributes only.
+No P2 screen was deferred.
+
+NEW/CLOSED BACKLOG ITEMS
+New: F65 Mobile web preview, T2, In Progress (built, reviews pending).
+Closed: none.
+
+VERIFICATION
+Coordinator's synthetic self-check, local dev server, fixture data, backend
+default-deny, no real sign-in:
+  qa/mobile-final      126 checks passed, 0 page errors, 0 attempted writes
+                       (360/390/430/640/768; includes 28 smoke-only routes at
+                       390 and 768, load + drawer exit only)
+  qa/mobile-tall-step   20 checks passed, 0 errors, 0 writes
+  qa/wizard-matrix      66 checks passed, 0 errors, 0 writes (earlier run)
+npm run build passes. ESLint 176 errors / 43 warnings, same as baseline.
+git diff --check clean. Zero diff in the plan's no-touch list.
+Desktop 1440: 10 of 13 screens pixel-exact. Call Log 9 px and Calendar 127 px
+differ by one channel level; New Inquiry 28 px, within its own base jitter
+(30 px). The plan's zero-pixel bar B1 is therefore not met literally; no
+layout or content change was observed.
+These runs are a build self-check. They are not the Smoke gate, not a review
+and not a hosted walk. Authenticated access to real records was not exercised.
+Screenshots and result files are in the task's local qa directory, not
+committed.
+
+NOT TOUCHED
+main, production, the Vercel project, database/schema/RLS/auth, edge
+functions, package.json and build config, src/schedule, src/field, src/ar,
+Invoices.jsx and the other money-path files, tokens.js, the logo, native Field
+Command, AIOS.
+
+NEXT SESSION POINTERS
+T4 Build vs Plan, T5 Code Review, T6 Security Review on this commit, each by a
+session that did not build it. Then Smoke Test (plan section 5 A-F) on the
+reviewed commit, then the coordinator pushes for the Vercel preview and adds
+the SHA and URL here. A commit after the reviews re-opens them.
+The preview shares the production database: a phone look should be read-only.
+Chris's look on a real phone is his step; emulated Chrome cannot show Safari's
+toolbar, keyboard, safe areas or focus zoom.
+Brand check and its two deviations (focus ring not cyan outside the Call Log
+route; legacy palette carried elsewhere) are in BUILD-REPORT.md.
+
+FILES TO KNOW
+src/styles/mobile-shell.css
+src/App.jsx (matchMedia, drawer state, menu button, data-app-main)
+src/components/AppSidebar.jsx (drawer semantics)
+src/components/NewInquiryWizard.jsx, SearchSelect.jsx, TableOfContents.jsx
+src/components/followup/{LogOutcome,JobList,HuntResults}Modal.jsx
+scripts/check-mobile-preview.mjs, scripts/mobile-preview-fixtures.mjs
+docs/plans/mobile_web_preview.md
+docs/agent-handoffs/BUILD-REPORT.md
+
+GIT STATE
+Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-3/mobile-preview
+Branch feat/mobile-web-preview, base a4b831b, this handoff's commit on top.
+Not pushed.

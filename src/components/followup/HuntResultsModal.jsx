@@ -29,7 +29,7 @@ export default function HuntResultsModal({ calls = [], jobs = [], onGoTo, onClos
   const go = (item) => { onGoTo?.(item); onClose?.(); };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(28,24,20,0.65)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div className="cl-dialog" onClick={e => e.stopPropagation()} style={{ background: C.linenCard, borderRadius: 14, padding: 28, width: 560, maxWidth: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
+      <div className="cl-dialog" role="dialog" aria-modal="true" aria-label="Waking Up the Sleepers, This Week" onClick={e => e.stopPropagation()} style={{ background: C.linenCard, borderRadius: 14, padding: 28, width: 560, maxWidth: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: SP.lg }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.03em", textTransform: "uppercase" }}>Waking Up the Sleepers · This Week</div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: C.textFaint }}>✕</button>
