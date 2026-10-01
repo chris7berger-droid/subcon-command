@@ -1,6 +1,6 @@
 // SC-20 — Call Log Row Detail View
 import { useState, useEffect, useRef, useMemo } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { fmt$, fmtD } from "../lib/utils";
 import { sumContractBilled } from "../lib/calc";
 import { selectableWorkTypes } from "../lib/workTypes";
@@ -54,11 +54,12 @@ function Section({ title, defaultOpen = false, children }) {
 
 function stageColor(stage) {
   const map = {
-    "New Inquiry": { bg: "rgba(79,70,229,0.15)", color: "#a5b4fc" },
-    "Wants Bid":   { bg: "rgba(217,119,6,0.15)",  color: "#fcd34d" },
-    "Has Bid":     { bg: "rgba(5,150,105,0.15)",   color: "#6ee7b7" },
-    "Sold":        { bg: "rgba(16,185,129,0.2)",   color: "#34d399" },
-    "Lost":        { bg: "rgba(239,68,68,0.15)",   color: "#fca5a5" },
+    // Themed: readable semantic inks. Off-theme: the original literal (fallback).
+    "New Inquiry": { bg: "rgba(79,70,229,0.15)", color: "var(--cl-tealInk, #a5b4fc)" },
+    "Wants Bid":   { bg: "rgba(217,119,6,0.15)",  color: "var(--cl-amber, #fcd34d)" },
+    "Has Bid":     { bg: "rgba(5,150,105,0.15)",   color: "var(--cl-purple, #6ee7b7)" },
+    "Sold":        { bg: "rgba(16,185,129,0.2)",   color: "var(--cl-green, #34d399)" },
+    "Lost":        { bg: "rgba(239,68,68,0.15)",   color: "var(--cl-red, #fca5a5)" },
   };
   return map[stage] || { bg: "rgba(255,255,255,0.06)", color: C.textFaint };
 }
@@ -449,7 +450,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+    <div className="cl-detail" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
       {showArchiveModal && (
         <ArchiveProposalModal
@@ -495,7 +496,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       )}
 
       {/* Back + cross-nav */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
+      <div className="cl-wrap-row" style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
         <button onClick={onBack} style={{ background: C.dark, border: "none", cursor: "pointer", color: C.teal, fontWeight: 800, fontSize: 12, fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", padding: "6px 14px", borderRadius: 6 }}>
           ← Call Log
         </button>
@@ -517,8 +518,8 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       </div>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em" }}>
+      <div className="cl-detail-head" style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
+        <h2 className="cl-page-title" style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em" }}>
           {job.display_job_number || job.job_name}
         </h2>
         <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, background: sc.bg, color: sc.color, fontFamily: F.display }}>
@@ -530,7 +531,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
         {job.archive_record_id && (
           <span title="Imported from archive — link a QB customer to enable invoice sync." style={{ fontSize: 10.5, fontWeight: 700, background: "rgba(142,68,173,0.12)", color: "#5b2d7a", padding: "3px 10px", borderRadius: 10, fontFamily: F.ui, border: "1px solid rgba(142,68,173,0.25)", cursor: "help" }}>ARCHIVE</span>
         )}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="cl-detail-actions" style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
           {!editing && <Btn sz="sm" v="ghost" onClick={() => setEditing(true)}>Edit</Btn>}
           {editing && (
             <button
@@ -586,7 +587,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
 
       {/* Job Info */}
       <Section title="Job Info" defaultOpen={true}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
+        <div className="cl-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
           <Field label="Stage">
             <select value={form.stage} onChange={e => set("stage", e.target.value)} style={iStyle}>
               <option value="">— Select —</option>
@@ -708,7 +709,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       <Section title={job.customer_type === "Residential" ? "Customer Address" : "Business Address"}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input type="text" value={form.business_address} onChange={e => set("business_address", e.target.value)} placeholder="Street Address" style={iStyle} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 72px 100px", gap: 8 }}>
+          <div className="cl-addr-grid" style={{ display: "grid", gridTemplateColumns: "1fr 72px 100px", gap: 8 }}>
             <input placeholder="City" value={form.business_city} onChange={e => set("business_city", e.target.value)} style={iStyle} />
             <input placeholder="State" value={form.business_state} onChange={e => set("business_state", e.target.value)} style={iStyle} maxLength={2} />
             <input placeholder="Zip" value={form.business_zip} onChange={e => set("business_zip", e.target.value)} style={iStyle} />
@@ -718,7 +719,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
 
       {/* Contact & Billing */}
       <Section title="Contact & Billing">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
+        <div className="cl-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
           <Field label="Customer Name" wide>
             <input type="text" value={form.customer_name} onChange={e => set("customer_name", e.target.value)} placeholder="Customer name" style={iStyle} disabled />
           </Field>
@@ -755,7 +756,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
             <span style={{ fontSize: 13.5, color: C.textBody, fontFamily: F.ui }}>Is there a separate billing contact?</span>
           </button>
           {!form.billing_same && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px", marginTop: 10, padding: "12px 14px", background: C.linen, borderRadius: 8, border: `1px solid ${C.border}` }}>
+            <div className="cl-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px", marginTop: 10, padding: "12px 14px", background: C.linen, borderRadius: 8, border: `1px solid ${C.border}` }}>
               <Field label="Billing Contact Name" wide>
                 <input type="text" value={form.billing_name} onChange={e => set("billing_name", e.target.value)} placeholder="Billing contact name" style={iStyle} />
               </Field>
@@ -774,7 +775,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       <Section title="Jobsite Address">
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input type="text" value={form.jobsite_address} onChange={e => set("jobsite_address", e.target.value)} placeholder="Street Address" style={iStyle} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 72px 100px", gap: 8 }}>
+          <div className="cl-addr-grid" style={{ display: "grid", gridTemplateColumns: "1fr 72px 100px", gap: 8 }}>
             <input placeholder="City" value={form.jobsite_city} onChange={e => set("jobsite_city", e.target.value)} style={iStyle} />
             <input placeholder="State" value={form.jobsite_state} onChange={e => set("jobsite_state", e.target.value)} style={iStyle} maxLength={2} />
             <input placeholder="Zip" value={form.jobsite_zip} onChange={e => set("jobsite_zip", e.target.value)} style={iStyle} />
@@ -999,7 +1000,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
             </div>
 
             {/* Stat strip: billed / remaining / % invoiced */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: C.dark }}>
+            <div className="cl-dark-panel cl-stat-strip" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: C.dark }}>
               <div style={{ padding: "14px 22px" }}>
                 <div title="Historical billed (pre-SC) + invoices issued via Sales Command, excludes deleted. Includes T&M." style={statLabel}>Billed</div>
                 <div style={statValue}>{fmt$(billed)}</div>
@@ -1045,7 +1046,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                   };
                   const sc = statusColors[p.status] || { bg: "rgba(28,24,20,0.06)", color: C.textFaint };
                   return (
-                    <button key={`p-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)} title={label}
+                    <button className="cl-linked-row" key={`p-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)} title={label}
                       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateProposal ? "pointer" : "default", textAlign: "left" }}
                       onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}
                       onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.linenLight : C.linen}
@@ -1073,7 +1074,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                   {archiveBilled.map((p, i) => {
                     const label = `${p.call_log?.display_job_number || job.display_job_number || "P"} P${p.proposal_number || 1}`;
                     return (
-                      <button key={`ab-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)}
+                      <button className="cl-linked-row" key={`ab-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)}
                         style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateProposal ? "pointer" : "default", textAlign: "left" }}
                         onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}
                         onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.linenLight : C.linen}
@@ -1106,7 +1107,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                     ? { bg: "rgba(229,57,53,0.18)", color: "#8b1a18" }
                     : (invColors[inv.status] || { bg: "rgba(28,24,20,0.06)", color: C.textFaint });
                   return (
-                    <button key={`i-${inv.id}`} onClick={() => onNavigateInvoice && onNavigateInvoice(inv.id)}
+                    <button className="cl-linked-row" key={`i-${inv.id}`} onClick={() => onNavigateInvoice && onNavigateInvoice(inv.id)}
                       title={isVoided ? `Voided${inv.void_reason ? `: ${inv.void_reason}` : ""}` : undefined}
                       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateInvoice ? "pointer" : "default", textAlign: "left", opacity: isVoided ? 0.6 : 1 }}
                       onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}

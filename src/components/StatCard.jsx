@@ -1,4 +1,4 @@
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 export default function StatCard({ label, value, sub, accent = C.teal, onClick }) {
   return (

@@ -29,6 +29,9 @@ export const C = {
 export const CALLLOG_C = Object.fromEntries(
   Object.entries(C).map(([key, value]) => [key, `var(--cl-${key}, ${value})`])
 );
+// Teal used as TEXT on a light surface: unthemed it is still C.teal; themed it
+// becomes the dark cyan ink (bright cyan is unreadable on warm ivory).
+CALLLOG_C.tealInk = `var(--cl-tealInk, ${C.teal})`;
 
 // Saved brand source: AIOS 565a1ba, UI Standard §§4–10, 14, 18.
 // Darker semantic inks are for AA readability on Light Glass; instrumentation
@@ -50,6 +53,19 @@ export const CALLLOG_THEME = {
   "--cl-ivory": "#F2E9D9", "--cl-muted-dark": "#D4C3AA",
   "--cl-shell": "#8B735E", "--cl-shell-light": "#D4C3AA",
   "--cl-success": "#37D47F", "--cl-warning": "#FFAA2D", "--cl-danger": "#FF4D43", "--cl-category": "#7637F5",
+  "--cl-tealInk": "#075763",
+  "--cl-dark-glass-soft": "rgba(24,21,18,.58)", "--cl-brown-glass-strong": "rgba(75,57,44,.48)",
+  "--cl-darkBorderStrong": "rgba(255,255,255,.23)",
+};
+
+// Interior screens opened from the Call Log (job detail, proposal detail, WTC):
+// same palette, but plain opaque warm surfaces — no photo, no glass (UI Standard
+// §6 "Dense operational canvases"). Spread over CALLLOG_THEME.
+export const CALLLOG_INTERIOR_THEME = {
+  ...CALLLOG_THEME,
+  "--cl-linen": "#E7DAC4", "--cl-linenLight": "#F2E9D9", "--cl-linenCard": "#F2E9D9",
+  "--cl-linenDeep": "#E7DAC4",
+  "--cl-shell": "#D4C3AA", "--cl-shell-light": "#D4C3AA",
 };
 
 export const F = {

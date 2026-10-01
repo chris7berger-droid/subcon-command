@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fmtD } from "../lib/utils";
 import Btn from "./Btn";

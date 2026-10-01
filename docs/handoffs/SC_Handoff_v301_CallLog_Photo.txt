@@ -1,0 +1,62 @@
+SUBCON COMMAND — HANDOFF v301 Call Log Photo — 2026-10-01
+
+SESSION SUMMARY
+Chris requested a revised Call Log brand preview: approved construction photo,
+separate translucent panels, smaller dashboard cards, preserved larger sidebar
+font and cyan selected navigation. He then expanded the first pass to the
+connected job/proposal flow, with plain branded interiors. Preview only.
+
+CHANGES
+Home photo is the exact src/schedule/assets/crew-capacity-command-bg.png from
+6483984d360e37d68a3e01be21977181be00531b, the source behind the approved
+sales-command-dxz5dvofz Vercel preview (ui/crew-capacity-surface-test). Extracted
+without re-encoding as src/assets/brand/calllog-construction.png.
+SHA256 05b2aa0aa3ffb6b60614e97b5afa74742aaf818a48cd87fdc59ae99c089d35b4.
+User-supplied reference screenshots were materialized locally via Library,
+verified and inspected as pixels; they were not used as production backgrounds.
+Detailed included/excluded screens and Brand check are in
+SC_CallLog_Brand_Revision_Build.md. Original logo and sidebar font unchanged.
+
+WORKFLOW
+Named AIOS Opus /fix implementation session:
+5060498a-60bb-49c4-9171-2532773b3436 (claude-opus-5-5[1m]).
+Codex independently inspected screenshots, ran synthetic local browser checks
+and routed readability/phone-overflow findings back for corrections. No full
+planning ceremony; user explicitly chose the lightest sufficient /fix pass.
+
+BRAND SOURCE VERIFICATION
+Current registry: /Users/chrisberger/aios/assets/brand/subcon-command/
+SUBCON_COMMAND_CURRENT.md, governing UI standard markdown and Visual Brand Guide
+DOCX. Saved source565a1bac6efe01d29700162f2474283b827e8c3f. Parent verifier
+opened the DOCX zip/XML and confirmed DOCX SHA256
+9833d17f2ec88c0a90626b599fb61eca997a91ac6206eb7337cedcf0277d0a80
+and XML hash match its faithful readable copy. Canonical image is byte-identical
+to embedded word/media/image1.png. UI Standard sections4–7,9–14,17–18 and Visual
+Guide03–08 govern; approved photo direction is Chris's explicit instruction.
+
+VERIFICATION
+Final checks and exact Ready deployment SHA are recorded in build report/task
+receipt after the Git integration builds this commit. Browser uses synthetic
+records/auth; all Supabase calls intercepted and every write blocked. Never read
+job10311 or any customer records. Fixture checks do not prove live login/RLS.
+Durable browser regression: scripts/qa-calllog-brand.mjs and
+scripts/qa-calllog-brand-checks.mjs. Requires available Playwright/Chrome via
+PLAYWRIGHT_MODULE and QA_BROWSER_PATH; no dependency/config change required.
+Set QA_URL to local preview, QA_INTERACTIVE=1, QA_OUTPUT_DIR to a local evidence
+directory. All application backend traffic is synthetic, unknown hosts blocked.
+Use VERCEL_ENV=preview and synthetic VITE_SUPABASE_URL/ANON_KEY for local builds.
+Archive regression: node scripts/check-preview-autoarchive.mjs.
+
+NOT TOUCHED / REVIEW LIMITS
+No main merge, production deploy, database/schema/data changes, auth/security or
+project settings changes. The Preview archive guard from e35f407 remains intact.
+The preview STILL uses production Supabase. Do not save/send/approve/merge jobs
+or use Billing/NewInvoice/financial creation while reviewing. Other automatic
+mutation paths remain outside this styling work. This is not a read-only app.
+Recovery worktree and unrelated untracked src/pages/CallLog 2.jsx untouched.
+No Schedule/Field/AR redesign. AIOS files unchanged.
+
+GIT STATE
+feat/calllog-brand-preview; base e35f40751c202325e96b7ba1a104ff3b34cce2a8.
+Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-2/calllog-preview.
+Review new immutable preview from completion receipt; no production release.

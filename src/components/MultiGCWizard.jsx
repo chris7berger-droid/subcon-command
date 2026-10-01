@@ -2,7 +2,7 @@
 // OPEN: CO call_log gate on Entry Point B — spec recommends hide on COs
 
 import { useEffect, useState } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fetchAll } from "../lib/supabaseHelpers";
 import { fmt$ } from "../lib/utils";
@@ -566,7 +566,7 @@ function Screen3({ targets, setTarget, sourceWtcs, sourceTotal, sp, expandedWtcs
 
               {/* Right: computed total */}
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.display, fontSize: 18, color: C.teal }}>{fmt$(sisterTotal)}</div>
+                <div style={{ fontFamily: F.display, fontSize: 18, color: C.tealInk }}>{fmt$(sisterTotal)}</div>
                 <div style={{ fontSize: 11, fontFamily: F.ui, color: delta > 0 ? C.amber : delta < 0 ? C.green : C.textFaint }}>
                   vs source: {delta >= 0 ? "+" : "−"}{fmt$(Math.abs(delta)).replace("$", "$")}
                 </div>
@@ -589,7 +589,7 @@ function Screen3({ targets, setTarget, sourceWtcs, sourceTotal, sp, expandedWtcs
                     <div key={w.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 12, fontFamily: F.ui, color: C.textBody }}>
                       <span>WTC {wi + 1} — {w.work_types?.name || "Unknown"}</span>
                       <span>
-                        <span style={{ color: C.teal, fontWeight: 600 }}>{fmt$(wtcPrice)}</span>
+                        <span style={{ color: C.tealInk, fontWeight: 600 }}>{fmt$(wtcPrice)}</span>
                         {t.markup_override_pct != null && (
                           <span style={{ color: C.textFaint, marginLeft: 8 }}>was {fmt$(sourceWtcPrice)}</span>
                         )}
@@ -621,7 +621,7 @@ function Screen4({ targets, sp, sourceWtcs, sourceTotal, displayLabel, saving, e
           <div><span style={{ color: C.textFaint }}>Job:</span> <span style={{ color: C.textBody }}>{sp?.call_log?.display_job_number} — {sp?.call_log?.job_name}</span></div>
           <div><span style={{ color: C.textFaint }}>Customer:</span> <span style={{ color: C.textBody }}>{sp?.call_log?.customer_name}</span></div>
           <div><span style={{ color: C.textFaint }}>Status:</span> <span style={{ color: C.textBody }}>{sp?.status}</span></div>
-          <div><span style={{ color: C.textFaint }}>Total:</span> <span style={{ color: C.teal, fontWeight: 700 }}>{fmt$(sourceTotal)}</span></div>
+          <div><span style={{ color: C.textFaint }}>Total:</span> <span style={{ color: C.tealInk, fontWeight: 700 }}>{fmt$(sourceTotal)}</span></div>
           <div><span style={{ color: C.textFaint }}>WTC count:</span> <span style={{ color: C.textBody }}>{sourceWtcs.length}</span></div>
         </div>
       </div>
@@ -667,7 +667,7 @@ function Screen4({ targets, sp, sourceWtcs, sourceTotal, displayLabel, saving, e
               </div>
 
               {/* Total */}
-              <div style={{ fontFamily: F.display, fontSize: 20, color: C.teal, marginBottom: 4 }}>{fmt$(sisterTotal)}</div>
+              <div style={{ fontFamily: F.display, fontSize: 20, color: C.tealInk, marginBottom: 4 }}>{fmt$(sisterTotal)}</div>
 
               {/* Intro override indicator */}
               {t.intro_locally_edited && (

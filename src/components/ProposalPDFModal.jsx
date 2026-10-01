@@ -256,32 +256,35 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
           @page { margin: 0.6in; size: letter; }
         }
       `}</style>
-      <div data-pdf-modal-inner data-pdf-printable style={{ background: "white", borderRadius: 16, width: "min(860px,95vw)", maxHeight: "93vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.35)", overflow: "hidden" }}>
+      {/* Chrome (header, send view, frame) takes brand variables whose fallbacks are the
+          original literals; the proposal document inside stays hard-coded and print resets
+          every variable, so nothing themed reaches the PDF/paper. */}
+      <div data-pdf-modal-inner data-pdf-printable className="cl-pdf-modal" style={{ background: "var(--cl-linenCard, white)", borderRadius: 16, width: "min(860px,95vw)", maxHeight: "93vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.35)", overflow: "hidden" }}>
 
         {/* Modal header */}
-        <div data-pdf-header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #E5E7EB", background: "#FAFAFA", flexShrink: 0 }}>
+        <div data-pdf-header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid var(--cl-borderStrong, #E5E7EB)", background: "var(--cl-linen, #FAFAFA)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: "#1976D2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--cl-dark, #1976D2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ color: "white", fontSize: 16 }}>📄</span>
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>Proposal Preview</div>
-              <div style={{ fontSize: 11, color: "#6B7280" }}>{wtcs.length} Work Type{wtcs.length !== 1 ? "s" : ""} · {money(proposalPrice)}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--cl-textHead, #111827)" }}>Proposal Preview</div>
+              <div style={{ fontSize: 11, color: "var(--cl-textMuted, #6B7280)" }}>{wtcs.length} Work Type{wtcs.length !== 1 ? "s" : ""} · {money(proposalPrice)}</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {view === "preview" && !sendDone && (
               <>
-                {onInternalApprove && <button onClick={onInternalApprove} style={{ background: "none", border: "1.5px solid #4CAF50", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#4CAF50", cursor: "pointer", fontFamily: "inherit" }}>✓ Internal Approve</button>}
-                <button onClick={() => window.print()} style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#4B5563", cursor: "pointer", fontFamily: "inherit" }}>🖨 Print</button>
-                {mode === "send" && !["Sold","Signed"].includes(proposal.status) && wtcs.length > 0 && wtcs.every(w => w.locked) && <button onClick={() => setView("send")} style={{ background: "#1976D2", border: "none", borderRadius: 7, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: "white", cursor: "pointer", fontFamily: "inherit" }}>📨 Send to Customer →</button>}
-                {mode === "send" && !["Sold","Signed"].includes(proposal.status) && (wtcs.length === 0 || !wtcs.every(w => w.locked)) && <span style={{ fontSize: 11, fontWeight: 700, color: "#e53935", fontFamily: "inherit", padding: "7px 12px" }}>Lock all WTCs to send</span>}
+                {onInternalApprove && <button onClick={onInternalApprove} style={{ background: "none", border: "1.5px solid var(--cl-green, #4CAF50)", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "var(--cl-green, #4CAF50)", cursor: "pointer", fontFamily: "inherit" }}>✓ Internal Approve</button>}
+                <button onClick={() => window.print()} style={{ background: "none", border: "1.5px solid var(--cl-borderStrong, #E5E7EB)", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "var(--cl-textBody, #4B5563)", cursor: "pointer", fontFamily: "inherit" }}>🖨 Print</button>
+                {mode === "send" && !["Sold","Signed"].includes(proposal.status) && wtcs.length > 0 && wtcs.every(w => w.locked) && <button onClick={() => setView("send")} style={{ background: "var(--cl-teal, #1976D2)", border: "none", borderRadius: 7, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: "var(--cl-dark, white)", cursor: "pointer", fontFamily: "inherit" }}>📨 Send to Customer →</button>}
+                {mode === "send" && !["Sold","Signed"].includes(proposal.status) && (wtcs.length === 0 || !wtcs.every(w => w.locked)) && <span style={{ fontSize: 11, fontWeight: 700, color: "var(--cl-red, #e53935)", fontFamily: "inherit", padding: "7px 12px" }}>Lock all WTCs to send</span>}
               </>
             )}
             {view === "send" && !sendDone && (
-              <button onClick={() => setView("preview")} style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#4B5563", cursor: "pointer", fontFamily: "inherit" }}>← Back to Preview</button>
+              <button onClick={() => setView("preview")} style={{ background: "none", border: "1.5px solid var(--cl-borderStrong, #E5E7EB)", borderRadius: 7, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "var(--cl-textBody, #4B5563)", cursor: "pointer", fontFamily: "inherit" }}>← Back to Preview</button>
             )}
-            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: "#9CA3AF", cursor: "pointer", padding: "0 4px", lineHeight: 1 }}>×</button>
+            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: "var(--cl-textMuted, #9CA3AF)", cursor: "pointer", padding: "0 4px", lineHeight: 1 }}>×</button>
           </div>
         </div>
 
@@ -289,7 +292,7 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
         <div data-pdf-body style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
 
           {view === "preview" && (
-            <div style={{ fontFamily: "Arial, sans-serif", color: "#1c1814", background: "white" }}>
+            <div className="cl-pdf-doc" style={{ fontFamily: "Arial, sans-serif", color: "#1c1814", background: "white" }}>
 
               {/* Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: 16, borderBottom: "4px solid #30cfac", marginBottom: 24 }}>
@@ -466,12 +469,12 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
 
           {view === "send" && !sendDone && (
             <div style={{ maxWidth: 520, margin: "0 auto" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 6 }}>Send Proposal to Customer</div>
-              <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 24 }}>Select a signer and optional viewers. All recipients will receive an email with the proposal link.</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--cl-textHead, #111827)", marginBottom: 6 }}>Send Proposal to Customer</div>
+              <div style={{ fontSize: 13, color: "var(--cl-textMuted, #6B7280)", marginBottom: 24 }}>Select a signer and optional viewers. All recipients will receive an email with the proposal link.</div>
 
               {/* Recipient picker */}
-              <div style={{ background: "#F9FAFB", border: "1.5px solid #E5E7EB", borderRadius: 10, padding: "14px 16px", marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>Recipients</div>
+              <div style={{ background: "var(--cl-linen, #F9FAFB)", border: "1.5px solid var(--cl-borderStrong, #E5E7EB)", borderRadius: 10, padding: "14px 16px", marginBottom: 12 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--cl-textMuted, #9CA3AF)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>Recipients</div>
                 {contacts.length === 0 && (
                   <div style={{ fontSize: 12, color: "#e53935" }}>No contacts on file. Add a contact email to the customer record first.</div>
                 )}
@@ -479,17 +482,17 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
                   const isSigner = signerEmail === c.email;
                   const isViewer = viewerEmails.includes(c.email);
                   return (
-                    <div key={c.email} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #E5E7EB" }}>
+                    <div key={c.email} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--cl-borderStrong, #E5E7EB)" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{c.name || c.email}</div>
-                        <div style={{ fontSize: 11, color: "#9CA3AF" }}>{c.email}{c.role ? ` · ${c.role}` : ""}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--cl-textHead, #111827)" }}>{c.name || c.email}</div>
+                        <div style={{ fontSize: 11, color: "var(--cl-textMuted, #9CA3AF)" }}>{c.email}{c.role ? ` · ${c.role}` : ""}</div>
                       </div>
                       <button
                         onClick={() => { setSignerEmail(c.email); setViewerEmails(v => v.filter(e => e !== c.email)); }}
                         style={{
                           padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                          background: isSigner ? "#30cfac" : "transparent", color: isSigner ? "#1c1814" : "#6B7280",
-                          border: `1.5px solid ${isSigner ? "#30cfac" : "#D1D5DB"}`,
+                          background: isSigner ? "var(--cl-teal, #30cfac)" : "transparent", color: isSigner ? "#1c1814" : "var(--cl-textMuted, #6B7280)",
+                          border: `1.5px solid ${isSigner ? "var(--cl-teal, #30cfac)" : "var(--cl-borderStrong, #D1D5DB)"}`,
                         }}
                       >Signer</button>
                       <button
@@ -499,8 +502,8 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
                         }}
                         style={{
                           padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: isSigner ? "default" : "pointer", fontFamily: "inherit",
-                          background: isViewer ? "#1c1814" : "transparent", color: isViewer ? "#30cfac" : "#6B7280",
-                          border: `1.5px solid ${isViewer ? "#1c1814" : "#D1D5DB"}`, opacity: isSigner ? 0.3 : 1,
+                          background: isViewer ? "var(--cl-dark, #1c1814)" : "transparent", color: isViewer ? "var(--cl-teal, #30cfac)" : "var(--cl-textMuted, #6B7280)",
+                          border: `1.5px solid ${isViewer ? "#1c1814" : "var(--cl-borderStrong, #D1D5DB)"}`, opacity: isSigner ? 0.3 : 1,
                         }}
                       >Viewer</button>
                     </div>
@@ -508,12 +511,12 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
                 })}
               </div>
 
-              <div style={{ background: "#F9FAFB", border: "1.5px solid #E5E7EB", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 12, color: "#6B7280", wordBreak: "break-all" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>Signing Link</div>
+              <div style={{ background: "var(--cl-linen, #F9FAFB)", border: "1.5px solid var(--cl-borderStrong, #E5E7EB)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 12, color: "var(--cl-textMuted, #6B7280)", wordBreak: "break-all" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--cl-textMuted, #9CA3AF)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>Signing Link</div>
                 {signingUrl}
               </div>
               {sendError && <div style={{ fontSize: 12, color: "#e53935", marginBottom: 12, background: "rgba(229,57,53,0.06)", border: "1px solid rgba(229,57,53,0.2)", borderRadius: 8, padding: "10px 14px" }}>{sendError}</div>}
-              <button onClick={handleSend} disabled={sending || !signerEmail} style={{ width: "100%", background: sending || !signerEmail ? "#ccc" : "#30cfac", color: "#1c1814", border: "none", borderRadius: 8, padding: 13, fontSize: 14, fontWeight: 700, cursor: sending || !signerEmail ? "default" : "pointer", fontFamily: "inherit" }}>
+              <button onClick={handleSend} disabled={sending || !signerEmail} style={{ width: "100%", background: sending || !signerEmail ? "#ccc" : "var(--cl-teal, #30cfac)", color: "#1c1814", border: "none", borderRadius: 8, padding: 13, fontSize: 14, fontWeight: 700, cursor: sending || !signerEmail ? "default" : "pointer", fontFamily: "inherit" }}>
                 {sending ? "Sending…" : `Send to ${1 + viewerEmails.length} Recipient${viewerEmails.length > 0 ? "s" : ""}`}
               </button>
             </div>
@@ -522,9 +525,9 @@ function ProposalPDFModal({ proposal, onClose, mode = "send", onInternalApprove 
           {sendDone && (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Proposal Sent</div>
-              <div style={{ fontSize: 14, color: "#6B7280", marginBottom: 24 }}>The customer will receive an email with a link to review and sign.</div>
-              <button onClick={onClose} style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: 8, padding: "9px 20px", fontSize: 13, fontWeight: 600, color: "#4B5563", cursor: "pointer", fontFamily: "inherit" }}>Close</button>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--cl-textHead, #111827)", marginBottom: 8 }}>Proposal Sent</div>
+              <div style={{ fontSize: 14, color: "var(--cl-textMuted, #6B7280)", marginBottom: 24 }}>The customer will receive an email with a link to review and sign.</div>
+              <button onClick={onClose} style={{ background: "none", border: "1.5px solid var(--cl-borderStrong, #E5E7EB)", borderRadius: 8, padding: "9px 20px", fontSize: 13, fontWeight: 600, color: "var(--cl-textBody, #4B5563)", cursor: "pointer", fontFamily: "inherit" }}>Close</button>
             </div>
           )}
 

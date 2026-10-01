@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { selectableWorkTypes } from "../lib/workTypes";
 import { supabase } from "../lib/supabase";
 import { dbErrorText } from "../lib/dbErrors";
@@ -197,7 +197,7 @@ export default function ArchiveProposalModal({ onClose, onCreated, preselectedJo
               <span style={{ fontWeight: 800, color: C.textHead }}>{selJob.display_job_number || selJob.job_name}</span>
               {" · "}{selJob.customer_name}
               {!preselectedJob && (
-                <button onClick={() => setStep(1)} style={{ marginLeft: 12, background: "none", border: "none", color: C.teal, cursor: "pointer", fontWeight: 700, fontSize: 12, fontFamily: F.display }}>← Change</button>
+                <button onClick={() => setStep(1)} style={{ marginLeft: 12, background: "none", border: "none", color: C.tealInk, cursor: "pointer", fontWeight: 700, fontSize: 12, fontFamily: F.display }}>← Change</button>
               )}
             </div>
 

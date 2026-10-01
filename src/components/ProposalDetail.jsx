@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import { fmt$, fmt$c, fmtD, rateCardLabel } from "../lib/utils";
 import { calcLabor, calcMaterialRow, calcTravel, calcWtcPrice, calcProposalTotal, calcWtcBreakdown, calcBidStamp, usesExactPricing, sumContractBilled } from "../lib/calc";
@@ -1014,7 +1014,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
 }} onClose={async (openPDF = false) => { const { data } = await supabase.from("proposals").select("*, call_log(jobsite_address, jobsite_city, jobsite_state, jobsite_zip, display_job_number, customer_name, sales_name, job_name, customer_id, show_cents, is_change_order, co_number, qb_skip_sync, qb_customer_id, archive_record_id, customers(email, contact_email, business_address, business_city, business_state, business_zip))").eq("id", p.id).single(); if (data) setP(data); setShowWTC(false); setActiveWtcId(null); setWtcInitialTab(null); const { data: wtcData } = await supabase.from("proposal_wtc").select("*, work_types(name)").eq("proposal_id", p.id).order("created_at", { ascending: true }); setWtcs(wtcData || []); if (openPDF) { setPdfMode("send"); setShowPDF(true); } }} />;  if (showPDF) return <ProposalPDFModal key={p.id + '-pdf'} proposal={p} mode={pdfMode} onClose={async () => { setShowPDF(false); const { data } = await supabase.from("proposals").select("*, call_log(jobsite_address, jobsite_city, jobsite_state, jobsite_zip, display_job_number, customer_name, sales_name, job_name, customer_id, show_cents, is_change_order, co_number, qb_skip_sync, qb_customer_id, archive_record_id, customers(email, contact_email, business_address, business_city, business_state, business_zip))").eq("id", p.id).single(); if (data) setP(data); }} onInternalApprove={p.status === "Sent" ? async () => { setShowPDF(false); const { data } = await supabase.from("proposals").select("*, call_log(jobsite_address, jobsite_city, jobsite_state, jobsite_zip, display_job_number, customer_name, sales_name, job_name, customer_id, show_cents, is_change_order, co_number, qb_skip_sync, qb_customer_id, archive_record_id, customers(email, contact_email, business_address, business_city, business_state, business_zip))").eq("id", p.id).single(); if (data) setP(data); setShowApproveModal(true); } : undefined} />;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+    <div className="cl-detail" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
       {missingJobsite && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", background: "rgba(230,168,0,0.1)", border: "1.5px solid rgba(230,168,0,0.35)", borderRadius: 10 }}>
@@ -1029,7 +1029,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="cl-detail-head" style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={{ background: C.dark, border: "none", cursor: "pointer", color: C.teal, fontWeight: 800, fontSize: 12, fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", padding: "6px 14px", borderRadius: 6 }}>
           ← Proposals
         </button>
@@ -1049,7 +1049,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
           </span>
         )}
         <div style={{ width: 1, height: 18, background: C.border }} />
-        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+        <h2 className="cl-page-title" style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>
           Proposal {p.call_log?.display_job_number || p.id} P{p.proposal_number || 1}
 
         </h2>
@@ -1069,7 +1069,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
         {(p.call_log?.qb_skip_sync || (p.is_archive_proposal && !p.call_log?.qb_customer_id)) && (
           <span title={p.call_log?.qb_skip_sync ? "QuickBooks auto-sync skipped — this job is flagged 'Skip QB' on the call log" : "QuickBooks auto-sync skipped — archive proposal not linked to a QB customer. Link the job to enable sync."} style={{ fontSize: 10.5, fontWeight: 700, background: C.dark, color: C.teal, padding: "3px 10px", borderRadius: 10, fontFamily: F.ui, border: `1px solid ${C.teal}`, cursor: "help", letterSpacing: "0.04em" }}>QB SKIP</span>
         )}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+        <div className="cl-detail-actions" style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           {canDelete && (
             <Btn sz="sm" v="ghost" onClick={handleDelete} style={{ color: C.red, borderColor: C.red }}>🗑 Delete</Btn>
           )}
@@ -1100,7 +1100,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div className="cl-proposal-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {p.is_archive_proposal ? (
             <ArchiveProposalPanel p={p} setP={setP} money={money} linkedInvoices={linkedInvoices} />
@@ -1136,7 +1136,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                     <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, position: "relative" }}>
                       <div style={{ fontSize: 11, color: wtc.locked ? C.green : C.amber, fontWeight: 700, fontFamily: F.ui }}>{wtc.locked ? "🔒 Locked" : "⏳ In Progress"}</div>
                       <button onClick={() => setExpandedWtc(expandedWtc === `progress-${wtc.id}` ? null : `progress-${wtc.id}`)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: pct === 100 ? C.green : C.teal, fontFamily: "Barlow Condensed, sans-serif", background: C.dark, borderRadius: 6, padding: "3px 10px", letterSpacing: "0.08em" }}>{pct}%</span>
+                        <span className="cl-dark-panel" style={{ fontSize: 13, fontWeight: 600, color: pct === 100 ? C.green : C.teal, fontFamily: "Barlow Condensed, sans-serif", background: C.dark, borderRadius: 6, padding: "3px 10px", letterSpacing: "0.08em" }}>{pct}%</span>
                       </button>
                       {expandedWtc === `progress-${wtc.id}` && (
                         <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 6, background: C.dark, borderRadius: 10, padding: "14px 18px", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", zIndex: 100, width: 220, textAlign: "left" }}>
@@ -1158,7 +1158,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                       fontSize: 11, fontWeight: 700, color: C.textFaint, cursor: "pointer", fontFamily: F.display,
                       letterSpacing: "0.05em", textTransform: "uppercase",
                     }}>{isExpanded ? "Hide Checklist" : "Checklist"}</button>
-                    <button onClick={() => toggleWtcLock(wtc.id)} style={{
+                    <button className={wtc.locked ? "cl-dark-panel" : undefined} onClick={() => toggleWtcLock(wtc.id)} style={{
                       background: wtc.locked ? C.green : "none", border: `1px solid ${wtc.locked ? C.green : (C.amber || "#e6a800")}`, borderRadius: 6, padding: "4px 12px",
                       fontSize: 11, fontWeight: 700, color: wtc.locked ? C.dark : (C.amber || "#e6a800"), cursor: "pointer", fontFamily: F.display,
                       letterSpacing: "0.05em", textTransform: "uppercase",
@@ -1301,7 +1301,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                               <button onClick={() => markRecipientReceived(r.id, true)} title="Confirm they got it (hand-delivered / Outlook / downloaded PDF) — clears it from Proposals 'Sent – not opened'" style={{ fontSize: 10, fontWeight: 700, color: C.tealDeep, background: "none", border: `1px dashed ${C.tealBorder || C.teal}`, borderRadius: 6, padding: "3px 10px", fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap" }}>Mark received</button>
                             )}
                             {!r.customer_contact_id && (
-                              <button onClick={() => saveToCustomerFile(r.id)} title="Add this recipient to the parent customer's contact list" style={{ fontSize: 10, fontWeight: 700, color: C.teal, background: "none", border: `1px dashed ${C.tealBorder || C.teal}`, borderRadius: 6, padding: "3px 10px", fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap" }}>Save to Customer</button>
+                              <button onClick={() => saveToCustomerFile(r.id)} title="Add this recipient to the parent customer's contact list" style={{ fontSize: 10, fontWeight: 700, color: C.tealInk, background: "none", border: `1px dashed ${C.tealBorder || C.teal}`, borderRadius: 6, padding: "3px 10px", fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap" }}>Save to Customer</button>
                             )}
                             <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, background: C.dark, borderRadius: 6, padding: "3px 10px", fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{custRole}</div>
                             <button onClick={() => { setEditingRecipient(r.id); setContactDraft({ name, email, phone, role: custRole !== "Contact" ? custRole : "Project Manager" }); }} style={{ background: "none", border: `1px solid ${C.borderStrong}`, borderRadius: 5, padding: "3px 8px", fontSize: 10, fontWeight: 700, color: C.textMuted, cursor: "pointer", fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>Edit</button>
@@ -1433,7 +1433,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
             )}
           </div>
 
-          <div style={{ background: C.dark, border: `1px solid ${C.tealBorder}`, borderRadius: 10, padding: 20 }}>
+          <div className="cl-dark-panel" style={{ background: C.dark, border: `1px solid ${C.tealBorder}`, borderRadius: 10, padding: 20 }}>
             <div style={{ fontWeight: 800, fontSize: 12.5, color: C.teal, fontFamily: F.display, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Summary</div>
             {[["Customer", p.customer]].map(([k, val]) => (
               <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.darkBorder}` }}>
@@ -1463,7 +1463,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
               const cell = { fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: F.ui, textAlign: "center" };
               const lbl = { fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: F.ui };
               return (
-                <>
+                <div className="cl-fin-scroll">
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 72px 72px 62px 72px", gap: "0 10px", padding: "8px 0", borderBottom: `1px solid ${C.darkBorder}` }}>
                     <span style={hdr} />
                     <span style={hdr}>Price</span>
@@ -1505,7 +1505,7 @@ if (showWTC) return <WTCCalculator proposalId={p.id} wtcId={activeWtcId} initial
                     <span style={{ ...cell, fontWeight: 800, color: totals.margin >= 30 ? C.green : totals.margin >= 15 ? C.amber : C.red }}>{totals.margin.toFixed(1)}%</span>
                     <span style={{ ...cell, fontWeight: 800, color: totals.profit >= 0 ? C.green : C.red }}>{money(totals.profit)}</span>
                   </div>
-                </>
+                </div>
               );
             })()}
             {[["Created", fmtD(p.created_at?.slice(0,10))], ["Status", p.status]].map(([k, val]) => (

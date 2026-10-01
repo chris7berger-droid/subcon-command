@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase } from "../lib/supabase";
 import Btn from "./Btn";
 import SearchSelect from "./SearchSelect";
@@ -61,7 +61,7 @@ function NewProposalModal({ onClose, onCreated, preselectedJob }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(28,24,20,0.65)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: C.linenCard, borderRadius: 14, padding: 32, width: 540, maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
+      <div className="cl-modal-card" style={{ background: C.linenCard, borderRadius: 14, padding: 32, width: 540, maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>New Proposal</h2>
@@ -82,7 +82,7 @@ function NewProposalModal({ onClose, onCreated, preselectedJob }) {
           {filtered.map(j => {
             const sel = selJob?.id === j.id;
             return (
-              <button key={j.id} onClick={() => setSelJob(j)} style={{ textAlign: "left", padding: "12px 14px", borderRadius: 9, border: `2px solid ${sel ? C.teal : C.borderStrong}`, background: sel ? C.dark : C.linen, cursor: "pointer", transition: "all 0.1s" }}>
+              <button className={sel ? "cl-dark-panel" : undefined} key={j.id} onClick={() => setSelJob(j)} style={{ textAlign: "left", padding: "12px 14px", borderRadius: 9, border: `2px solid ${sel ? C.teal : C.borderStrong}`, background: sel ? C.dark : C.linen, cursor: "pointer", transition: "all 0.1s" }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: sel ? C.teal : C.textHead, fontFamily: F.display }}>{j.display_job_number || j.job_name}</div>
                 <div style={{ fontSize: 12, color: sel ? "rgba(255,255,255,0.4)" : C.textFaint, fontFamily: F.ui, marginTop: 2 }}>
                   {j.customer_name || "—"}

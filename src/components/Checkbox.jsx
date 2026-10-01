@@ -1,4 +1,4 @@
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 // White-free checkbox. Replaces native <input type="checkbox">, whose unchecked
 // fill is ALWAYS browser-white regardless of accentColor. Renders a styled box:

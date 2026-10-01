@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import PublicSigningPage from "./pages/PublicSigningPage";
-import { C, F, GLOBAL_CSS, CALLLOG_THEME } from "./lib/tokens";
+import { C, F, GLOBAL_CSS, CALLLOG_THEME, CALLLOG_INTERIOR_THEME } from "./lib/tokens";
 import { supabase } from "./lib/supabase";
 import { getSession, onAuthStateChange, getCurrentTeamMember } from "./lib/auth";
 import Login from "./pages/Login";
@@ -392,12 +392,21 @@ function AppShell({ open, setOpen, displayName, displayRole, displayInitials, te
   const active = sectionFromPath(location.pathname);
   const group = groupFromPath(location.pathname);
   const onSubconHome = location.pathname === SUBCON_HOME.path;
-  const callLogBrand = location.pathname.replace(/\/$/, "") === "/sales/calllog";
+  // Brand preview scope: the Call Log home gets the photo/glass treatment; the
+  // job detail, Proposals list and proposal detail (incl. its WTC) connected to
+  // it get the same palette on plain warm surfaces. Every other route stays unthemed.
+  const brandPath = location.pathname.replace(/\/$/, "");
+  const callLogHome = brandPath === "/sales/calllog";
+  const callLogInterior = /^\/sales\/(calllog\/[^/]+|proposals(\/[^/]+)?)$/.test(brandPath);
+  const brandTheme = callLogHome ? CALLLOG_THEME : callLogInterior ? CALLLOG_INTERIOR_THEME : null;
+  const brandClass = callLogHome ? "sc-calllog sc-calllog-home" : callLogInterior ? "sc-calllog sc-calllog-interior" : undefined;
   const activeLabel = resolveNavTarget(active)?.label;
   return (
     <>
       <style>{GLOBAL_CSS}</style>
-      <div data-app-shell className={callLogBrand ? "sc-calllog" : undefined} style={{ ...(callLogBrand ? CALLLOG_THEME : {}), display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
+      {/* Printing falls back to the original literals: the theme never reaches paper. */}
+      {brandTheme && <style>{`@media print{[data-app-shell]{${Object.keys(brandTheme).map(k => `${k}:initial!important`).join(";")}}}`}</style>}
+      <div data-app-shell className={brandClass} style={{ ...(brandTheme || {}), display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
 
         <AppSidebar
           open={open} setOpen={setOpen}

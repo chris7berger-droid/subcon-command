@@ -10,7 +10,7 @@ import Checkbox from "../components/Checkbox";
 import MobilizationsEditor from "../components/MobilizationsEditor";
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const T = {
+const T_LITERAL = {
   green: "#30cfac", greenDark: "#1a8a72", greenLight: "rgba(48,207,172,0.12)",
   blue: "#1976D2", blueLight: "#E3F2FD",
   gray50: "#b5a896", gray100: "#bfb3a1", gray200: "rgba(28,24,20,0.12)",
@@ -19,6 +19,29 @@ const T = {
   white: "#c8bcaa", red: "#e53935", amber: "#F59E0B",
   dark: "#1c1814", darkRaised: "#28231d", darkCard: "#322c25",
 };
+// Screen UI opts into the Call Log brand variables (same pattern as CALLLOG_C in
+// tokens.js): each value falls back to its original literal, so the calculator
+// is unchanged wherever the theme isn't applied. Print + the PDF preview use
+// literals directly and never read these.
+const T_VAR = {
+  green: "teal", greenDark: "tealDark", greenLight: "tealGlow",
+  gray50: "linen", gray100: "linenDeep", gray200: "border", gray300: "borderStrong",
+  gray400: "textFaint", gray500: "textLight", gray600: "textMuted", gray700: "textBody",
+  gray800: "textHead", gray900: "textHead", white: "linenCard",
+  red: "red", amber: "amber", dark: "dark", darkRaised: "darkRaised",
+};
+const T = Object.fromEntries(
+  Object.entries(T_LITERAL).map(([k, v]) => [k, T_VAR[k] ? `var(--cl-${T_VAR[k]}, ${v})` : v])
+);
+// Teal as text on a light surface (dark cyan ink when themed) + the alpha tints
+// that used to be built by appending hex alpha to T.green.
+T.greenInk = `var(--cl-tealInk, ${T_LITERAL.green})`;
+T.greenTint = `var(--cl-tealGlow, ${T_LITERAL.green}22)`;
+T.greenEdge = `var(--cl-tealBorder, ${T_LITERAL.green}40)`;
+T.greenShadow = `var(--cl-tealGlow, ${T_LITERAL.green}35)`;
+// Text on a green/cyan fill: white off-theme (as before), dark ink on brand cyan.
+T.onGreen = "var(--cl-dark, #fff)";
+T.onGreenMuted = "var(--cl-dark, rgba(255,255,255,0.7))";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const fmt = n => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
@@ -73,8 +96,8 @@ function Field({ label, value, onChange, type = "text", prefix, suffix, readOnly
           style={{
             width: "100%", border: `1.5px solid ${borderColor}`, borderRadius: 8,
             padding: prefix ? "8px 10px 8px 28px" : "8px 10px", fontSize: 14,
-            color: highlight ? T.green : T.gray900, fontWeight: highlight ? 700 : 400,
-            background: readOnly ? "rgba(28,24,20,0.08)" : "#bfb3a1", outline: "none",
+            color: highlight ? T.greenInk : T.gray900, fontWeight: highlight ? 700 : 400,
+            background: readOnly ? "rgba(28,24,20,0.08)" : T.gray100, outline: "none",
             boxSizing: "border-box", transition: "border-color 0.15s",
             cursor: readOnly ? "default" : "text", fontFamily: "inherit"
           }}
@@ -101,7 +124,7 @@ function Textarea({ label, value, onChange, rows = 4, placeholder, locked }) {
         style={{
           width: "100%", border: `1.5px solid ${locked ? T.gray100 : T.gray200}`, borderRadius: 8,
           padding: "8px 10px", fontSize: 13, color: T.gray900,
-          background: locked ? "rgba(28,24,20,0.08)" : "#bfb3a1", outline: "none", resize: "vertical",
+          background: locked ? "rgba(28,24,20,0.08)" : T.gray100, outline: "none", resize: "vertical",
           fontFamily: "inherit", lineHeight: 1.5, boxSizing: "border-box", transition: "border-color 0.15s"
         }}
         onFocus={e => { if (!locked) e.target.style.borderColor = T.green; }}
@@ -114,8 +137,8 @@ function Textarea({ label, value, onChange, rows = 4, placeholder, locked }) {
 function StatCard({ label, value, green, large }) {
   return (
     <div style={{ background: green ? T.green : T.white, border: `1.5px solid ${green ? T.green : T.gray200}`, borderRadius: 10, padding: "14px 18px" }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: green ? "rgba(255,255,255,0.7)" : T.gray400, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: large ? 26 : 18, fontWeight: 700, color: green ? "#ffffff" : T.gray900, letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: green ? T.onGreenMuted : T.gray400, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: large ? 26 : 18, fontWeight: 700, color: green ? "var(--cl-dark, #ffffff)" : T.gray900, letterSpacing: "-0.02em" }}>{value}</div>
     </div>
   );
 }
@@ -123,7 +146,7 @@ function StatCard({ label, value, green, large }) {
 function Btn({ children, onClick, variant = "primary", small, icon, disabled }) {
   const styles = {
     primary:   { background: T.green,  color: T.dark, border: "none" },
-    secondary: { background: "#bfb3a1", color: "#1c1814", border: `1.5px solid rgba(28,24,20,0.2)` },
+    secondary: { background: T.gray100, color: "var(--cl-textHead, #1c1814)", border: "1.5px solid var(--cl-borderStrong, rgba(28,24,20,0.2))" },
     danger:    { background: T.white,  color: T.red,     border: `1.5px solid ${T.red}` },
     ghost:     { background: "transparent", color: "rgba(255,255,255,0.7)", border: "none" },
     blue:      { background: T.green,   color: T.dark, border: "none" },
@@ -186,7 +209,7 @@ function MaterialPicker({ onSelect, onAddCustom, onEdit, catalog }) {
         onChange={e => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         placeholder="Search or add new material…"
-        style={{ width: "100%", border: `1.5px solid ${T.green}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, outline: "none", fontFamily: "inherit", color: T.gray900, background: "#bfb3a1" }}
+        style={{ width: "100%", border: `1.5px solid ${T.green}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, outline: "none", fontFamily: "inherit", color: T.gray900, background: T.gray100 }}
       />
       {showDropdown && (
         <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: T.white, border: `1.5px solid ${T.gray200}`, borderRadius: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.12)", zIndex: 999, maxHeight: 280, overflowY: "auto", marginTop: 2 }}>
@@ -216,7 +239,7 @@ function MaterialPicker({ onSelect, onAddCustom, onEdit, catalog }) {
           {onAddCustom && (
             <div onClick={handleAddCustom}
               style={{ padding: "10px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.greenDark, fontWeight: 600, background: results.length > 0 ? T.gray50 : T.white, borderTop: results.length > 0 ? `1px solid ${T.gray200}` : "none" }}
-              onMouseEnter={e => e.currentTarget.style.background = T.green + "22"}
+              onMouseEnter={e => e.currentTarget.style.background = T.greenTint}
               onMouseLeave={e => e.currentTarget.style.background = results.length > 0 ? T.gray50 : T.white}
             >
               <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
@@ -255,7 +278,7 @@ function TaskAutocomplete({ value, onChange, allPriorTasks, placeholder }) {
         placeholder={placeholder}
         onChange={e => { setQ(e.target.value); onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "6px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1", color: T.gray900 }}
+        style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "6px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100, color: T.gray900 }}
         onBlur={e => e.target.style.borderColor = T.gray200}
       />
       {open && matches.length > 0 && (
@@ -270,7 +293,7 @@ function TaskAutocomplete({ value, onChange, allPriorTasks, placeholder }) {
               onMouseLeave={e => e.currentTarget.style.background = T.white}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: T.green, fontSize: 11, fontWeight: 700 }}>↩</span>
+                <span style={{ color: T.greenInk, fontSize: 11, fontWeight: 700 }}>↩</span>
                 <span>{t.name}</span>
               </div>
               {t.remaining < 100 && (
@@ -407,7 +430,7 @@ function BiddingTab({ data, onChange, workTypes, selectedWorkTypeId, onWorkTypeC
             <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.gray400, fontSize: 13, pointerEvents: "none" }}>$</span>
             <input type="number" value={otVal || ""} onChange={e => setOT(e.target.value)} placeholder="0"
               readOnly={pwRateLocked}
-              style={{ width: "100%", border: `1.5px solid ${pwRateLocked ? "transparent" : (rateMissing ? T.red : T.gray200)}`, borderRadius: 8, padding: "8px 10px 8px 28px", fontSize: 14, color: T.gray900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", background: pwRateLocked ? "rgba(28,24,20,0.08)" : "#bfb3a1", cursor: pwRateLocked ? "default" : "text" }}
+              style={{ width: "100%", border: `1.5px solid ${pwRateLocked ? "transparent" : (rateMissing ? T.red : T.gray200)}`, borderRadius: 8, padding: "8px 10px 8px 28px", fontSize: 14, color: T.gray900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", background: pwRateLocked ? "rgba(28,24,20,0.08)" : T.gray100, cursor: pwRateLocked ? "default" : "text" }}
               onFocus={e => { if (!pwRateLocked) e.target.style.borderColor = T.green; }}
               onBlur={e => { e.target.style.borderColor = pwRateLocked ? "transparent" : (rateMissing ? T.red : T.gray200); }} />
           </div>
@@ -445,7 +468,7 @@ function BiddingTab({ data, onChange, workTypes, selectedWorkTypeId, onWorkTypeC
           <Label>Tentative Start Date {!data.dates_tbd && <span style={{ color: T.red }}>*</span>}</Label>
           <input type="date" value={data.start_date || ""} disabled={data.dates_tbd} onChange={e => setDate("start_date")(e.target.value)}
             onClick={e => { if (!data.dates_tbd) e.target.showPicker?.(); }}
-            style={{ width: "100%", border: `1.5px solid ${data.dates_tbd ? T.gray200 : (data.start_date ? T.gray200 : T.red)}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: data.dates_tbd ? T.gray400 : T.gray900, background: data.dates_tbd ? T.gray200 : "#bfb3a1", outline: "none", fontFamily: "inherit", boxSizing: "border-box", cursor: data.dates_tbd ? "not-allowed" : "pointer" }}
+            style={{ width: "100%", border: `1.5px solid ${data.dates_tbd ? T.gray200 : (data.start_date ? T.gray200 : T.red)}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: data.dates_tbd ? T.gray400 : T.gray900, background: data.dates_tbd ? T.gray200 : T.gray100, outline: "none", fontFamily: "inherit", boxSizing: "border-box", cursor: data.dates_tbd ? "not-allowed" : "pointer" }}
             onFocus={e => { if (!data.dates_tbd) e.target.style.borderColor = T.green; }}
             onBlur={e => e.target.style.borderColor = data.dates_tbd ? T.gray200 : (data.start_date ? T.gray200 : T.red)} />
           {!data.start_date && !data.dates_tbd && <div style={{ fontSize: 11, color: T.red, marginTop: 3, fontWeight: 600 }}>Required — use tentative date if unknown</div>}
@@ -454,7 +477,7 @@ function BiddingTab({ data, onChange, workTypes, selectedWorkTypeId, onWorkTypeC
           <Label>Tentative End Date {!data.dates_tbd && <span style={{ color: T.red }}>*</span>}</Label>
           <input type="date" value={data.end_date || ""} min={data.start_date || ""} disabled={data.dates_tbd} onChange={e => setDate("end_date")(e.target.value)}
             onClick={e => { if (!data.dates_tbd) e.target.showPicker?.(); }}
-            style={{ width: "100%", border: `1.5px solid ${data.dates_tbd ? T.gray200 : (data.end_date ? T.gray200 : T.red)}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: data.dates_tbd ? T.gray400 : T.gray900, background: data.dates_tbd ? T.gray200 : "#bfb3a1", outline: "none", fontFamily: "inherit", boxSizing: "border-box", cursor: data.dates_tbd ? "not-allowed" : "pointer" }}
+            style={{ width: "100%", border: `1.5px solid ${data.dates_tbd ? T.gray200 : (data.end_date ? T.gray200 : T.red)}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: data.dates_tbd ? T.gray400 : T.gray900, background: data.dates_tbd ? T.gray200 : T.gray100, outline: "none", fontFamily: "inherit", boxSizing: "border-box", cursor: data.dates_tbd ? "not-allowed" : "pointer" }}
             onFocus={e => { if (!data.dates_tbd) e.target.style.borderColor = T.green; }}
             onBlur={e => e.target.style.borderColor = data.dates_tbd ? T.gray200 : (data.end_date ? T.gray200 : T.red)} />
           {!data.end_date && !data.dates_tbd && <div style={{ fontSize: 11, color: T.red, marginTop: 3, fontWeight: 600 }}>Required — use tentative date if unknown</div>}
@@ -604,7 +627,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
     <td style={{ ...td, width: w }}>
       <input type={type} value={item[key] ?? ""} placeholder={type === "number" ? "0" : ""}
         onChange={e => updateItem(item.id, key, e.target.value)}
-        style={{ width: "100%", minWidth: key === "qty" || key === "tax" ? 80 : undefined, border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "5px 6px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: "#bfb3a1" }}
+        style={{ width: "100%", minWidth: key === "qty" || key === "tax" ? 80 : undefined, border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "5px 6px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: T.gray100 }}
         onFocus={e => e.target.style.borderColor = T.green}
         onBlur={e => e.target.style.borderColor = T.gray200} />
     </td>
@@ -655,7 +678,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
                       <button
                         onClick={() => toggleSpecs(item.id)}
                         title="Application specs — mils, mix time, mix speed, cure time"
-                        style={{ background: specsOpen ? T.green : "none", border: `1px solid ${T.green}`, color: specsOpen ? "#fff" : T.greenDark, cursor: "pointer", fontSize: 9.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, marginRight: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}
+                        style={{ background: specsOpen ? T.green : "none", border: `1px solid ${T.green}`, color: specsOpen ? T.onGreen : T.greenDark, cursor: "pointer", fontSize: 9.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, marginRight: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}
                       >
                         {specsOpen ? "Specs ▲" : `Specs${specCount ? ` ·${specCount}` : ""} ▾`}
                       </button>
@@ -693,7 +716,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
                               <label style={{ fontSize: 9.5, fontWeight: 700, color: T.gray400, letterSpacing: "0.05em", textTransform: "uppercase" }}>{lbl}</label>
                               <input type="text" value={item[key] ?? ""} placeholder={ph}
                                 onChange={e => updateItem(item.id, key, e.target.value)}
-                                style={{ width: "100%", border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "6px 8px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: "#bfb3a1" }}
+                                style={{ width: "100%", border: `1px solid ${T.gray200}`, borderRadius: 5, padding: "6px 8px", fontSize: 11, outline: "none", fontFamily: "inherit", boxSizing: "border-box", background: T.gray100 }}
                                 onFocus={e => e.target.style.borderColor = T.green}
                                 onBlur={e => e.target.style.borderColor = T.gray200} />
                             </div>
@@ -731,7 +754,7 @@ function MaterialsTab({ items, taxRate, onChange }) {
 function CatalogEditModal({ editing, setEditing, onSave, onCancel, saving }) {
   const set = (k, v) => setEditing(e => ({ ...e, [k]: v }));
   const label = { fontSize: 10, fontWeight: 700, color: T.gray400, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 };
-  const input = { width: "100%", border: `1px solid ${T.gray200}`, borderRadius: 6, padding: "8px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1", boxSizing: "border-box" };
+  const input = { width: "100%", border: `1px solid ${T.gray200}`, borderRadius: 6, padding: "8px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100, boxSizing: "border-box" };
   return (
     <div onClick={onCancel}
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -911,7 +934,7 @@ function DiscountTab({ data, onChange }) {
   const specInput = (m, key, placeholder, width, type = "text") => (
     <input type={type} value={m[key] ?? ""} placeholder={placeholder}
       onChange={e => updateField(m.wtc_material_id, key, type === "number" ? (parseFloat(e.target.value) || 0) : e.target.value)}
-      style={{ width, border: `1.5px solid rgba(28,24,20,0.15)`, borderRadius: 5, padding: "5px 8px", fontSize: 12, outline: "none", fontFamily: "inherit", background: "#bfb3a1", color: T.gray800, boxSizing: "border-box" }}
+      style={{ width, border: `1.5px solid rgba(28,24,20,0.15)`, borderRadius: 5, padding: "5px 8px", fontSize: 12, outline: "none", fontFamily: "inherit", background: T.gray100, color: T.gray800, boxSizing: "border-box" }}
       onFocus={e => e.target.style.borderColor = T.green}
       onBlur={e => e.target.style.borderColor = "rgba(28,24,20,0.15)"} />
   );
@@ -931,7 +954,7 @@ function DiscountTab({ data, onChange }) {
                   <span style={{ fontSize: 11, color: T.gray400, background: T.gray100, borderRadius: 4, padding: "1px 7px" }}>{m.kit_size}</span>
                   {/* TASK N picker (D5) → chip. Blank allowed; links this material to a day task. */}
                   <select value={m.task_ref || ""} onChange={e => updateField(m.wtc_material_id, "task_ref", e.target.value)}
-                    style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", border: `1px solid ${m.task_ref ? T.green : "rgba(28,24,20,0.2)"}`, borderRadius: 4, padding: "1px 4px", background: m.task_ref ? T.dark : "#bfb3a1", color: m.task_ref ? T.green : T.gray500, outline: "none", fontFamily: "inherit", cursor: "pointer" }}>
+                    style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", border: `1px solid ${m.task_ref ? T.green : "rgba(28,24,20,0.2)"}`, borderRadius: 4, padding: "1px 4px", background: m.task_ref ? T.dark : T.gray100, color: m.task_ref ? T.green : T.gray500, outline: "none", fontFamily: "inherit", cursor: "pointer" }}>
                     <option value="">— TASK —</option>
                     {dayTasks.map((t, ti) => <option key={t.id} value={t.id}>TASK {ti + 1}</option>)}
                   </select>
@@ -1097,7 +1120,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
   const UNITS = ["SQFT", "LF", "EA", "HR", "TON", "CY"];
   const unitSelect = (val, onCh, w = 100) => (
     <select value={val || "SQFT"} onChange={e => onCh(e.target.value)}
-      style={{ width: w, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: T.gray900, background: "#bfb3a1", outline: "none", fontFamily: "inherit", flexShrink: 0 }}>
+      style={{ width: w, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, color: T.gray900, background: T.gray100, outline: "none", fontFamily: "inherit", flexShrink: 0 }}>
       {UNITS.map(u => <option key={u}>{u}</option>)}
     </select>
   );
@@ -1117,7 +1140,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
         <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
           <input type="number" value={data.size || ""} placeholder="0"
             onChange={e => onChange({ ...data, size: parseFloat(e.target.value) || 0 })}
-            style={{ flex: 1, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+            style={{ flex: 1, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", background: T.gray100 }}
             onFocus={e => e.target.style.borderColor = T.green}
             onBlur={e => e.target.style.borderColor = T.gray200} />
           {unitSelect(data.unit, v => onChange({ ...data, unit: v }))}
@@ -1137,12 +1160,12 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
         <div key={area.id} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
           <input type="text" value={area.label} placeholder="e.g. Cove Base, Drain Details"
             onChange={e => updateSubArea(area.id, "label", e.target.value)}
-            style={{ flex: 2, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+            style={{ flex: 2, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", background: T.gray100 }}
             onFocus={e => e.target.style.borderColor = T.green}
             onBlur={e => e.target.style.borderColor = T.gray200} />
           <input type="number" value={area.size || ""} placeholder="Size"
             onChange={e => updateSubArea(area.id, "size", e.target.value)}
-            style={{ width: 110, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", flexShrink: 0, background: "#bfb3a1" }}
+            style={{ width: 110, border: `1.5px solid ${T.gray200}`, borderRadius: 8, padding: "8px 12px", fontSize: 14, color: T.gray900, outline: "none", fontFamily: "inherit", flexShrink: 0, background: T.gray100 }}
             onFocus={e => e.target.style.borderColor = T.green}
             onBlur={e => e.target.style.borderColor = T.gray200} />
           {unitSelect(area.unit, v => updateSubArea(area.id, "unit", v))}
@@ -1181,7 +1204,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
         </div>
         <Textarea label="Customer-Facing Scope of Work" value={data.sales_sow} onChange={set("sales_sow")} rows={7}
           placeholder={"SCOPE OF WORK:\n- Step 1\n- Step 2\n\nQUALIFICATIONS:\n- ...\n\nEXCLUSIONS:\n- ..."} locked={locked} />
-        {locked && <div style={{ fontSize: 11, color: T.green, fontWeight: 600, marginTop: -8 }}>🔒 Locked — change order required to edit</div>}
+        {locked && <div style={{ fontSize: 11, color: T.greenInk, fontWeight: 600, marginTop: -8 }}>🔒 Locked — change order required to edit</div>}
       </div>
 
       {/* Field SOW — blue zone */}
@@ -1228,21 +1251,21 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                 <div style={{ width: 90, flexShrink: 0 }}>
                   <Label>Day Label</Label>
                   <input value={entry.day_label} onChange={e => updateDay(entry.id, "day_label", e.target.value)}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", fontWeight: 600, background: "#bfb3a1" }}
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", fontWeight: 600, background: T.gray100 }}
                     onFocus={e => e.target.style.borderColor = T.green}
                     onBlur={e => e.target.style.borderColor = T.gray200} />
                 </div>
                 <div style={{ width: 110, flexShrink: 0 }}>
                   <Label>Crew Count</Label>
                   <input type="number" value={entry.crew_count || ""} onChange={e => updateDay(entry.id, "crew_count", e.target.value)}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100 }}
                     onFocus={e => e.target.style.borderColor = T.green}
                     onBlur={e => e.target.style.borderColor = T.gray200} />
                 </div>
                 <div style={{ width: 110, flexShrink: 0 }}>
                   <Label>Hours Planned</Label>
                   <input type="number" value={entry.hours_planned || ""} onChange={e => updateDay(entry.id, "hours_planned", e.target.value)}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100 }}
                     onFocus={e => e.target.style.borderColor = T.green}
                     onBlur={e => e.target.style.borderColor = T.gray200} />
                 </div>
@@ -1252,7 +1275,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                     onChange={e => updateDay(entry.id, "date", e.target.value)}
                     onClick={e => { if (!datesTbd) e.target.showPicker?.(); }}
                     title={datesTbd ? "Dates TBD is on — Schedule will assign the calendar" : undefined}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: datesTbd ? T.gray200 : "#bfb3a1", color: datesTbd ? T.gray400 : T.gray900, cursor: datesTbd ? "not-allowed" : "pointer" }} />
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: datesTbd ? T.gray200 : T.gray100, color: datesTbd ? T.gray400 : T.gray900, cursor: datesTbd ? "not-allowed" : "pointer" }} />
                 </div>
                 <div style={{ width: 180, flexShrink: 0 }}>
                   <Label>Trip</Label>
@@ -1262,12 +1285,12 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                     </div>
                   ) : (mobilizations.length === 1 && entry.mobilization_id === mobilizations[0].id) ? (
                     // Standard job (single trip): no picking needed — every day is this mob.
-                    <div title="Standard job — one trip for the whole job" style={{ fontSize: 12.5, fontWeight: 700, color: T.gray900, padding: "6px 8px", border: `1.5px solid ${T.gray200}`, borderRadius: 6, background: "#bfb3a1", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div title="Standard job — one trip for the whole job" style={{ fontSize: 12.5, fontWeight: 700, color: T.gray900, padding: "6px 8px", border: `1.5px solid ${T.gray200}`, borderRadius: 6, background: T.gray100, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       Trip {mobilizations[0].seq}{mobilizations[0].label ? ` — ${mobilizations[0].label}` : ""}
                     </div>
                   ) : (
                     <select value={entry.mobilization_id || ""} onChange={e => updateDay(entry.id, "mobilization_id", e.target.value)}
-                      style={{ width: "100%", border: `1.5px solid ${entry.mobilization_id ? T.gray200 : T.red}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1", color: T.gray900 }}
+                      style={{ width: "100%", border: `1.5px solid ${entry.mobilization_id ? T.gray200 : T.red}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100, color: T.gray900 }}
                       onFocus={e => e.target.style.borderColor = T.green}
                       onBlur={e => e.target.style.borderColor = entry.mobilization_id ? T.gray200 : T.red}>
                       <option value="">— select —</option>
@@ -1278,14 +1301,14 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                 <div style={{ width: 90, flexShrink: 0 }}>
                   <Label>Sq Ft</Label>
                   <input type="number" value={entry.sq_ft || ""} onChange={e => updateDay(entry.id, "sq_ft", e.target.value)}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100 }}
                     onFocus={e => e.target.style.borderColor = T.green}
                     onBlur={e => e.target.style.borderColor = T.gray200} />
                 </div>
                 <div style={{ width: 90, flexShrink: 0 }}>
                   <Label>Linear Ft</Label>
                   <input type="number" value={entry.linear_ft || ""} onChange={e => updateDay(entry.id, "linear_ft", e.target.value)}
-                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1" }}
+                    style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "5px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100 }}
                     onFocus={e => e.target.style.borderColor = T.green}
                     onBlur={e => e.target.style.borderColor = T.gray200} />
                 </div>
@@ -1302,7 +1325,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                 <textarea value={entry.scope_notes || ""} rows={2}
                   placeholder="Crew-facing notes for this day — site conditions, sequence reminders, callouts…"
                   onChange={e => updateDay(entry.id, "scope_notes", e.target.value)}
-                  style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "7px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: "#bfb3a1", color: T.gray900, boxSizing: "border-box", resize: "vertical" }}
+                  style={{ width: "100%", border: `1.5px solid ${T.gray200}`, borderRadius: 6, padding: "7px 10px", fontSize: 13, outline: "none", fontFamily: "inherit", background: T.gray100, color: T.gray900, boxSizing: "border-box", resize: "vertical" }}
                   onFocus={e => e.target.style.borderColor = T.green}
                   onBlur={e => e.target.style.borderColor = T.gray200} />
               </div>
@@ -1330,12 +1353,12 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
                             if (isKnown && val > cap) return;
                             updateTask(entry.id, task.id, "pct_complete", e.target.value);
                           }}
-                          style={{ width: 64, border: `1.5px solid ${isOver ? T.red : isKnown ? T.green : T.gray200}`, borderRadius: 6, padding: "6px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", textAlign: "center", background: "#bfb3a1", color: T.gray900 }}
+                          style={{ width: 64, border: `1.5px solid ${isOver ? T.red : isKnown ? T.green : T.gray200}`, borderRadius: 6, padding: "6px 8px", fontSize: 13, outline: "none", fontFamily: "inherit", textAlign: "center", background: T.gray100, color: T.gray900 }}
                           onFocus={e => e.target.style.borderColor = isOver ? T.red : T.green}
                           onBlur={e => e.target.style.borderColor = isOver ? T.red : isKnown ? T.green : T.gray200} />
                         <span style={{ fontSize: 12, color: T.gray400, fontWeight: 600 }}>%</span>
                         {isKnown && cap < 100 && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: cap === 0 ? T.red : T.green, whiteSpace: "nowrap", marginLeft: 2 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: cap === 0 ? T.red : T.greenInk, whiteSpace: "nowrap", marginLeft: 2 }}>
                             {cap === 0 ? "done" : `max ${cap}%`}
                           </span>
                         )}
@@ -1404,7 +1427,7 @@ function SowTab({ data, onChange, locked, committed = false, wtcMaterials, onSav
   const sqftPrice     = (size || 0) > 0 ? proposalPrice / size : 0;
 
   return (
-    <div style={{ background: T.dark, borderRadius: 14, padding: "24px 28px", marginTop: 0, border: "1px solid rgba(48,207,172,0.2)" }}>
+    <div className="wtc-card wtc-card-dark" style={{ background: T.dark, borderRadius: 14, padding: "24px 28px", marginTop: 0, border: "1px solid rgba(48,207,172,0.2)" }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
         WTC Summary
       </div>
@@ -1524,12 +1547,12 @@ function SummaryTab({ labor, materials, travel, discount, sow, bidding, onSave, 
               <span style={{ fontSize: 12, color: T.gray400, fontWeight: 600 }}>{sowExpanded ? "▲ collapse" : "▼ expand"}</span>
             </button>
             {sowExpanded && (
-              <div style={{ background: T.greenLight, border: `2px solid ${T.green}40`, borderRadius: 10, padding: "14px 16px" }}>
+              <div style={{ background: T.greenLight, border: `2px solid ${T.greenEdge}`, borderRadius: 10, padding: "14px 16px" }}>
                 {sow.sales_sow
                   ? <pre style={{ margin: 0, fontSize: 12, color: T.gray700, lineHeight: 1.6, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{sow.sales_sow}</pre>
                   : <div style={{ fontSize: 13, color: T.gray400, fontStyle: "italic" }}>No Sales SOW written yet — add it in the Scope of Work tab.</div>
                 }
-                {locked && <div style={{ fontSize: 11, color: T.green, fontWeight: 600, marginTop: 10 }}>🔒 Locked</div>}
+                {locked && <div style={{ fontSize: 11, color: T.greenInk, fontWeight: 600, marginTop: 10 }}>🔒 Locked</div>}
               </div>
             )}
           </div>
@@ -1611,19 +1634,19 @@ function SummaryTab({ labor, materials, travel, discount, sow, bidding, onSave, 
               <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                   <div style={{ width: 32, height: 32, borderRadius: "50%", background: locked ? "#E3F2FD" : T.white, border: `2px solid ${locked ? T.green : T.gray300}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: locked ? T.green : T.gray400 }}>2</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: locked ? T.greenInk : T.gray400 }}>2</span>
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: locked ? T.green : T.gray400, marginBottom: 6, letterSpacing: "0.03em" }}>GENERATE & SEND</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: locked ? T.greenInk : T.gray400, marginBottom: 6, letterSpacing: "0.03em" }}>GENERATE & SEND</div>
                   <button disabled={!locked} onClick={locked ? onGeneratePDF : undefined}
-                    style={{ width: "100%", background: locked ? T.green : T.white, color: locked ? T.dark : T.gray400, border: `2px solid ${locked ? T.green : T.gray200}`, borderRadius: 8, padding: "13px 16px", fontSize: 14, fontWeight: 700, cursor: locked ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit", transition: "all 0.15s", opacity: locked ? 1 : 0.4, boxShadow: locked ? `0 2px 10px ${T.green}35` : "none" }}
+                    style={{ width: "100%", background: locked ? T.green : T.white, color: locked ? T.dark : T.gray400, border: `2px solid ${locked ? T.green : T.gray200}`, borderRadius: 8, padding: "13px 16px", fontSize: 14, fontWeight: 700, cursor: locked ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit", transition: "all 0.15s", opacity: locked ? 1 : 0.4, boxShadow: locked ? `0 2px 10px ${T.greenShadow}` : "none" }}
                     onMouseEnter={e => { if (locked) e.currentTarget.style.opacity = "0.85"; }}
                     onMouseLeave={e => e.currentTarget.style.opacity = locked ? "1" : "0.4"}>
                     📄 Generate Proposal PDF
                   </button>
                   {!locked && <div style={{ fontSize: 11, color: T.gray400, marginTop: 5, paddingLeft: 2 }}>Lock & Approve first to enable</div>}
-                  {locked && <div style={{ fontSize: 11, color: T.green, fontWeight: 600, marginTop: 5, paddingLeft: 2 }}>✓ Ready — PDF will include locked Sales SOW</div>}
+                  {locked && <div style={{ fontSize: 11, color: T.greenInk, fontWeight: 600, marginTop: 5, paddingLeft: 2 }}>✓ Ready — PDF will include locked Sales SOW</div>}
                 </div>
               </div>
 
@@ -1826,6 +1849,7 @@ function SummaryTab({ labor, materials, travel, discount, sow, bidding, onSave, 
 }
 
 function CustomerSigningPage({ proposal, onClose }) {
+  const T = T_LITERAL; // customer-facing mock: always the original literals
   const [name, setName] = useState("");
   const [signed, setSigned] = useState(false);
 
@@ -2524,15 +2548,15 @@ export default function WTCCalculator({ proposalId, wtcId: wtcIdProp, workTypeId
       {/* Sticky header + tab bar wrapper */}
       <div data-wtc-no-print style={{ flexShrink: 0, boxShadow: "0 1px 3px rgba(0,0,0,0.2)", background: T.dark }}>
         {/* Header */}
-        <div style={{ background: T.dark, borderBottom: `1px solid rgba(255,255,255,0.08)`, padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="wtc-header" style={{ background: T.dark, borderBottom: `1px solid rgba(255,255,255,0.08)`, padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500, marginBottom: 3 }}>
               Sales Command · Proposals /
               <span style={{ color: T.green, fontWeight: 600 }}> WTC</span>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>Work Type Calculator{wtcNumber ? ` — WTC ${wtcNumber}` : ""}</div>
+            <div className="wtc-title" style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>Work Type Calculator{wtcNumber ? ` — WTC ${wtcNumber}` : ""}</div>
           </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div className="wtc-header-actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <Btn onClick={() => window.print()} variant="secondary" small icon="🖨">Print</Btn>
             {onBackToList && <Btn onClick={onBackToList} variant="secondary" small>← Proposals</Btn>}
             {onClose && <Btn onClick={() => onClose()} variant="ghost">✕ Close</Btn>}
@@ -2574,7 +2598,7 @@ export default function WTCCalculator({ proposalId, wtcId: wtcIdProp, workTypeId
             <button onClick={() => setPwAlert(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#92400e", fontWeight: 700, padding: "0 4px" }}>&times;</button>
           </div>
         )}
-        <div style={{ background: "#c8bcaa", borderRadius: 14, border: `1px solid rgba(28,24,20,0.15)`, padding: "28px 32px", marginBottom: 20, position: "relative" }}>
+        <div className="wtc-card" style={{ background: T.white, borderRadius: 14, border: `1px solid rgba(28,24,20,0.15)`, padding: "28px 32px", marginBottom: 20, position: "relative" }}>
           {(locked || isCommitted) && tab !== "summary" && !(isCommitted && tab === "sow") && (
             <div style={{ position: "absolute", inset: 0, borderRadius: 14, zIndex: 10, cursor: "not-allowed" }} onClick={() => {}} />
           )}

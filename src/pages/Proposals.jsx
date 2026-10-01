@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { supabase, archiveDb } from "../lib/supabase";
 import { fetchAll } from "../lib/supabaseHelpers";
 import { fmt$, fmtD } from "../lib/utils";
@@ -277,7 +277,7 @@ export default function Proposals({ teamMember, setSubPage }) {
           preselectedJob={preselectedJob}
         />
       )}
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="cl-detail cl-proposals-list" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <SectionHeader title="Proposals" action={<Btn sz="sm" onClick={() => setShowModal(true)}>+ New Proposal</Btn>} />
         {/* Period selector — scopes the stat bar + Needs-Attention (not the list) */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: -4 }}>
@@ -354,7 +354,7 @@ export default function Proposals({ teamMember, setSubPage }) {
         ) : (
           <DataTable
             cols={[
-              { k: "id",         l: "Proposal #", r: (v, row) => { const djn = row.call_log?.display_job_number || String(v); const idx = djn.indexOf(" - "); const num = idx > -1 ? djn.slice(0, idx) : djn; const name = idx > -1 ? djn.slice(idx + 3) : ""; return <span style={{ fontFamily: F.display, display: "flex", alignItems: "center", gap: 8 }}>{row.cloned_from_proposal_id && <span style={{ color: C.teal, fontSize: 14, marginRight: -2 }}>↳</span>}<span style={{ fontWeight: 600, color: C.teal, background: C.dark, padding: "3px 10px", borderRadius: 6, fontSize: 13, letterSpacing: "0.08em" }}>{num} P{row.proposal_number || 1}</span>{row.cloned_from_proposal_id && <span style={{ background: C.dark, color: C.teal, border: `1px solid ${C.teal}`, borderRadius: 10, padding: "2px 7px", fontSize: 10, fontWeight: 700, fontFamily: F.ui, letterSpacing: "0.04em" }}>GC COPY</span>}{name && <span style={{ fontWeight: 500, color: C.textMuted }}>{name}</span>}</span>; } },
+              { k: "id",         l: "Proposal #", r: (v, row) => { const djn = row.call_log?.display_job_number || String(v); const idx = djn.indexOf(" - "); const num = idx > -1 ? djn.slice(0, idx) : djn; const name = idx > -1 ? djn.slice(idx + 3) : ""; return <span style={{ fontFamily: F.display, display: "flex", alignItems: "center", gap: 8 }}>{row.cloned_from_proposal_id && <span style={{ color: C.tealInk, fontSize: 14, marginRight: -2 }}>↳</span>}<span style={{ fontWeight: 600, color: C.teal, background: C.dark, padding: "3px 10px", borderRadius: 6, fontSize: 13, letterSpacing: "0.08em" }}>{num} P{row.proposal_number || 1}</span>{row.cloned_from_proposal_id && <span style={{ background: C.dark, color: C.teal, border: `1px solid ${C.teal}`, borderRadius: 10, padding: "2px 7px", fontSize: 10, fontWeight: 700, fontFamily: F.ui, letterSpacing: "0.04em" }}>GC COPY</span>}{name && <span style={{ fontWeight: 500, color: C.textMuted }}>{name}</span>}</span>; } },
               { k: "customer",   l: "Customer" },
               { k: "status",     l: "Status",     r: (v, row) => (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>

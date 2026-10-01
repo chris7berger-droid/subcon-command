@@ -1,7 +1,11 @@
-/* Call Log only. Brand palette lives in tokens.js; shared components retain
-   their literal fallbacks on every other route. One fine woven shell, quiet
-   Light Glass work surfaces, espresso command framing (UI Standard §§5–6). */
+/* Call Log brand preview. Brand palette lives in tokens.js; shared components
+   retain their literal fallbacks on every other route.
+   .sc-calllog           — shared frame (sidebar, header, buttons, focus)
+   .sc-calllog-home      — /sales/calllog: construction photo + separate glass panels
+   .sc-calllog-interior  — job detail / proposal detail / WTC: plain warm surfaces
+   Screen only: print output keeps the original literals (UI Standard §§5–6). */
 .cl-mission { display: none; }
+@media screen {
 .sc-calllog[data-app-shell] {
   background-color: var(--cl-shell) !important;
   background-image:
@@ -10,6 +14,17 @@
     linear-gradient(115deg, var(--cl-shell-light), var(--cl-shell)) !important;
   color: var(--cl-textBody);
   font-family: 'Inter', system-ui, sans-serif;
+}
+/* Exact approved photo bytes (src/assets/brand/calllog-construction.png). The
+   warm wash keeps the brown world over it; panels below stay separate glass. */
+.sc-calllog-home[data-app-shell] {
+  background-color: #2F241D !important;
+  background-image:
+    linear-gradient(180deg, rgba(36,27,22,.36) 0%, rgba(36,27,22,.24) 40%, rgba(88,69,52,.50) 100%),
+    url('../assets/brand/calllog-construction.png') !important;
+  background-size: auto, cover !important;
+  background-position: center, right center !important;
+  background-repeat: no-repeat !important;
 }
 .sc-calllog [data-app-sidebar] {
   background: var(--cl-dark-glass-strong) !important;
@@ -36,16 +51,34 @@
   border-color: var(--cl-borderStrong) !important;
 }
 .sc-calllog [data-app-header] span { color: var(--cl-textHead) !important; font-size: 13px !important; }
+.sc-calllog-home [data-app-header] {
+  background: var(--cl-dark-glass-soft) !important;
+  border-color: var(--cl-darkBorder) !important;
+  backdrop-filter: blur(10px);
+}
+.sc-calllog-home [data-app-header] span { color: var(--cl-ivory) !important; }
+.sc-calllog-home [data-app-header] span:last-child { color: var(--cl-teal) !important; }
 .sc-calllog [data-app-content] { padding: 24px 28px 80px !important; }
-.sc-calllog .cl-command { gap: 18px !important; min-width: 0; }
-.sc-calllog .cl-command > .cl-section-header { margin-bottom: 4px !important; gap: 16px; }
-.sc-calllog .cl-command > .cl-section-header h2 { font-size: 36px !important; line-height: 1.1; }
-.sc-calllog .cl-tab { border-radius: 6px !important; min-height: 36px; font-size: 13px !important; }
+.sc-calllog-home [data-app-content] { padding: 18px 24px 72px !important; }
+.sc-calllog .cl-command { gap: 14px !important; min-width: 0; }
+.sc-calllog .cl-command > .cl-section-header { margin-bottom: 0 !important; gap: 16px; }
+.sc-calllog .cl-command > .cl-section-header h2 {
+  font-size: 32px !important; line-height: 1.1;
+  color: var(--cl-ivory) !important; text-shadow: 0 1px 2px rgba(17,16,14,.6);
+}
+.sc-calllog .cl-tab { border-radius: 6px !important; min-height: 32px; font-size: 13px !important; }
 .sc-calllog .cl-tab[aria-pressed='true'] { border-color: var(--cl-teal) !important; }
 .sc-calllog .cl-tab span { opacity: 1 !important; }
+/* Tabs that sit directly on the photo get their own dark glass chip. */
+.sc-calllog .cl-command > div > .cl-tab:not([aria-pressed='true']) {
+  background: var(--cl-dark-glass) !important;
+  border-color: var(--cl-darkBorderStrong) !important;
+  color: var(--cl-ivory) !important;
+}
 .sc-calllog .cl-pipeline,
 .sc-calllog .cl-hunt-hero,
-.sc-calllog .cl-hunt-results {
+.sc-calllog .cl-hunt-results,
+.sc-calllog .cl-leads {
   background: var(--cl-dark-glass) !important;
   border: 1px solid var(--cl-darkBorder);
   border-radius: 9px !important;
@@ -55,44 +88,70 @@
   --cl-green: var(--cl-success); --cl-purple: var(--cl-category);
   --cl-tealDark: var(--cl-teal);
 }
-.sc-calllog .cl-pipeline { padding: 20px 24px !important; }
-.sc-calllog .cl-pipeline > div:first-child { color: var(--cl-teal) !important; font-size: 12px !important; }
+.sc-calllog .cl-pipeline, .sc-calllog .cl-leads { backdrop-filter: blur(10px); }
+.sc-calllog .cl-leads { border-color: var(--cl-tealBorder) !important; padding: 9px 14px !important; flex-wrap: wrap; }
+.sc-calllog .cl-pipeline { padding: 14px 20px !important; }
+.sc-calllog .cl-pipeline > div:first-child { color: var(--cl-teal) !important; font-size: 12px !important; margin-bottom: 8px !important; }
+.sc-calllog .cl-pipeline > div:not(:first-child):not(.cl-pipeline-grid) { margin-top: 10px !important; }
 .sc-calllog .cl-pipeline > div:last-child { color: var(--cl-muted-dark) !important; text-align: left !important; }
-.sc-calllog .cl-pipeline-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px !important; }
-.sc-calllog .cl-pipeline-item { min-width: 0; padding: 12px 8px !important; }
+.sc-calllog .cl-pipeline-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px !important; }
+.sc-calllog .cl-pipeline-item { min-width: 0; padding: 6px 8px !important; }
 .sc-calllog .cl-pipeline-item + .cl-pipeline-item { border-left-color: var(--cl-darkBorder) !important; }
 .sc-calllog .cl-pipeline-item[aria-pressed='true'] { border-color: var(--cl-teal) !important; background: var(--cl-tealGlow) !important; }
-.sc-calllog .cl-pipeline-icon { width: 38px !important; height: 38px !important; font-size: 17px !important; }
-.sc-calllog .cl-pipeline-value { font-size: 44px !important; }
-.sc-calllog .cl-pipeline-value + span { color: var(--cl-ivory) !important; }
+.sc-calllog .cl-pipeline-icon { width: 32px !important; height: 32px !important; font-size: 15px !important; }
+.sc-calllog .cl-pipeline-value { font-size: 36px !important; }
+/* No truncation: the stat label and its supporting line wrap instead of clipping. */
+.sc-calllog .cl-pipeline-value + span { color: var(--cl-ivory) !important; white-space: normal !important; overflow: visible !important; }
 .sc-calllog .cl-pipeline-value ~ span:last-child { color: var(--cl-teal) !important; white-space: normal !important; }
-.sc-calllog .cl-intelligence { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 20px !important; }
+.sc-calllog .cl-intelligence { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 14px !important; }
 .sc-calllog .cl-dig,
 .sc-calllog .cl-hunt {
-  min-width: 0; padding: 18px; border-radius: 9px;
+  min-width: 0; padding: 14px; border-radius: 9px;
   border: 1px solid var(--cl-border); background: var(--cl-linen);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(49,36,26,.10);
 }
+/* Where To Hunt: warm brown panel (Brown Glass 2 over Dark Glass 1 so ivory text
+   holds contrast above the photo). Light-surface inks are re-pointed for it. */
+.sc-calllog .cl-hunt {
+  gap: 12px !important;
+  background: linear-gradient(var(--cl-brown-glass-strong), var(--cl-brown-glass-strong)), var(--cl-dark-glass-soft);
+  border-color: var(--cl-darkBorder);
+  color: var(--cl-ivory);
+  --cl-textHead: var(--cl-ivory); --cl-textBody: var(--cl-ivory);
+  --cl-textMuted: var(--cl-muted-dark); --cl-textLight: var(--cl-muted-dark); --cl-textFaint: var(--cl-muted-dark);
+  --cl-tealDark: var(--cl-teal); --cl-tealDeep: var(--cl-teal);
+  --cl-linenCard: var(--cl-dark-glass-soft); --cl-linen: var(--cl-dark-glass-soft);
+  --cl-border: var(--cl-darkBorder); --cl-borderStrong: var(--cl-darkBorderStrong);
+  --cl-red: var(--cl-danger); --cl-amber: var(--cl-warning);
+  --cl-green: var(--cl-success); --cl-purple: var(--cl-category);
+}
+.sc-calllog .cl-hunt > div:nth-child(2):not(.cl-hunt-hero) { padding: 14px 16px !important; border-radius: 9px !important; }
+.sc-calllog .cl-dig > div:first-child { margin-bottom: 10px !important; }
 .sc-calllog .cl-dig > div:first-child > span,
 .sc-calllog .cl-hunt > div:first-child {
   color: var(--cl-textHead) !important;
-  font: 700 19px/1.2 'Barlow Condensed', 'Arial Narrow', sans-serif !important;
+  font: 700 17px/1.2 'Barlow Condensed', 'Arial Narrow', sans-serif !important;
   letter-spacing: .06em !important;
 }
-.sc-calllog .cl-dig-card { background: var(--cl-linenLight) !important; min-height: 72px; }
+.sc-calllog .cl-dig-card { background: var(--cl-linenLight) !important; min-height: 56px; padding: 9px 14px !important; }
 .sc-calllog .cl-dig-card:hover { background: var(--cl-linenDeep) !important; }
-.sc-calllog .cl-hunt-hero { padding: 20px !important; }
-.sc-calllog .cl-hunt-hero > div:nth-child(2) { font-size: 28px !important; }
-.sc-calllog .cl-hunt-hero button { min-height: 36px; }
+.sc-calllog .cl-hunt-hero { padding: 16px !important; gap: 8px !important; background: var(--cl-dark-glass-soft) !important; }
+.sc-calllog .cl-hunt-hero > div:nth-child(2) { font-size: 24px !important; }
+.sc-calllog .cl-hunt-hero button { min-height: 34px; }
 .sc-calllog .cl-hunt-hero button:not(.cl-button) { color: var(--cl-teal) !important; }
 .sc-calllog .cl-hunt-hero > div:nth-child(3) { color: var(--cl-ivory) !important; font-family: 'Inter',system-ui,sans-serif !important; }
+.sc-calllog .cl-hunt-results { padding: 16px !important; gap: 12px !important; }
 .sc-calllog .cl-outbound { flex-wrap: wrap; }
 .sc-calllog .cl-outbound > div { flex-basis: 180px !important; flex-wrap: wrap; gap: 3px 8px !important; }
 .sc-calllog .cl-outbound > div > span { max-width: 100% !important; font-size: 13px !important; }
+/* Dense jobs workspace: high-opacity Light Glass 3 so the photo never reads through the table. */
 .sc-calllog .cl-jobs {
-  min-width: 0; display: flex; flex-direction: column; gap: 16px;
-  padding: 20px; background: var(--cl-linenCard);
+  min-width: 0; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px; background: var(--cl-linenCard);
   border: 1px solid var(--cl-border); border-radius: 9px;
   box-shadow: 0 8px 24px rgba(49,36,26,.10);
+  backdrop-filter: blur(10px);
 }
 .sc-calllog .cl-jobs > div:first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: 0 !important; }
 .sc-calllog .cl-jobs input,
@@ -102,7 +161,7 @@
 .sc-calllog .cl-table { border-radius: 6px !important; }
 .sc-calllog .cl-table table { min-width: 850px; font-variant-numeric: tabular-nums; }
 .sc-calllog .cl-table thead tr { background: var(--cl-dark-glass-strong) !important; }
-.sc-calllog .cl-table th { color: var(--cl-ivory) !important; font-size: 11px !important; padding-block: 14px !important; }
+.sc-calllog .cl-table th { color: var(--cl-ivory) !important; font-size: 11px !important; padding-block: 11px !important; }
 .sc-calllog .cl-table th span { color: var(--cl-teal) !important; }
 .sc-calllog .cl-table tbody tr { background: transparent !important; }
 .sc-calllog .cl-table tbody tr:nth-child(even) { background: var(--cl-linen) !important; }
@@ -116,17 +175,19 @@
 .sc-calllog button:disabled { cursor: not-allowed; }
 @media (max-width: 1200px) {
   .sc-calllog [data-app-content] { padding: 20px 20px 80px !important; }
+  .sc-calllog-home [data-app-content] { padding: 16px 16px 72px !important; }
   .sc-calllog .cl-pipeline-icon { display: none !important; }
-  .sc-calllog .cl-intelligence { gap: 14px !important; }
-  .sc-calllog .cl-dig, .sc-calllog .cl-hunt { padding: 14px; }
+  .sc-calllog .cl-intelligence { gap: 12px !important; }
+  .sc-calllog .cl-dig, .sc-calllog .cl-hunt { padding: 12px; }
 }
 @media (max-width: 900px) {
   .sc-calllog .cl-intelligence { grid-template-columns: minmax(0,1fr) !important; }
   .sc-calllog .cl-pipeline-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 600px) {
-  .sc-calllog [data-app-content] { padding: 16px 12px 76px !important; }
-  .sc-calllog .cl-jobs, .sc-calllog .cl-pipeline { padding: 14px !important; }
+  .sc-calllog [data-app-content],
+  .sc-calllog-home [data-app-content] { padding: 16px 12px 76px !important; }
+  .sc-calllog .cl-jobs, .sc-calllog .cl-pipeline { padding: 12px !important; }
   .sc-calllog .cl-command > .cl-section-header { flex-wrap: wrap; }
   .sc-calllog .cl-jobs input { max-width: 100%; }
   .sc-calllog .cl-jump { right: 12px !important; bottom: 12px !important; }
@@ -142,3 +203,102 @@
 
 .sc-calllog .cl-select-trigger { background: var(--cl-linenDeep) !important; color: var(--cl-textBody) !important; min-height: 38px; }
 .sc-calllog .cl-select-trigger > span { color: var(--cl-textBody) !important; }
+
+/* ── Interior: job detail, proposal detail, Work Type Calculator ─────────────
+   Plain opaque warm surfaces (values in CALLLOG_INTERIOR_THEME). No photo. */
+.sc-calllog-interior[data-app-shell] {
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(36,27,22,.018) 2px 3px),
+    repeating-linear-gradient(90deg, transparent 0 2px, rgba(242,233,217,.035) 2px 3px) !important;
+}
+.sc-calllog-interior [data-app-header] { background: var(--cl-linenCard) !important; }
+.sc-calllog-interior .cl-page-title,
+.sc-calllog-interior .cl-proposals-list > .cl-section-header h2 { font-size: 30px !important; line-height: 1.1; }
+.sc-calllog-interior [data-app-content] :is(input, select, textarea) { font-family: 'Inter', system-ui, sans-serif; }
+/* Proposals list reuses the pipeline strip: opaque espresso here (no glass on
+   plain interiors) and as many columns as its 5–6 buckets need. */
+.sc-calllog-interior .cl-pipeline { background: var(--cl-dark) !important; backdrop-filter: none; }
+.sc-calllog-interior .cl-pipeline-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+/* Espresso panels inside the light interior: status inks switch to the bright
+   instrumentation set so they stay readable on dark. */
+.sc-calllog-interior .cl-dark-panel,
+.sc-calllog-interior .wtc-card-dark,
+.sc-calllog-interior [style*="background: var(--cl-dark,"] {
+  --cl-red: var(--cl-danger); --cl-amber: var(--cl-warning);
+  --cl-green: var(--cl-success); --cl-purple: var(--cl-category);
+  --cl-tealDark: var(--cl-teal); --cl-tealDeep: var(--cl-teal); --cl-tealInk: var(--cl-teal);
+}
+/* Explicit dark panels only (they hold no light cards): light-surface text inks
+   and the dim white literals become readable muted ivory. Cyan metrics untouched. */
+.sc-calllog-interior .cl-dark-panel {
+  --cl-textHead: var(--cl-ivory); --cl-textBody: var(--cl-ivory);
+  --cl-textMuted: var(--cl-muted-dark); --cl-textLight: var(--cl-muted-dark); --cl-textFaint: var(--cl-muted-dark);
+  --cl-border: var(--cl-darkBorder); --cl-borderStrong: var(--cl-darkBorderStrong);
+}
+.sc-calllog-interior .cl-dark-panel :is(
+  [style*="color: rgba(255, 255, 255, 0.3)"], [style*="color: rgba(255,255,255,0.3)"],
+  [style*="color: rgba(255, 255, 255, 0.35)"], [style*="color: rgba(255,255,255,0.35)"],
+  [style*="color: rgba(255, 255, 255, 0.4)"], [style*="color: rgba(255,255,255,0.4)"],
+  [style*="color: rgba(255, 255, 255, 0.5)"], [style*="color: rgba(255,255,255,0.5)"]
+) { color: var(--cl-muted-dark) !important; }
+/* WTC keeps its own header/tab bar; give it the same condensed command type. */
+.sc-calllog-interior .wtc-title { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: .04em !important; text-transform: uppercase; }
+.sc-calllog-interior .wtc-content { padding-top: 20px; }
+/* Proposal preview/send modal: branded frame, the document stays a white sheet. */
+.sc-calllog-interior .cl-pdf-doc { padding: 24px 28px; border: 1px solid var(--cl-border); border-radius: 4px; }
+.sc-calllog-interior .cl-pdf-modal [data-pdf-header],
+.sc-calllog-interior .cl-pdf-modal [data-pdf-header] > div:last-child { flex-wrap: wrap; row-gap: 8px; }
+
+/* ── Interior responsive ─────────────────────────────────────────────────────
+   Headers/actions wrap, form grids stack, financial grids scroll locally.
+   Nothing is hidden and no handler changes. */
+.sc-calllog-interior .cl-detail { min-width: 0; max-width: 100%; }
+.sc-calllog-interior :is(.cl-detail-head, .cl-detail-actions, .cl-wrap-row) { flex-wrap: wrap; row-gap: 8px; }
+.sc-calllog-interior .cl-detail-head > h2 { min-width: 0; overflow-wrap: anywhere; }
+.sc-calllog-interior :is(.cl-form-grid, .cl-addr-grid, .cl-proposal-body) > * { min-width: 0; }
+.sc-calllog-interior .cl-proposal-body { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; }
+.sc-calllog-interior .cl-fin-scroll { overflow-x: auto; }
+.sc-calllog-interior .cl-fin-scroll > div { min-width: 430px; }
+.sc-calllog-interior .wtc-header { flex-wrap: wrap; gap: 8px 12px; }
+.sc-calllog-interior .wtc-header-actions { flex-wrap: wrap; }
+@media (max-width: 1100px) {
+  .sc-calllog-interior .cl-proposal-body { grid-template-columns: minmax(0,1fr) !important; }
+}
+@media (max-width: 700px) {
+  .sc-calllog-interior [data-app-content] { padding: 14px 12px 72px !important; }
+  .sc-calllog-interior .cl-page-title,
+  .sc-calllog-interior .cl-proposals-list > .cl-section-header h2 { font-size: 24px !important; }
+  .sc-calllog-interior .cl-detail-actions { margin-left: 0 !important; width: 100%; }
+  .sc-calllog-interior :is(.cl-form-grid, .cl-stat-strip) { grid-template-columns: minmax(0,1fr) !important; }
+  .sc-calllog-interior .cl-stat-strip > div { border-left: 0 !important; border-top: 1px solid var(--cl-darkBorder); }
+  .sc-calllog-interior .cl-linked-row { flex-wrap: wrap; }
+  .sc-calllog-interior .cl-linked-row > span:first-child {
+    width: auto !important; min-width: 0 !important; flex: 1 1 100%;
+    white-space: normal !important; overflow: visible !important;
+  }
+  /* Safety net for the many inline rows not individually hooked. Tables and the
+     pipeline strip are excluded: tables scroll inside their own wrapper. */
+  .sc-calllog-interior .cl-detail [style*="display: flex"]:not([style*="flex-direction: column"]):not(.cl-table *):not(.cl-pipeline *) { flex-wrap: wrap; }
+  .sc-calllog-interior .cl-detail [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: minmax(0,1fr) !important; }
+  .sc-calllog-interior .cl-detail [style*="white-space: nowrap"]:not(.cl-table *):not(.cl-pipeline *) { white-space: normal !important; }
+  .sc-calllog-interior .cl-detail :is(input, select, textarea) { min-width: 0; max-width: 100%; }
+  .sc-calllog-interior .cl-detail :is(div, span, button, a, label):not(.cl-table *) { max-width: 100%; }
+  .sc-calllog-interior :is(.cl-modal-card, [style*="position: fixed"] > div) { max-width: calc(100vw - 20px) !important; }
+  .sc-calllog-interior .cl-modal-card { padding: 20px 16px !important; }
+  .sc-calllog-interior .cl-pdf-doc { padding: 14px; }
+  .sc-calllog-interior .cl-pdf-modal [data-pdf-body] { padding: 14px 12px !important; }
+}
+/* WTC measures its own width (its root is already a size container), so these
+   follow the calculator, not the viewport. Applies to all seven tabs. */
+@container (max-width: 700px) {
+  .sc-calllog-interior .wtc-header { padding: 10px 14px !important; }
+  .sc-calllog-interior .wtc-title { font-size: 18px !important; }
+  .sc-calllog-interior .wtc-content { width: calc(100% - 20px) !important; padding-top: 12px; }
+  .sc-calllog-interior .wtc-card { padding: 16px 14px !important; }
+  .sc-calllog-interior .wtc-content [style*="grid-template-columns"] { grid-template-columns: minmax(0,1fr) !important; }
+  .sc-calllog-interior .wtc-content [style*="display: flex"]:not([style*="flex-direction: column"]):not(table *) { flex-wrap: wrap; }
+  .sc-calllog-interior .wtc-content [style*="white-space: nowrap"]:not(table *) { white-space: normal !important; }
+  .sc-calllog-interior .wtc-content :is(input, select, textarea) { min-width: 0; max-width: 100%; }
+  .sc-calllog-interior .wtc-content :is(div, span, button, label):not(table *) { max-width: 100%; }
+}
+}

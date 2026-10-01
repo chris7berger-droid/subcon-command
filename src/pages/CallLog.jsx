@@ -361,7 +361,7 @@ export default function CallLog({ teamMember, setSubPage }) {
         {/* Campaign Leads band (bolt-on) — leads live in one place but show here,
             uniquely tagged, so paid-campaign inquiries surface alongside the pipeline. */}
         {cfg.leads_enabled && leadCount > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: C.dark, border: `1.5px solid ${C.teal}`, borderRadius: 12 }}>
+          <div className="cl-leads" style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", background: C.dark, border: `1.5px solid ${C.teal}`, borderRadius: 12 }}>
             <span style={{ fontSize: 10, fontWeight: 800, background: C.teal, color: C.dark, padding: "3px 9px", borderRadius: 10, fontFamily: F.ui, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>CAMPAIGN LEADS</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "rgba(243,237,225,0.92)", fontFamily: F.ui }}>
               {leadCount} open lead{leadCount !== 1 ? "s" : ""} from paid marketing waiting to be worked
