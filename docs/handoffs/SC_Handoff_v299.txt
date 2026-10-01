@@ -4,8 +4,10 @@ SESSION SUMMARY
 Chris asked for a practical mobile-browser preview of Subcon Command. This is
 the T3 build of docs/plans/mobile_web_preview.md @ 87e820f (T2 CONVERGED,
 recorded in docs/AUDIT_LOG.md "Gate records" @ a4b831b). Built on
-feat/mobile-web-preview from the Call Log brand commit 34af375. Local status
-only: not pushed, no preview yet, reviews not run. Do not merge.
+feat/mobile-web-preview from the Call Log brand commit 34af375. Published as
+a Vercel preview after independent reviews and compiled synthetic Smoke;
+see PREVIEW below for verified deployment evidence and the SSO limitation.
+Chris's acceptance remains pending. Do not merge.
 
 CHANGES BUILT
 Phone shell at <=768px: the sidebar becomes a drawer opened from a header menu
