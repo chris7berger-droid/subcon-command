@@ -1,104 +1,129 @@
 SC Handoff v298 — Password recovery lifecycle fix (B124) — 2026-10-01
 
 SESSION SUMMARY
-Build terminal (T3), routed as an in-flow /fix for a failed customer password
-recovery. Built and committed on fix/recovery-save-stability from origin/main
-90f890d, in an isolated worktree. STOPPED AT THE BUILD GATE. Not pushed, not
-merged. Code Review, Security Review, Vercel preview and Chris's acceptance
-are all still open. Security Review is required: this touches auth/sessions.
+In-flow /fix for a failed customer password recovery, run through the AIOS
+dev roles. Code, tests, Code Review (2 rounds), Security Review and the
+Vercel preview are COMPLETE on fix/recovery-save-stability (draft PR #73).
+NOT merged. NOT in production. Pending: Bugbot, Chris's acceptance, and
+explicit merge/production approval.
+
+Everything was verified with synthetic fixtures. No real account, no live
+auth, no native app, no customer confirmation.
 
 CAUSE
 verifyOtp({type:"recovery"}) saves a session and emits PASSWORD_RECOVERY
-before it returns. App.jsx applied that session (it looked "stale": no
-recovery hash). The logged-out branch unmounted with the Login that held the
-reset form. A rejected or slow updateUser then reported to a dead component:
-user inside the app on the recovery session, old password still in force, no
-error. Reproduced synthetically against origin/main. The real customer's
-exact outcome is NOT proven; no customer data, code or token was inspected.
+before it returns. App.jsx applied that session. The logged-out branch
+unmounted with the Login that held the reset form. A rejected or slow
+updateUser then reported to a dead component: user inside the app on the
+recovery session, old password still in force, no error.
+Reproduced against origin/main with synthetic auth. The real customer's exact
+outcome is NOT proven: no customer data, code, token or auth log was read,
+and this work has no evidence of the customer's actual save result.
 
-CHANGES
+CHANGES (code = e508736)
 src/lib/passwordRecovery.js (new, pure) — recovery hold, auth-event decision,
-  startup rule, reset flow bound to the verified auth user id.
+  marker rule, startup rule, reset flow bound to the verified auth user id.
 src/App.jsx — holds session-bearing auth events during a reset; never applies
   a hashless PASSWORD_RECOVERY; on startup ends an unfinished recovery session
   instead of admitting it; "Remember me"-off startup sign-out skips a tab
-  opened by a recovery link.
+  opened by a recovery link; applies a confirmed password sign-in.
 src/pages/Login.jsx — one mounted form through verify -> save -> sign-out;
   rejected save retries without re-verifying; sign-out result checked; link
   mode (no code field); Back / Request a new code end the recovery session;
   no longer strips a token-bearing URL hash before the auth client reads it.
 src/lib/passwordRecovery.test.mjs, scripts/check-password-recovery.mjs (new).
-No dependency, migration, edge function, mail or native change.
+No dependency, migration, edge function, mail, Supabase setting or native
+change.
 
 DECISIONS
 - Hold the App's state rather than move/remount Login mid-submit.
 - Marker localStorage sc_recovery_user = verified user id while a reset is
-  unfinished. Never a code or password. A password sign-in clears it.
+  unfinished. Never a code or password. Cleared only after a confirmed
+  sign-out or a successful password sign-in.
 - Refresh/return during an unfinished reset ENDS the recovery session (new
-  code needed) rather than resuming it. Smaller and safe.
-- Link recovery was broken on origin/main too (hash stripped before the
-  client read it). Fixed here because links were in scope.
+  code needed) rather than resuming it.
+- Link recovery was broken on origin/main too; fixed because links were in
+  scope.
 
-NEW/CLOSED BACKLOG ITEMS
-New: B124 (T1, In Progress). Nothing closed. B77 invite half unchanged.
+GATES (docs/AUDIT_LOG.md, "Gate records")
+T3 build            36ce1c0
+T5 round 1          not met, 1 BLOCKS-SHIP + 1 SHOULD-FIX     recorded bf13720
+T3 fix for T5       e508736 (marker cleared while session still alive)
+T5 round 2          met, 0 BLOCKS-SHIP                         recorded 3031f0c
+T6                  0 exploitable-today, 3 HARDENING           recorded 2a132f2
+Smoke + Preview     8/8 on the Ready preview                   BUILD-REPORT.md
+T4 does not apply (no plan on the /fix path). Both reviews were source-only;
+neither reviewer ran the tests. T5 did not review the docs.
+
+Sessions — all Claude Opus 5.5, AIOS spawn wrapper in a Codex PTY (not an
+AIOS.app-owned terminal), no orchestration changes:
+T3 recovery-t3 bb07d938-e6cb-4b33-bb24-b7110693ccf1
+   https://claude.ai/code/session_0152qUjdUWv8uCtefmLaMaE4
+T5 recovery-t5 5b538650-d476-4e72-9ad4-c1ff1fb58cf8
+   https://claude.ai/code/session_01Vi21HLkdfJJn3yhzdu7H7d
+T6 recovery-t6 521dd74e-d33b-4ef6-b288-4533da8abb87
+   https://claude.ai/code/session_01Ampob28KJy3ZWFBWu6983s
 
 VERIFICATION
-node src/lib/passwordRecovery.test.mjs — 21 scenarios pass.
-scripts/check-password-recovery.mjs (real App/Login DOM, every Supabase/edge
-request intercepted, everything else blocked):
-  fix, dev server            6/6 pass
-  fix, production build      6/6 pass
-  origin/main 90f890d copy   5/6 FAIL (expected red)
+Preview (Ready): https://sales-command-l00n980aw-chris7berger-droids-projects.vercel.app
+  deployment dpl_9Ng1qMUpdnByUSSwjwYz1vHamHxf, git 3031f0c. App source is
+  identical to reviewed e508736 (git diff over src, scripts, index.html,
+  package.json is empty).
+  scripts/check-password-recovery.mjs, 2026-10-01 16:04-16:05 UTC: 8/8 pass.
+  Run through `vercel env run`; Deployment Protection left on.
+Local production builds: 8/8 on e508736; 6/8 on 36ce1c0 (the two T5 scenarios
+  fail, expected); first six scenarios 5/6 FAIL on origin/main 90f890d
+  (expected red).
+node src/lib/passwordRecovery.test.mjs — 24/24.
 npm run build — pass.
-npx eslint . — 219 problems, identical to baseline; 1 pre-existing error in
-the changed files (App.jsx /terms redirect).
-Completion: code built yes; data applied n/a; authenticated access verified
-NO (synthetic only); Chris's acceptance not given.
-Details and the Brand check: docs/agent-handoffs/BUILD-REPORT.md.
+npx eslint . — 219 problems, identical to origin/main; 1 pre-existing error
+  in the changed files (App.jsx /terms redirect).
+Limits: synthetic fixtures only. Every Supabase/edge request was intercepted.
+No real account, no live auth, no native app, no customer confirmation.
+The earlier preview at 36ce1c0 is superseded.
+
+NEW/CLOSED BACKLOG ITEMS
+B124 In Progress (stays open until merged and accepted).
+New B125 (T4) — T6 hardening, 3 items, none exploitable today.
+New B126 (T4) — T5 SHOULD-FIX: saved-status message lost after refresh.
+Nothing closed. B77 invite half unchanged.
 
 NOT TOUCHED
-Edge functions (reset-password, invite-user), email templates, Supabase auth
-settings, migrations, lib/auth.js, invite/WelcomeScreen flow, native apps,
-other worktrees and the original sales-command checkout. No live auth call,
-reset email, or customer write was made.
-
-ROUND 2 — T5 FINDING 1 FIXED (same day)
-T5 (session 5b538650) returned 1 BLOCKS-SHIP, recorded in docs/AUDIT_LOG.md
-"Gate records" (commit bf13720). The recovery marker was cleared on paths
-that left the recovery session alive: refresh -> failed startup sign-out ->
-Back / Request a new code, and a failed password sign-in. Fixed: the marker
-is cleared only after a confirmed sign-out or a successful password sign-in;
-a fresh form recognises a still-live marked session when leaving.
-Evidence (production builds, synthetic): browser script 8/8 on the fix, 6/8
-on 36ce1c0 (the two new scenarios fail there); unit 24/24.
-T5 finding 2 (SHOULD-FIX, saved-status messaging after refresh) is NOT fixed;
-it is a residual on B124.
-Draft PR #73 and the Ready preview at 36ce1c0 are the round-1 build:
-SUPERSEDED, not final. The round-2 commit is not pushed.
+Edge functions (reset-password, invite-user), email templates and sending,
+Supabase auth settings, Vercel config and protection, migrations,
+lib/auth.js, invite/WelcomeScreen flow, native apps, other worktrees, the
+original sales-command checkout and its running dev servers.
 
 NEXT SESSION POINTERS
-1. Independent T5 re-review of the complete diff, then Security Review. The
-   builder does not review.
-2. Then push + a Ready Vercel preview of the reviewed commit; rerun the
-   browser script with BASE_URL=<preview URL>. That step uses SYNTHETIC
-   fixtures only (every auth request intercepted). A real customer password
-   save and login is Jacob's action after a separately approved release; it
-   is not a QA step here. No live auth has been verified.
-3. Residuals listed in BUILD-REPORT.md "Issues / Follow-up" — decide whether
-   any becomes its own row.
-4. docs/runbooks/rls-deploy-gates.md is still missing (pre-existing, BACKLOG
+1. Bugbot on PR #73 (required before merge for app changes).
+2. Chris walks the preview and accepts, or not. Then explicit merge and
+   production approval. Nothing here is that approval.
+3. A real customer password save and login is Jacob's action AFTER a
+   separately approved release. It is not a QA step in this work.
+4. Bounced reset email (Resend) is a SEPARATE issue, not addressed here.
+   Smallest supported follow-up per the routing: review the provider's
+   bounce metadata / support, with no further sends and no settings changes.
+5. B125 item 1 was introduced by this change; fold B125 into the next auth
+   touch.
+6. docs/runbooks/rls-deploy-gates.md is still missing (pre-existing, BACKLOG
    O4 -> handoff v83 lines 64-89). No RLS change in this slice.
 
 FILES TO KNOW
 src/lib/passwordRecovery.js
 src/lib/passwordRecovery.test.mjs
 scripts/check-password-recovery.mjs
-src/App.jsx (auth effect), src/pages/Login.jsx (handleReset, leaveReset)
+src/App.jsx (auth effect), src/pages/Login.jsx (handleReset, leaveReset,
+  handleSubmit)
 docs/agent-handoffs/BUILD-REPORT.md
-docs/BACKLOG.md (B124)
+docs/AUDIT_LOG.md (Gate records)
+docs/BACKLOG.md (B124, B125, B126)
 
 GIT STATE
-Branch fix/recovery-save-stability on origin/main 90f890d: 36ce1c0 (build,
-pushed, PR #73 draft), bf13720 (T5 gate record), then the round-2 fix commit.
-bf13720 and the fix commit are not pushed. Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
-(node_modules installed there, untracked). Working tree clean after commit.
+Branch fix/recovery-save-stability on origin/main 90f890d:
+  36ce1c0 build · bf13720 T5 r1 gate · e508736 T5 fix · 3031f0c T5 r2 gate ·
+  2a132f2 T6 gate · then this closeout commit (docs only).
+origin has through 3031f0c; 2a132f2 and the closeout commit are not pushed
+by the build terminal — the coordinator pushes.
+Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
+(node_modules installed there, untracked; .review/ is the coordinator's
+temporary input, untracked).
