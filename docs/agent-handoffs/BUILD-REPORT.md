@@ -1,17 +1,17 @@
 ## Status
 
-Mobile web preview (F65) — T3 build complete on `feat/mobile-web-preview`, **not pushed**. T4 Build vs Plan, T5 Code Review and T6 Security Review are pending; Smoke Test and the Vercel preview follow them. **Do not merge.**
+Mobile web preview (F65) — built on `feat/mobile-web-preview`, **not pushed**. T4 Build vs Plan round 1 was **NO-GO** (recorded in `docs/AUDIT_LOG.md`, Gate records). This revision answers its finding 2 (acceptance checks missing from the script) and finding 7 (wrong base in this report). App source is unchanged since `cc4d733`. T4 recheck, T5, T6, Smoke Test and the Vercel preview are still open. **Do not merge.**
 
-    Role:        T3 Build · mode: build (initial) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
+    Role:        T3 Build · mode: build (fixes for T4) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
                  (continues builder session 0dd426b3-d40d-4c3a-97af-393dc105f6f3, which wrote most of the source)
-    Plan:        docs/plans/mobile_web_preview.md @ 87e820f · gates: T2 CONVERGED recorded in docs/AUDIT_LOG.md `## Gate records` @ a4b831b
+    Plan:        docs/plans/mobile_web_preview.md @ 87e820f · gates: T2 CONVERGED and T4 NO-GO (round 1) recorded in docs/AUDIT_LOG.md `## Gate records`
                  · plan diff 87e820f → working tree is inside `## Audit manifest` only
                  · T1: no personal lock exists; build authorised by Chris directly (plan §A)
-    Branch:      feat/mobile-web-preview · base a4b831b · this commit
-    Outcome:     bar met within planned scope (build self-check; not the Smoke gate)
+    Branch:      feat/mobile-web-preview · slice base 34af375 · app source cc4d733 · report correction 32fe67a · T4 gate record 8cd3f62 · this commit (scripts and docs only)
+    Outcome:     acceptance bar met except B1, which fails as written (see "Desktop at 1440"). Build self-check; not the Smoke gate.
     Completion:  code built yes · data applied n.a. (none) · access verified no (not exercised) · Chris accepted: not T3's to claim
     Push:        not pushed
-    Next:        T7
+    Next:        T7 → targeted T4 recheck
 
 ## Summary
 
@@ -26,37 +26,71 @@ No data fetching, backend call, auth, guard, route, validation, save handler, ca
 - **Dialog semantics** — `role="dialog" aria-modal="true"` and a name on the existing containers of New Inquiry, the Directory, Log Outcome, the job-list modal and the Hunt results modal. Attributes only.
 - **New Inquiry (P1)** — dialog inside the viewport; Back/Next/Save pinned at the bottom; the title row is sticky so Close stays on screen while a tall step scrolls. The customer picker's search box (rendered on `<body>` by `SearchSelect`) is 16px while the wizard is open.
 - **P1/P2 screens** — class hooks plus scoped rules in `src/styles/mobile-shell.css`: one-column field grids, wrapping header actions and KPI rows, 16px text entry and 36px buttons on P1 screens and Login, scrollable table frames on Customer detail, wrapping status tabs on Proposals.
-- **QA scripts** — `scripts/check-mobile-preview.mjs`, `scripts/mobile-preview-fixtures.mjs` (written and run by the coordinator). Playwright is loaded from an existing local runtime via `PLAYWRIGHT_MODULE`; no dependency or `package.json` change.
+- **QA scripts** — `scripts/check-mobile-preview.mjs`, `scripts/mobile-preview-fixtures.mjs` (written by the coordinator; extended by T3 for T4 finding 2), `scripts/capture-mobile-preview-desktop.mjs` (the coordinator's capture procedure, committed). Playwright is loaded from an existing local runtime via `PLAYWRIGHT_MODULE`; no dependency or `package.json` change.
 
 P2 deferrals: none. No screen needed a no-touch file.
 
 ## Evidence
 
-All browser checks are the coordinator's synthetic self-check runs against the local dev server with fixture data: backend default-deny, service workers blocked, WebSockets mocked. They are **not** the Smoke gate, a review or a hosted walk. Result files and screenshots stay in the task's local `qa/` directory and are not committed.
+One script carries the acceptance checks (plan H1): `scripts/check-mobile-preview.mjs`, with its fixtures in `scripts/mobile-preview-fixtures.mjs`. Desktop screenshots for B1 are captured by `scripts/capture-mobile-preview-desktop.mjs` and compared by the check script. All runs are synthetic: local dev server, fixture data, backend default-deny, service workers blocked, WebSockets mocked, no sign-in. They are a build self-check — **not** the Smoke gate, a review or a hosted walk. Results and screenshots stay in the task's local `qa/` directory and are not committed (handoff v298 practice).
 
-| Run | Checks | Result |
+**Current run — `qa/mobile-acceptance/results.json`, console in `qa/mobile-acceptance/console.log`** (run by T3 on the source at `cc4d733`, widths 360, 390, 430, 640, 768):
+
+- 167 checks: **166 passed, 1 failed (B1)**. 0 page errors, 0 attempted writes, 0 refused requests.
+- A refused request now fails the run, not only a write (T4 finding 6). The fixtures were not loosened.
+
+| Plan item | What the script now checks | Checks |
 |---|---|---|
-| `qa/mobile-final` — widths 360, 390, 430, 640, 768 | 126 | all passed · 0 page errors · 0 attempted writes |
-| `qa/mobile-tall-step` — 360 | 20 | all passed · 0 page errors · 0 attempted writes |
-| `qa/wizard-matrix` — earlier separate wizard run, 5 widths | 66 | all passed · 0 page errors · 0 attempted writes |
+| A3 | Drawer rows — label, title, order, active marker — equal the 1440 sidebar for the Admin, Manager and Sales-only fixtures; every drawer button ≥44px; ≥44px of page left beside the drawer | 12 |
+| A4, A5, A7 | Drawer close modes and focus; edited job and list filters survive the drawer; badge and jump button apart and tappable (unchanged checks) | 12 |
+| A6 | Shell height equals the viewport; last Call Log row scrolls clear of the jump button | 4 |
+| A8 | 28 smoke routes at 390 and 768, each left through the drawer; `/sales/managers` with the Manager fixture; `/crew` with no sideways scroll at 360, 390, 430 | 56 + 1 + 3 |
+| A9 | Directory opened from the drawer and from the badge: inside the viewport, close 44px and tappable, content scrolls inside it | 4 + 4 |
+| A10 | Drawer open: taps at the badge and jump button centres do not reach them; no drawer row is covered by the page. Wizard and Directory controls tappable; the wizard stays on top of a drawer opened from the keyboard behind it | 4 |
+| C1 | Both homes: no sideways scroll, no number clipped or outside its box, KPI cells do not overlap, seven-digit figure shown; the "Wants Bid" tile opens Call Log with that stage and the rep applied | 3 |
+| C2 | Pipeline count, search, table headers, sideways scroll in frame, View opens the job (unchanged) | 4 |
+| C3 | Job opened from the list; header actions equal the 1440 set and are inside the viewport; one-column field grids; linked rows show label, status and amount inside the viewport; three totals unclipped with a seven-digit figure; Save Changes and Cancel in view in edit mode (not pressed: Cancel only); Back returns to the list | 3 |
+| C4 | Ten standard steps and the Change Order path, stopping before Save (unchanged) | 5 + 5 |
+| C5 | Every text input, select and textarea ≥16px and every button ≥36px on the four P1 screens, in detail edit mode and on every wizard step; Login inputs | 3 + inside C3/C4 + 1 |
+| D1–D5 | Layout and table headers per screen; "+ New Proposal", Invoices header actions and "+ Add Customer" in view; a row opens the proposal, invoice and customer routes with no error; Customer detail Back, Merge, Delete and Edit in view (not pressed); its three tables scroll in frame | 36 layout + 4 + 4 |
+| B2, B3, E4 | Desktop collapse 228/56 and resize restore; Sales-only fixture gets "Not authorized" on `/settings` | 1 + 1 |
+| B1 | Pixel comparison of the 13 desktop screens against base — **fails as written**, below | 1 |
 
-- `mobile-final` covers: P1/P2 layout and table headers, all three Customer detail table tabs, drawer close modes / focus / draft preservation, Call Log pipeline count, search and View opening the selected job, the ten standard wizard steps and the Change Order path (stopping before Save), the Manager route and the Sales Settings guard, Login at 360, and desktop sidebar 228/56 preservation after a resize.
-- It also loads 28 smoke-only routes at 390 and 768 (all 11 Schedule, 6 Field, 6 AR, Proposal and Invoice detail, Team, Archive, Settings) and leaves each through the drawer, AR included. Those routes load without error; nothing is claimed about their inner workflows on a phone.
-- `mobile-tall-step` covers, on both wizard paths at 360: three unsaved contact rows added, the tall step scrolled to its end, Close still visible, 44px and hit; the customer picker search box at 16px; Enter advancing the step.
-- Local checks by T3 after the last source change: `npm run build` passes; ESLint 176 errors / 43 warnings, equal to the pre-build baseline; `git diff --check` clean; zero diff under `src/schedule`, `src/field`, `src/ar` and the rest of the plan's no-touch list.
+Selector notes, from the real UI: a Proposals row opens through its own "Open" control (the row itself does not route); the "Your Book" tile sets the stage tab and rep filter, not the pipeline button state.
 
-### Desktop at 1440 — exception to B1
+No control that saves, sends, deletes, merges, invites or moves a job is activated anywhere in the script.
 
-B1 asks for zero pixel difference from base beyond base-vs-base. That bar is **not met literally**:
+Earlier runs by the coordinator, on the same source, kept for the record: `qa/mobile-final` 126 checks, `qa/mobile-tall-step` 20 checks, `qa/wizard-matrix` 66 checks — all passed, 0 errors, 0 writes. The 66-check wizard result is in the coordinator's review packet.
 
-| Screens | Difference from base |
-|---|---|
-| 10 of 13 | exact |
-| Call Log | 9 pixels, max channel difference 1 |
-| Calendar | 127 pixels, max channel difference 1 |
-| New Inquiry | 28 pixels, max channel difference 18 (base repeated against itself: 30 pixels, max 18) |
+Local checks by T3: `npm run build` passed at `cc4d733` (no app source change since); ESLint 176 errors / 43 warnings after this revision, equal to the baseline, and the two edited scripts lint clean; `git diff --check` clean; zero diff under the plan's no-touch list.
 
-New Inquiry is inside base jitter. Call Log and Calendar are 136 pixels one level off with no geometry or content change observed; base-vs-base on those two was zero. Not polished further; the reviewer judges whether it is a practical desktop regression.
+### Desktop at 1440 — B1 fails as written
+
+B1 asks that the 13 screens differ from base `34af375` by no more than base differs from itself. **That is not met, and it is carried here as a failure, not a pass.** No threshold was changed and Chris has not accepted it.
+
+Four captures of this build, each compared with the base capture (`qa/desktop-base-final`; its repeat `qa/desktop-base-repeat` is the noise floor):
+
+| Capture of this build | Screens exact | Differences from base |
+|---|---|---|
+| Coordinator, earlier (`qa/desktop-after`) | 10 of 13 | Call Log 9 px, max channel 1 · Calendar 127 px, max 1 · New Inquiry 28 px, max 18 (floor 30 px, max 18) |
+| Coordinator's script re-run by T3 on the current source | 12 of 13 | New Inquiry 28 px, max 18 (inside the floor) |
+| Committed capture script, run 1 (`qa/mobile-acceptance/desktop-after-1`) — **the one the check script judged** | 11 of 13 | Call Log 16 px, max 1 · Time Clock 1 px, max 10 |
+| Committed capture script, run 2 (`…/desktop-after-2`) | 9 of 13 | as run 1, plus the two home screens' hero image area (64,766 and 40,991 px, max 12) |
+
+What this shows:
+
+- **The capture is not repeatable.** The same source, captured four times, gives four different results; runs 1 and 2 were minutes apart with no change between them. Calendar, the screen with the largest earlier difference, has zero source diff and is exact in three of the four.
+- **No layout or content change was seen** in any capture. Crops of the largest difference (the home hero, run 2) are indistinguishable by eye.
+- Every rule in `mobile-shell.css` sits in a `screen` media query at ≤768px or ≤600px, and the desktop markup changes are attributes and class names.
+- A single base repeat is too thin a noise floor to tell build from noise here. T4 said the same.
+
+Dispositions recorded so far — neither is Chris's acceptance:
+
+- **T4 (round 1)** judged the first capture's 136 one-level pixels immaterial, and said T4 cannot waive a plan criterion.
+- **The coordinator** accepts a ≤1-level difference as a routine technical deviation under the original authorization, with the literal failure kept on record. The check script was run with that bound (`QA_B1_ACCEPT_MAX_CHANNEL=1`). Run 1 is **outside** that bound because of the single Time Clock pixel at 10 levels, so the script reports B1 as failed and unwaived, and exits non-zero for that reason alone.
+- **The coordinator, on run 1** (session message, 2026-09-30 19:25 PDT): accepts the 1 Time Clock pixel and 16 Call Log pixels too, as an immaterial raster-only technical deviation with no source or geometry change, and states this is not user preview acceptance. The script result was not re-run or relabelled to match; B1 stays failed in `results.json`.
+
+Captures taken inside the long check run (after the phone widths) differed from base by far more — text raster differences with the same geometry — which is why capture is a separate script run in its own process, the way the base directories were made.
 
 ## Brand check
 
@@ -94,7 +128,7 @@ Deviations:
 Not performed:
 
 - **Phone-width comparison against a brand reference** — none exists. Neither document defines a phone layout, breakpoint, phone navigation pattern or touch-target size, and the canonical image is desktop only.
-- **Side-by-side comparison of the changed screens with the canonical image** — this session opened the reference but viewed no screenshot of the build, so it makes no fidelity claim. At desktop the build's rendering is unchanged apart from the pixel exception above.
+- **Side-by-side comparison of the changed screens with the canonical image** — this session opened the reference but viewed no screenshot of the build, so it makes no fidelity claim. At desktop see the B1 section above.
 - **WCAG contrast measurement** of the new controls and their focus rings.
 
 ## Scope boundaries
@@ -109,4 +143,4 @@ Not performed:
 
 ## Remaining
 
-T4 → T5 → T6 on this commit · Smoke Test (plan §5 A–F) on the reviewed commit · coordinator push and Vercel preview (G1–G4), SHA and URL to be added by the coordinator · Chris's acceptance.
+Targeted T4 recheck of findings 2 and 7 · a recorded disposition for B1 · T5 → T6 · Smoke Test (plan §5 A–F) on the reviewed commit · coordinator push and Vercel preview (G1–G4), SHA and URL to be added by the coordinator · Chris's acceptance. T4's non-blocking findings 3–6 are backlog row O12.

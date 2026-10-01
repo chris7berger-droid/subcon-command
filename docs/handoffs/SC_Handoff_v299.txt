@@ -33,7 +33,29 @@ No P2 screen was deferred.
 
 NEW/CLOSED BACKLOG ITEMS
 New: F65 Mobile web preview, T2, In Progress (built, reviews pending).
+New: O12 Mobile preview follow-ups from the T4 review (four non-blocking
+items: wizard title stripe, aria-modal without focus containment, import-order
+CSS wins, fixture logging of unknown reads).
 Closed: none.
+
+REVISION AFTER T4 ROUND 1 (same day)
+T4 Build vs Plan returned NO-GO; its proposed record is transcribed in
+docs/AUDIT_LOG.md "Gate records" (commit 8cd3f62). Two blockers:
+1. B1 (desktop pixels vs base) fails as written.
+2. The check script did not implement A3, A6, A8 /crew, A9 from the drawer,
+   A10, B1, C1, C3, C5 and D2-D5.
+Blocker 2 is answered: scripts/check-mobile-preview.mjs now carries those
+checks, fails the run on any refused request, and compares desktop capture
+directories made by the new scripts/capture-mobile-preview-desktop.mjs.
+App source is unchanged since cc4d733.
+Run qa/mobile-acceptance (360/390/430/640/768): 167 checks, 166 passed,
+0 page errors, 0 writes, 0 refused requests. The one failure is B1.
+B1 stays failed and is not relabelled. Latest capture: Time Clock 1 pixel
+(max channel 10), Call Log 16 pixels (max 1), 11 of 13 screens exact. Four
+captures of the same source gave four different results, so the capture is
+not repeatable; no layout or content change was seen in any. T4 judged the
+first capture immaterial but cannot waive it. The coordinator accepts it as
+a raster-only technical deviation. Chris has not accepted anything.
 
 VERIFICATION
 Coordinator's synthetic self-check, local dev server, fixture data, backend
@@ -61,8 +83,8 @@ Invoices.jsx and the other money-path files, tokens.js, the logo, native Field
 Command, AIOS.
 
 NEXT SESSION POINTERS
-T4 Build vs Plan, T5 Code Review, T6 Security Review on this commit, each by a
-session that did not build it. Then Smoke Test (plan section 5 A-F) on the
+Targeted T4 recheck of findings 2 and 7 on the latest commit, then T5 Code
+Review and T6 Security Review, each by a session that did not build it. Then Smoke Test (plan section 5 A-F) on the
 reviewed commit, then the coordinator pushes for the Vercel preview and adds
 the SHA and URL here. A commit after the reviews re-opens them.
 The preview shares the production database: a phone look should be read-only.
@@ -77,11 +99,14 @@ src/App.jsx (matchMedia, drawer state, menu button, data-app-main)
 src/components/AppSidebar.jsx (drawer semantics)
 src/components/NewInquiryWizard.jsx, SearchSelect.jsx, TableOfContents.jsx
 src/components/followup/{LogOutcome,JobList,HuntResults}Modal.jsx
-scripts/check-mobile-preview.mjs, scripts/mobile-preview-fixtures.mjs
+scripts/check-mobile-preview.mjs, scripts/mobile-preview-fixtures.mjs,
+scripts/capture-mobile-preview-desktop.mjs
 docs/plans/mobile_web_preview.md
 docs/agent-handoffs/BUILD-REPORT.md
 
 GIT STATE
 Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-3/mobile-preview
-Branch feat/mobile-web-preview, base a4b831b, this handoff's commit on top.
+Branch feat/mobile-web-preview. Slice base 34af375. App source cc4d733,
+Brand check correction 32fe67a, T4 gate record 8cd3f62, then the scripts and
+docs revision that carries this text.
 Not pushed.
