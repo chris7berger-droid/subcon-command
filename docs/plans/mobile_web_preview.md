@@ -385,14 +385,14 @@ A screen-layout change with no database, sign-in or money logic in it, but it re
 
 ### Round
 - Plan type: feature (new phone layout surface; no pre-existing defect being fixed)
-- Current round: 1
-- Plan revision under audit: `7efcebbf266f9b50cdc52bc604066bc4c4944dcb`
-- Sizing basis: full-surface — round 1
-- Delta scope (round N>1 only): n/a
-- Findings trend: n/a — round 1
+- Current round: 2
+- Plan revision under audit: `87e820f`
+- Sizing basis: DELTA since `7efcebb` — round 2. Scoped delta recheck by T2 inline, no agents, as routed; the fields below this section are the round-1 full-surface sizing and are kept as the record of that round.
+- Delta scope (round N>1 only): the resolutions of A1–A3, B1–B2, C1–C2 only — §0.5, §0.8, Beats 8 and 10, P0.2/P0.11–P0.13, §2 P2, H1–H6, A4/A8–A10, B3, C4, D1–D5, E2/E5, G1–G4. New mechanism: one `matchMedia` listener and one drawer boolean. Everything else unchanged; not re-audited.
+- Findings trend: round 1 (7 in cap) → round 2 (0)
 
 ### Prior rounds
-none — this is round 1
+- Round 1: `7efcebb` (manifest `b268478`) · 0C/4H/3M/0L in cap, 10 over cap, 6 adjacent · pattern: acceptance-bar-vs-constraints
 
 **Briefing for agents**: do NOT re-find issues from prior rounds. Each round's revision-pass commit message is the canonical record of what was addressed. Attack ONLY material new to the plan revision under audit.
 
