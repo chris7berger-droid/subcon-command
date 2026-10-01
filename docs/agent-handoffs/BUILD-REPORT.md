@@ -1,142 +1,142 @@
-RELEASE STATUS UPDATE — 2026-10-01: Chris accepted the tested PR #73 fix and approved release, substituting the completed AIOS T5/T6 reviews for disabled Bugbot for this PR only. Original approval verified directly by the coordinator; exact evidence is in docs/AUDIT_LOG.md. Merge and production verification are the remaining execution steps. Earlier blocked/pending-acceptance statements below are superseded by this update. Final deployment evidence will be recorded on PR #73. No live customer password or native login has been verified.
-
 ## Status
 
-**B124 — password-recovery lifecycle fix. Code, tests, both reviews and the Vercel preview are complete. Not merged. Not in production.**
-
-**Blocked on Bugbot: it was invoked and skipped — disabled for this repository. No automated review ran.** Pending, in order: Chris's decision on Bugbot (enable it, or explicitly waive it / accept the completed T5 + T6 reviews as the substitute) · Chris's acceptance · explicit merge / production approval.
+**F60 — Sunday = Saturday parity. Built and locally checked on `feat/sunday-saturday-parity`. Stopped at the T3 build gate. Not pushed, not reviewed, no preview, not merged, not in production.**
 
 | | |
 |---|---|
-| Branch | `fix/recovery-save-stability`, draft PR #73, base `origin/main` `90f890d` |
-| Reviewed code | `e5087360c4a5b4ceebecb7193ef09c0b98a2e729` (`36ce1c0` build + `e508736` T5 fix) |
-| Preview tested | `3031f0c` — app source identical to `e508736` |
-| Path | in-flow bug fix (`/fix`), no plan document; scope from the T7 routing packets of 2026-10-01 |
+| Branch | `feat/sunday-saturday-parity`, base `origin/main` `3145a7a` |
+| Plan | `docs/plans/sunday-scheduling.md` @ `bbe71e4ad1c79db530866fd63ea3631dd1f22520` (body verified identical at commit, index and working tree; only `## Audit manifest` differs) |
+| Build commit | `3f6b3cf8ac3df2ceef39654e10a429ca14f1a086` |
+| Builder | T3 `t3-sunday-parity` · `2c23e844-d27d-4995-bdcc-7b0ef7430cb0` · https://claude.ai/code/session_01JQBVvRqXkNRVdkMBL7VRDh |
 
-Completion: code built **yes** · data applied **n/a** · authenticated access verified **no** (synthetic fixtures only) · Chris accepted **no**.
+Completion: code built **yes** · data applied **n/a (none)** · authenticated access verified **no** (synthetic fixtures only) · Chris accepted **no — not T3's to claim**.
 
-## Summary
-
-Resetting a password with the emailed code could drop the user into the app before the new password was saved, and hide a failed save.
-
-Cause: `supabase.auth.verifyOtp({ type: "recovery" })` saves a session and emits `PASSWORD_RECOVERY` before it returns. `App.jsx` applied that session. The logged-out branch unmounted, taking the `Login` that owned the reset form with it. A rejected or slow `updateUser` then reported to a component that no longer existed: the user was in the app on the recovery session, old password still in force, no error shown. The code is one-time, so a retry needed a new one.
-
-Proven: the mechanism, reproduced against `origin/main` in a real browser with synthetic auth. **Not proven: that this is exactly what the affected customer hit.** No customer account, code, token or auth log was inspected, and there is no evidence in this work of the customer's actual save result.
-
-Now:
-
-1. The same reset form stays mounted from code entry through save and sign-out.
-2. A rejected save shows its reason on that form; the retry saves against the retained recovery session and does not re-verify the consumed code.
-3. The reset finishes only after the save is confirmed for the verified user and the sign-out succeeds. A failed sign-out keeps the form up, never admits the app, and its retry does not save twice.
-4. The retained stage is bound to the verified auth user id. If that session is signed out or replaced by another account, the stage is dropped and nothing is saved or signed out against the other account.
-5. A refresh or return during an unfinished reset is not treated as a login. The marker that says so is cleared only after a confirmed sign-out or a successful password sign-in.
-6. Recovery links work: no code field, save against the link's session.
+Outcome: bar met locally for every §5 check T3 can run, with the limits listed under "What this does not show". P (Vercel preview) and N (native device) are not T3-build steps.
 
 ## Gates
 
-Recorded in `docs/AUDIT_LOG.md` § Gate records.
+| Gate | Result | Recorded |
+|---|---|---|
+| T1 Planning lock | **Not recorded.** The plan's §A states Chris has not personally locked it; the coordinator directed the work forward under his "make Sunday match Saturday… go launch that work" direction. T3 built on the coordinator's explicit build instruction and carries this forward as an open provenance fact, not a resolved one. | plan §A |
+| T2 round 1 | NOT CONVERGED @ `745a291` | `docs/AUDIT_LOG.md`, `c6bdb7f` |
+| T2 round 2 | CONVERGED @ `bbe71e4` · standing (§9) | `docs/AUDIT_LOG.md`, `735b6e3` |
+| T3 Build | committed `3f6b3cf` | this file |
+| T4 / T5 / T6 / Smoke / Preview / Chris | not started | — |
 
-| Gate | Result | Session | Recorded |
-|---|---|---|---|
-| T3 Build | committed `36ce1c0` | `recovery-t3` · `bb07d938-e6cb-4b33-bb24-b7110693ccf1` | this file |
-| T5 Code Review, round 1 | not met — 1 BLOCKS-SHIP, 1 SHOULD-FIX | `5b538650-d476-4e72-9ad4-c1ff1fb58cf8` | `bf13720` |
-| T3 fix for T5 | committed `e508736` | `bb07d938-…` | this file |
-| T5 Code Review, round 2 | met — 0 BLOCKS-SHIP | `5b538650-…` | `3031f0c` |
-| T6 Security Review | 0 exploitable-today · 3 HARDENING | `521dd74e-d33b-4ef6-b288-4533da8abb87` | `2a132f2` |
-| Smoke + Preview | 8/8 on the Ready preview | `bb07d938-…` | this file |
+T2's two non-blocking notes were applied as written: B13 is compared on the Monday–Saturday **day columns** (not week-wide pool totals), and the week-link check asserts that **no read for another week is sent**, which is tighter than W2's wording.
 
-T4 (Build vs Plan) does not apply: the `/fix` path has no plan. Both reviews were source-only; neither reviewer executed the tests. T5 did not review the docs.
+## Summary
 
-Sessions (all Claude Opus 5.5, AIOS `spawn` wrapper in a Codex PTY — not an AIOS.app-owned terminal; no orchestration changes):
+Every Schedule surface that showed, loaded or totalled Monday–Saturday now uses Monday–Sunday. Sunday is the seventh day, after Saturday, always shown, and takes Saturday's existing rules and classes. No Saturday or Monday–Friday rule changed.
 
-- T3 `recovery-t3` — https://claude.ai/code/session_0152qUjdUWv8uCtefmLaMaE4
-- T5 `recovery-t5` — https://claude.ai/code/session_01Vi21HLkdfJJn3yhzdu7H7d
-- T6 `recovery-t6` — https://claude.ai/code/session_01Ampob28KJy3ZWFBWu6983s
+One fix beyond Sunday (S10): the crew board turned `?week=<date>` into a week by rounding days ÷ 7, so a Friday, Saturday or Sunday date opened the following week. Both read sites now share one helper that takes the Monday of the target date. Monday links are arithmetically unchanged.
 
 ## Files Changed
 
-- `src/lib/passwordRecovery.js` (new) — pure module: recovery hold, auth-event decision, marker rule, startup rule, reset flow
-- `src/App.jsx` — auth handler uses the decision; startup guards; applies a confirmed password sign-in
-- `src/pages/Login.jsx` — reset form drives the flow; link mode; back / new-code end the session
-- `src/lib/passwordRecovery.test.mjs` (new) — 24 synthetic scenarios
-- `scripts/check-password-recovery.mjs` (new) — 8 browser scenarios on the real App/Login
-- `docs/BACKLOG.md`, `docs/AUDIT_LOG.md`, `docs/handoffs/SC_Handoff_v298.txt`, this file
+App (13 files, +72 / −86):
 
-No dependency, migration, edge-function, mail, Supabase-setting or native change.
+- `src/schedule/views/Schedule.jsx` — day labels gain `Su` / `Sun`; week list is seven dates; week end and both reads use the list's last date; label Monday – Sunday; crew popup grid follows the list length; `weekOffsetFor()` used by both `?week=` sites.
+- `src/schedule/App.css` — board grid and capacity strip grid `repeat(7, 1fr)` (lines 1103, 6768 only).
+- `src/schedule/lib/queries.js` — `wkDates` returns seven dates; `getJobMultiWeekAlert` checks seven days per later week.
+- `src/schedule/lib/weeks.js` — `fmtWk` ends on Monday+6.
+- `src/schedule/components/HomeCapacityStrip.jsx` — `SUN` label.
+- `src/schedule/views/Calendar.jsx` — week view is `wkDates(monday)`, Sunday last, always; week fetch range is Monday–Sunday. The on-demand Sunday column before Monday is gone.
+- `src/schedule/views/Daily.jsx`, `src/schedule/lib/exports.js` — seven days.
+- `src/schedule/lib/crewWeekText.js` — Midweek Update runs today through Sunday. `src/schedule/views/CrewPhone.jsx` — five strings say Sunday.
+- `src/schedule/lib/crewStatus.js`, `src/schedule/components/ScheduledOffModal.jsx` — the two presets fill Monday → Sunday (`thisWeekMonSat` / `nextWeekMonSat` renamed `…MonSun`; no other caller).
+
+Checks:
+
+- New: `scripts/check-sunday-parity.mjs` (browser, 30 check groups), `scripts/check-sunday-parity-model.mjs` (M1–M6), `scripts/sunday-parity-fixture.mjs` (the plan's §5 fixture, synthetic names).
+- Restated for the seven-day week, as the plan's §3 lists: `scripts/check-crew-midweek-text-model.mjs`, `scripts/check-crew-phone.mjs`, `scripts/check-crew-week-summary.mjs`, `src/schedule/lib/crewStatus.test.mjs`.
+
+Records: this file, `docs/BACKLOG.md` (F60 row; stale "pending merge" note at line 9), `docs/handoffs/SC_Handoff_v302.txt`, evidence under `docs/agent-handoffs/evidence/sunday-parity/`.
+
+No schema, migration, RLS, edge function, dependency, config or env change. No new Supabase call site.
 
 ## Important Implementation Decisions
 
-- **Hold, not remount.** `Login` raises a module-level hold before verifying the code. While it is up, `App` ignores auth events that carry a session, so its render branch never changes under the form. `SIGNED_OUT` and a rejected token refresh still apply.
-- **A hashless `PASSWORD_RECOVERY` is never applied.** It only comes from a typed-code verify, in this tab or broadcast from another.
-- **Marker `sc_recovery_user` (localStorage).** Holds the verified user's id while a reset is unfinished — never a code or password. With it set, a session for that user is a recovery session: auth events are held, and startup ends the session instead of admitting the app.
-- **The marker outlives every path that leaves the session alive (T5 round 1).** It is cleared only after a confirmed sign-out or a successful password sign-in. A form mounted after a refresh reads the marker and must end a still-live marked session before leaving. Because the marker is still set while a password sign-in emits `SIGNED_IN`, App holds that event and Login hands App the confirmed session.
-- **Link recovery had two defects, both fixed.** `Login` stripped the URL hash before the auth client read it, so the link's session was never established (also true on `origin/main`). And with "Remember me" off, the fresh-tab startup sign-out would have ended the link session.
-- **`auth.js` unchanged.**
+- **One week list on the board (E3).** Columns, labels, pickers, dots, the popup, both reads and the capacity strip all follow `dates`; the ends are `dates.at(-1)`, not an index.
+- **Week links: one helper, both sites.** `weekOffsetFor(week)` = whole weeks between this week's Monday and the Monday of the target date. Because both sites now compute the same value, the mount effect no longer overwrites the initial state with a different week, so no wrong-week read is sent.
+- **Calendar week range starts on Monday.** Base fetched from the Sunday *before* Monday so the old leading Sunday column could see its crew. That column no longer exists, so the range is the week itself. The month-grid union is unchanged. This is inside C6 ("the Calendar week range").
+- **Left alone, per the plan:** the dead six-day code (`wkEnd` in `Schedule.jsx`, `StatsBar.jsx`, `App.css:391`, `:757`); the duplicate week helpers; `billingForecast.js:272`.
 
 ## Verification Performed
 
-All auth traffic synthetic; fake credentials only. No live auth call, reset email, customer read or write.
+All data synthetic. Every backend request was answered inside the browser from an in-memory fixture; the harness refuses any write other than `POST`/`DELETE assignments` and the `crew_status` upsert. No sign-in anywhere, no production read or write.
 
-| Check | Where | Result |
-|---|---|---|
-| Browser script, 8 scenarios | **Ready Vercel preview** `https://sales-command-l00n980aw-chris7berger-droids-projects.vercel.app` (`dpl_9Ng1qMUpdnByUSSwjwYz1vHamHxf`, git `3031f0c`), 2026-10-01 16:04–16:05 UTC | **8/8 pass** |
-| Browser script | local production build of `e508736` | 8/8 pass |
-| Browser script | local production build of `36ce1c0` | 6/8 — the two T5 scenarios fail, as expected |
-| Browser script, first 6 scenarios | temp copy of `origin/main` `90f890d` | 5/6 fail, as expected |
-| Unit | `node src/lib/passwordRecovery.test.mjs` | 24/24 pass |
-| Build | `npm run build` | pass |
-| Lint, full | `npx eslint .` | 219 problems (176 errors, 43 warnings) — identical to `origin/main` |
-| Lint, changed files | | 1 error, pre-existing (`App.jsx` `/terms` redirect) |
+Tooling: Playwright is not a repo dependency. Run with `PLAYWRIGHT_MODULE=<path to playwright-core/index.mjs> CHROME_PATH=<Chrome> TZ=America/Los_Angeles node scripts/check-sunday-parity.mjs`.
 
-Preview command (Deployment Protection left on; the short-lived token is sent only to the preview's own origin and never logged):
+**Base evidence, recorded before the first app edit**
 
-    BASE_URL=<preview url> PLAYWRIGHT_MODULE=<path to playwright-core> vercel env run -- node scripts/check-password-recovery.mjs
+- U1 — base screenshots of the populated board, strip, Daily and Calendar week at 1440×900 and 1280×800: `evidence/sunday-parity/base/`.
+- U2 — every `scripts/check-*.mjs` and `*.test.mjs` on base: 21 pass, 15 fail. `evidence/sunday-parity/checks-base.txt`.
+- U3 — ESLint on base: 176 errors, 43 warnings (268 files).
+- U4 — **not observed.** Production was not queried. B14 covers existing Sunday rows with the fixture.
 
-`git diff e508736 3031f0c -- src scripts index.html package.json` is empty: the preview ran the reviewed code. The same diff against the docs-only commits after it is also empty.
+"Matches base" values were recorded by running the new scripts with `SUNDAY_PARITY_BASE=1` while the app edits were stashed (`base-snapshot.json`, `base-model-snapshot.json`), then asserted against the build.
 
-Browser scenarios, on the real DOM:
+**Results on the build**
 
-1. Delayed save → same form mounted, app not entered; forced double submit sends nothing twice; rejection visible; retry verifies once, saves, signs out; lands on sign in; a password sign-in then admits the app.
-2. Sign-out failure → message shown, form mounted, app not entered; retry signs out without saving again.
-3. Invalid code → message shown, code field still offered, nothing saved.
-4. Back to sign in after a verified code → session ended, app not entered.
-5. Refresh after a verified code → session ended, reset form, app not entered.
-6. Refresh with a failing sign-out → Back and Request a new code blocked, marker kept; returning to the tab does not admit; marker cleared only after a sign-out succeeds.
-7. Second tab: a wrong password keeps the marker and is not admitted; the correct password clears it and is admitted.
-8. Recovery link with "Remember me" off → no code field, startup does not sign out, save succeeds, lands on sign in.
+| Check | Result |
+|---|---|
+| `scripts/check-sunday-parity-model.mjs` — M1–M6 | pass |
+| `scripts/check-sunday-parity.mjs` — B1–B15, H1–H2, K1–K4, D1–D2, X1–X2, T1–T2, L1, W1–W3, F1–F2 | pass, 30 groups |
+| Full run of every existing check | 23 pass, 15 fail — **the same 15 as base**, no new failure (`checks-after.txt`) |
+| `scripts/check-crew-phone.mjs` with a local fixture dev server on 5197 | pass on base (original script) and on the build (restated script) |
+| `npm run build` | pass |
+| `npx eslint .` | 176 errors, 43 warnings — equal to base; no touched file's count changed |
+| E1 zero-diff list | `git diff 3145a7a` over the §3 zero-diff files and the "expected zero diff" files is empty |
+
+What the browser script exercises, on the real DOM:
+
+- **Board:** seven columns MON 09/28 … SUN 10/04; reads `gte 2026-09-28` / `lte 2026-10-04`; Saturday-only and Sunday-only trips are rows on that week and not the next.
+- **Assign / edit / remove:** dragging a person onto a Sunday-only trip shows seven chips with only Sun enabled and sends exactly one `POST` carrying the trip id (and `team_member_id` for a linked person, `null` for an unlinked one); Saturday is identical. Su and Sa toggles each send one `POST` then one `DELETE` naming that row id. ✕ deletes only that person's rows on that trip.
+- **Overlapping trips:** turning Sunday off on the short trip deletes that one row id; the long trip's Sunday row keeps its id and date; the picker labels it "(another trip)".
+- **Select all:** 7 for a free person; 6 leaving Sunday out for someone Scheduled Off Sunday; 6 leaving Saturday out for someone Sick Saturday; the out day still saves when picked by hand.
+- **Time off:** Sick picker has seven chips and writes one row for Sunday; Scheduled Off presets fill 09-28 → 10-04 and 10-05 → 10-11; the review lists the Saturday and Sunday assignments and changes neither. A person off Monday–Saturday is a normal draggable chip with an open Sunday (greyed on base); a person off all seven days stays greyed.
+- **Capacity:** seven cards; SUN 4 reads `3 / 8`, 38%, 5 free, 2 out — the fixture's truth by Saturday's formula. Home's Crew Capacity is the rounded mean of seven percentages.
+- **Calendar:** week view Mon 28 … Sun 4, no column before Monday; after five Next presses the week of 11-02 reads `lte 2026-11-08` and draws the Sunday bar, which only passes with the fetch-range edit. Month view matches base.
+- **Daily, prints, texts, billing:** seven columns; prints end "Sun 10/04"; Midweek range "THU 10/1 – SUN 10/4 · today through Sunday" and the one-day Sunday case; Weekly send text matches base; billing header and forecast buckets read Monday – Sunday with rows and dollar figures equal to base.
+- **Dates:** fall-back week, year-end week and spring-forward week each show seven consecutive dates. With the clock in standard time, Monday links to daylight- and standard-time dates open the same week as base.
+- **Layout:** at 1440 and 1280, no sideways page scroll, no clipped header, count, `need N`, percent or TODAY tag; all seven day columns equal width; Sunday's header carries Saturday's classes. F4 did not trigger.
+
+### Pre-existing failures (not caused by this build, not fixed)
+
+Identical on base and build: `check-crew-first-deletion`, `check-crew-schedule-eligibility` (port 5199 held by another session's process); `check-crew-phone` (needs a dev server — passes with one); `check-crew-week-summary` (fails at the same `:115` assertion "2 / 4 assigned · needs 2 more" before and after; its week labels and day count were restated and it now runs as far as it did on base); `check-job-trips-model`, `check-job-trips`, `check-overlapping-crew-trips`, `check-required-trip-titles`, `check-sales-trips-send`, `check-send-schedule-dates`, `check-password-recovery` (assertion or timeout failures); `check-legacy-trip-conversion-preview`, `check-sales-trips-preview`, `check-trip-owned-crew-preview` (need `PREVIEW_URL`); `check-public-select-grants` (needs a linked Supabase project).
+
+So E5 is met only in this form: every existing check that passed on base still passes unedited. `check-overlapping-crew-trips.mjs` and `check-job-card-schedule.mjs`-class coverage of trip ownership rests on the model checks that pass plus B4/B7 here, because the overlapping-trips browser check was already failing on base.
 
 ### What this does not show
 
-- **No real account.** Every Supabase and edge request was answered by a fixture. Real Supabase behaviour (error text, timing, session rules) is assumed from `@supabase/auth-js` 2.99.0 source.
-- **No customer confirmation.** Nothing here shows the affected customer can now reset and sign in.
-- **No native app.** Web only.
-- **Unit-only:** account change before/during a save, and sign-out elsewhere.
-- **Read-only:** the "Remember me"-off startup branch with a failing sign-out.
-
-## Visual Verification
-
-Link-mode reset form and its error state viewed in Chrome on a local dev server (fake auth endpoint): linen background, card, inputs, teal button and red error banner unchanged; Email and Reset Code fields absent. The "Code verified." state was checked by DOM text in the browser script, not as a screenshot. No screenshot was taken on the preview.
+- **No signed-in user, no real records.** Fixtures only (repo `CLAUDE.md` Workflow Rule 10).
+- **No Vercel preview.** Nothing was pushed.
+- **W1 was not clicked through the Trips panel.** The check opens the exact URL `TripsPanel.jsx:100` builds (`?job=&week=<trip start>&trip=`); that file is unchanged.
+- **X2** asserts the seven column headers and that Sunday cells are filled; it compares Sunday's Scheduled Off label to Saturday's instead of pinning the string.
+- **L1** has one partly billed job (job R) in the browser fixture; the Saturday-vs-Sunday twin comparison is in the model check (M4).
+- **M4 detail worth a reviewer's eye:** the worklist's internal `arm` is `production` for the Saturday-dated twin and `null` for Sunday-dated job R, on base and build alike. That is the `billingForecast.js:272` window the plan leaves alone; row, status, label and amounts are equal, which is what the plan claims.
+- **Phone layouts, native Field, Time Clock:** not exercised beyond `check-time-clock.mjs` passing unedited.
+- **Production Sunday rows (U4):** not inspected.
 
 ## Brand check
 
-- Registry: `aios/assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md` (working copy, 2026-09-30)
-- Read: `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` §1, §4 "Semantic colors", §7 "Tone", §10 "Buttons" and "Inputs", §14, §15, §18 "AI coding-agent acceptance checklist"
-- Changed surfaces: reset form on the login card only — helper line (two new variants), Email and Reset Code fields hidden once a code is verified or a link is used, new error strings, the two text buttons disabled while a request is in flight
-- No new colors, type, radii, surfaces or components; existing inline styles reused
-- deviations: none against the sections read
-- Not performed: comparison with the canonical Crew Schedule image — nothing visual was added to compare. Visual Brand Guide not opened (no theme, surface, typography or imagery change).
+- Registry: `aios/assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md`.
+- Read: `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` §1, §10 "Tables / schedules" and "Crew panels", §14, §17 (steps 9–10), §18 "AI coding-agent acceptance checklist".
+- Changed surfaces: crew board (seventh column, pickers, pool dots, popup), capacity strip (seventh card), Daily (seventh column), Calendar week view (seventh column), labels.
+- The diff adds no color, font, radius, shadow or token. Sunday uses Saturday's classes. Monday–Saturday columns differ from base in width only.
+- §14: no text size changed; dense text stays at its existing sizes at 1280.
+- Screenshots at both widths: `evidence/sunday-parity/base/` and `…/after/`.
+- deviations: none against the sections read.
+- Not performed: match to the canonical Crew Schedule image for column count (it shows six; the seventh is the requested change); §17 step 10 mobile/tablet (owned by the mobile slice); Visual Brand Guide not opened (no theme, surface, typography or imagery change); no contrast measurement (no color changed).
 
-## Deviations From Handoff
+## Deviations From Plan
 
-None. Beyond the first diagnosis, and inside "recovery links must also work": the early hash strip and the "Remember me" startup sign-out.
+None in behavior. Two things a reviewer should know: the two preset functions were renamed (`…MonSat` → `…MonSun`), and the Calendar week fetch now starts on Monday instead of the Sunday before.
 
 ## Issues / Follow-up
 
-- **B125** — T6 hardening, three items, none exploitable today. Item 1 (tokenless `#type=recovery` opens the code-less form) was introduced by this change.
-- **B126** — T5 SHOULD-FIX: after "saved, sign-out failed, refresh" the user is not told the password was saved.
-- A refresh, or a second tab, during an unfinished reset ends the recovery session; a new code is needed.
-- While a sign-out keeps failing, Back and Request a new code stay blocked. Fail-closed by design.
-- An abandoned recovery-link tab (opened, nothing submitted) leaves a session a new tab would admit. Pre-existing; B125 item 3.
-- The browser script needs Playwright, which is not a repo dependency (same as the other `scripts/check-*.mjs`).
-- Bugbot was invoked on PR #73 by the coordinator (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940); result: **skipped, Bugbot is disabled for this repository** (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935477064, request id `serverGenReqId_8ffb0f08-00d0-4816-9809-cb0f49d17dba`). It reviewed nothing; this is not a clear or passed result. `session-wrap.mdc` requires one Bugbot pass before merging an app change, so merge is blocked until Chris enables Bugbot or explicitly waives or substitutes it. No settings change was authorized or made.
-- **Test-server cleanup caveat.** The build terminal stopped its local test servers with pattern kills (`pkill -f` on `vite --port 5197`, `vite --port 5198`, `vite preview --outDir`), not by PID. Existing office dev servers were seen running afterwards, but it cannot be shown that no other matching process was interrupted. Detail in handoff v298.
+- **Chris has not seen** the plan's expectation list or the pool-chip consequence (B15). He first sees them at the preview.
+- T2's three adjacent items (Select all replacing a saved out-of-range day; a status save overwriting Scheduled Off; the Prev/Next pulse reading the loaded week) behave for Sunday as they do for Saturday. Not changed, not filed by T3.
+- Optional weekends / Select-all reform: deferred by Chris, not designed.
+- Mobile slice integration (plan §3): not started; this build never touched the mobile worktree.
+- The 15 pre-existing check failures above are unowned by this slice.
