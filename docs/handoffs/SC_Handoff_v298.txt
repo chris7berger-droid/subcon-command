@@ -1,0 +1,86 @@
+SC Handoff v298 — Password recovery lifecycle fix (B124) — 2026-10-01
+
+SESSION SUMMARY
+Build terminal (T3), routed as an in-flow /fix for a failed customer password
+recovery. Built and committed on fix/recovery-save-stability from origin/main
+90f890d, in an isolated worktree. STOPPED AT THE BUILD GATE. Not pushed, not
+merged. Code Review, Security Review, Vercel preview and Chris's acceptance
+are all still open. Security Review is required: this touches auth/sessions.
+
+CAUSE
+verifyOtp({type:"recovery"}) saves a session and emits PASSWORD_RECOVERY
+before it returns. App.jsx applied that session (it looked "stale": no
+recovery hash). The logged-out branch unmounted with the Login that held the
+reset form. A rejected or slow updateUser then reported to a dead component:
+user inside the app on the recovery session, old password still in force, no
+error. Reproduced synthetically against origin/main. The real customer's
+exact outcome is NOT proven; no customer data, code or token was inspected.
+
+CHANGES
+src/lib/passwordRecovery.js (new, pure) — recovery hold, auth-event decision,
+  startup rule, reset flow bound to the verified auth user id.
+src/App.jsx — holds session-bearing auth events during a reset; never applies
+  a hashless PASSWORD_RECOVERY; on startup ends an unfinished recovery session
+  instead of admitting it; "Remember me"-off startup sign-out skips a tab
+  opened by a recovery link.
+src/pages/Login.jsx — one mounted form through verify -> save -> sign-out;
+  rejected save retries without re-verifying; sign-out result checked; link
+  mode (no code field); Back / Request a new code end the recovery session;
+  no longer strips a token-bearing URL hash before the auth client reads it.
+src/lib/passwordRecovery.test.mjs, scripts/check-password-recovery.mjs (new).
+No dependency, migration, edge function, mail or native change.
+
+DECISIONS
+- Hold the App's state rather than move/remount Login mid-submit.
+- Marker localStorage sc_recovery_user = verified user id while a reset is
+  unfinished. Never a code or password. A password sign-in clears it.
+- Refresh/return during an unfinished reset ENDS the recovery session (new
+  code needed) rather than resuming it. Smaller and safe.
+- Link recovery was broken on origin/main too (hash stripped before the
+  client read it). Fixed here because links were in scope.
+
+NEW/CLOSED BACKLOG ITEMS
+New: B124 (T1, In Progress). Nothing closed. B77 invite half unchanged.
+
+VERIFICATION
+node src/lib/passwordRecovery.test.mjs — 21 scenarios pass.
+scripts/check-password-recovery.mjs (real App/Login DOM, every Supabase/edge
+request intercepted, everything else blocked):
+  fix, dev server            6/6 pass
+  fix, production build      6/6 pass
+  origin/main 90f890d copy   5/6 FAIL (expected red)
+npm run build — pass.
+npx eslint . — 219 problems, identical to baseline; 1 pre-existing error in
+the changed files (App.jsx /terms redirect).
+Completion: code built yes; data applied n/a; authenticated access verified
+NO (synthetic only); Chris's acceptance not given.
+Details and the Brand check: docs/agent-handoffs/BUILD-REPORT.md.
+
+NOT TOUCHED
+Edge functions (reset-password, invite-user), email templates, Supabase auth
+settings, migrations, lib/auth.js, invite/WelcomeScreen flow, native apps,
+other worktrees and the original sales-command checkout. No live auth call,
+reset email, or customer write was made.
+
+NEXT SESSION POINTERS
+1. Independent Code Review, then Security Review, of origin/main..HEAD on
+   fix/recovery-save-stability. The builder does not review.
+2. Then push + Ready Vercel preview; rerun the browser script with
+   BASE_URL=<preview URL>; walk a real reset once.
+3. Residuals listed in BUILD-REPORT.md "Issues / Follow-up" — decide whether
+   any becomes its own row.
+4. docs/runbooks/rls-deploy-gates.md is still missing (pre-existing, BACKLOG
+   O4 -> handoff v83 lines 64-89). No RLS change in this slice.
+
+FILES TO KNOW
+src/lib/passwordRecovery.js
+src/lib/passwordRecovery.test.mjs
+scripts/check-password-recovery.mjs
+src/App.jsx (auth effect), src/pages/Login.jsx (handleReset, leaveReset)
+docs/agent-handoffs/BUILD-REPORT.md
+docs/BACKLOG.md (B124)
+
+GIT STATE
+Branch fix/recovery-save-stability, one commit on top of origin/main 90f890d.
+Not pushed. Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
+(node_modules installed there, untracked). Working tree clean after commit.

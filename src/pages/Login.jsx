@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { signIn } from '../lib/auth'
 import { supabase } from '../lib/supabase'
+import { createRecoveryFlow, endRecoveryHold, RECOVERY_MESSAGES, RECOVERY_USER_KEY } from '../lib/passwordRecovery'
 import { C as _C } from '../lib/tokens'
 import { getTenantConfig, DEFAULTS } from '../lib/config'
 import Checkbox from '../components/Checkbox'
@@ -21,6 +22,27 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [code, setCode] = useState("")
   const [remember, setRemember] = useState(() => localStorage.getItem("sc_remember") !== "false")
+  // Reset lifecycle for THIS mounted form: it remembers a verified code and a
+  // saved password so a retry never repeats a completed step.
+  const [recovery] = useState(() => createRecoveryFlow(supabase.auth, {
+    set: (userId) => localStorage.setItem(RECOVERY_USER_KEY, userId),
+    clear: () => localStorage.removeItem(RECOVERY_USER_KEY),
+  }))
+  const [viaLink, setViaLink] = useState(false)   // arrived by recovery link — session exists, no code
+  const [verified, setVerified] = useState(false) // typed code accepted (it is consumed)
+
+  useEffect(() => () => endRecoveryHold(), [])
+
+  // The verified stage is bound to one auth user: drop it if that session is
+  // signed out or replaced by another account (e.g. from another tab).
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (!recovery.observe(s)) return
+      setVerified(false)
+      setError(RECOVERY_MESSAGES.expired)
+    })
+    return () => subscription.unsubscribe()
+  }, [recovery])
 
   useEffect(() => {
     // One-time notice after a completed reset (survives the post-reset reload).
@@ -29,9 +51,14 @@ export default function Login() {
 
     const hash = window.location.hash || "";
     if (hash.includes("type=recovery") || sessionStorage.getItem("sc_recovery_mode")) {
-      sessionStorage.removeItem("sc_recovery_mode")
+      // The flag stays until the reset finishes or is left, so a refresh
+      // returns to this form instead of the app.
+      setViaLink(true)
       setMode("reset")
-      window.history.replaceState({}, "", window.location.pathname)
+      // Leave a token-bearing hash alone: the auth client reads it during its
+      // own async startup (and clears it). Stripping it here first meant the
+      // link's session was never established.
+      if (!hash.includes("access_token")) window.history.replaceState({}, "", window.location.pathname)
     } else if (localStorage.getItem("sc_reset_pending") === "1") {
       // Resume an in-progress reset. The user MUST leave to fetch the emailed
       // code (and the email can take a minute), so the code-entry screen has to
@@ -49,6 +76,8 @@ export default function Login() {
     setLoading(true)
     try {
       localStorage.setItem("sc_remember", remember ? "true" : "false")
+      // A password sign-in is a real login, never an unfinished reset.
+      localStorage.removeItem(RECOVERY_USER_KEY)
       localStorage.setItem("sc_last_email", email.trim())
       await signIn(email.trim(), password)
       if (!remember) {
@@ -106,34 +135,50 @@ export default function Login() {
       return
     }
     setLoading(true)
-    try {
-      // Verify the typed 6-digit code — this establishes a recovery session,
-      // then updateUser sets the new password against it.
-      const { error: vErr } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: code.trim(),
-        type: "recovery",
-      })
-      if (vErr) throw new Error(vErr.message === "Token has expired or is invalid"
-        ? "That code is invalid or expired. Request a new one."
-        : vErr.message)
-      const { error } = await supabase.auth.updateUser({ password: newPassword })
-      if (error) throw error
-      // Reset complete — clear the persisted resume state, remember the email
-      // for the sign-in prefill, and stash a one-time notice for the next load.
+    // Verify the typed code once (skipped for a recovery link or a retry), save
+    // the new password, then sign the recovery session out so the user logs in
+    // fresh. App holds this form in place for the whole sequence.
+    const res = await recovery.submit({ viaLink, email: email.trim(), code: code.trim(), password: newPassword })
+    if (!res.ok && res.reason === "busy") return
+    if (res.ok || res.saved) {
       localStorage.removeItem("sc_reset_pending")
       localStorage.removeItem("sc_reset_email")
-      localStorage.setItem("sc_last_email", email.trim())
-      sessionStorage.setItem("sc_login_notice", "Password updated. Please sign in with your new password.")
-      // Sign the recovery session out so the user must log in fresh with the new
-      // password, instead of being dropped straight into the app. The full reload
-      // to /login clears the recovery session/hash and lands on sign-in.
-      await supabase.auth.signOut()
-      window.location.replace("/login")
-    } catch (err) {
-      setError(err.message || "Failed to update password.")
-      setLoading(false)
     }
+    if (!res.ok) {
+      setVerified(res.verified)
+      setError(res.message)
+      setLoading(false)
+      return
+    }
+    sessionStorage.removeItem("sc_recovery_mode")
+    // Reset complete — remember the email for the sign-in prefill and stash a
+    // one-time notice; the full reload to /login lands on sign-in.
+    localStorage.setItem("sc_last_email", res.email || email.trim())
+    sessionStorage.setItem("sc_login_notice", "Password updated. Please sign in with your new password.")
+    window.location.replace("/login")
+  }
+
+  // "Request a new code" / "Back to sign in". A verified code or a recovery
+  // link leaves a live recovery session — end it before leaving the form.
+  async function leaveReset(nextMode) {
+    setError(null)
+    setLoading(true)
+    const res = await recovery.cancel({ viaLink })
+    if (!res.ok && res.reason === "busy") return
+    setLoading(false)
+    if (!res.ok) { setError(res.message); return }
+    sessionStorage.removeItem("sc_recovery_mode")
+    if (nextMode === "login") {
+      localStorage.removeItem("sc_reset_pending")
+      localStorage.removeItem("sc_reset_email")
+      // A recovery link pins App to this form until reload.
+      if (viaLink) { window.location.replace("/login"); return }
+    }
+    setViaLink(false)
+    setVerified(false)
+    setMessage(null)
+    setCode("")
+    setMode(nextMode)
   }
 
   const inputStyle = {
@@ -222,15 +267,19 @@ export default function Login() {
 
         {mode === "reset" && (
           <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ fontSize: 13, color: C.textFaint, marginBottom: 4 }}>Enter the 6-digit code we emailed you and your new password.</div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Reset Code</div>
-              <input type="text" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))} style={{ ...inputStyle, letterSpacing: "0.3em", fontFamily: "monospace" }} placeholder="Enter code" required />
-            </div>
+            <div style={{ fontSize: 13, color: C.textFaint, marginBottom: 4 }}>{viaLink ? "Enter your new password." : verified ? "Code verified. Enter your new password." : "Enter the 6-digit code we emailed you and your new password."}</div>
+            {!viaLink && !verified && (
+              <>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Reset Code</div>
+                  <input type="text" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))} style={{ ...inputStyle, letterSpacing: "0.3em", fontFamily: "monospace" }} placeholder="Enter code" required />
+                </div>
+              </>
+            )}
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>New Password</div>
               <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={inputStyle} required minLength={6} />
@@ -241,10 +290,10 @@ export default function Login() {
             </div>
             <button type="submit" disabled={loading} style={btnStyle}>{loading ? "Updating..." : "Set New Password"}</button>
             <div style={{ textAlign: "center", marginTop: 4, display: "flex", flexDirection: "column", gap: 10 }}>
-              <button type="button" onClick={() => { setMode("forgot"); setError(null); setMessage(null); setCode(""); }} style={{ background: "none", border: "none", color: C.tealDark, fontSize: 13, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
+              <button type="button" disabled={loading} onClick={() => leaveReset("forgot")} style={{ background: "none", border: "none", color: C.tealDark, fontSize: 13, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
                 Request a new code
               </button>
-              <button type="button" onClick={() => { localStorage.removeItem("sc_reset_pending"); localStorage.removeItem("sc_reset_email"); setMode("login"); setError(null); setMessage(null); setCode(""); }} style={{ background: "none", border: "none", color: C.textFaint, fontSize: 13, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
+              <button type="button" disabled={loading} onClick={() => leaveReset("login")} style={{ background: "none", border: "none", color: C.textFaint, fontSize: 13, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
                 Back to sign in
               </button>
             </div>
