@@ -264,3 +264,15 @@ Nothing was executed: this is a source-only review of the patch plus the current
 - The actual incident cause remains unproven; this does not certify the customer's password is fixed.
 - I did not read the T3 or T5 transcripts, or `t5-first-review.txt`.
 - The known residual (refresh after saved-plus-sign-out-failure loses the saved-status message) is acknowledged as filed and not re-raised.
+
+
+### Chris acceptance — B124 / PR #73 — 2026-10-01
+
+- Role: release coordinator; original approval verified directly with the supported `mcp__codex_app__read_thread` tool.
+- Artifact: PR #73 candidate `48ab14392be71f25713c0e641a642221c01c523e`; application source reviewed at `e508736`, eight-scenario preview tested at `3031f0c`.
+- Verdict: release approved; production verification pending.
+- Source: parent thread `01a0f447-ce26-721f-a345-7097d9bbc012`, approval turn `01a0f848-cf4f-7282-b911-88650521039b`, original user message `01a0f848-d104-74a5-ac25-d64993bf54d8`, 2026-10-01 16:25 UTC. The preceding delivered question is in turn `01a0f83d-67a5-7782-9273-6d0979fb3130`.
+- Question: “One release decision: Bugbot is disabled for this repository, so it skipped the review. The independent AIOS code and security reviews both passed. Do you approve using those reviews instead and releasing the tested password-reset fix? That replaces my previous approval question.”
+- Acceptance, Chris: “The reset fix is approved. I want to know how, why, and when it happened because I've had this issue in the past and we fixed it.”
+- Scope: one-time substitution of the completed independent AIOS T5/T6 reviews for disabled Bugbot on PR #73 only; no permanent waiver or settings change. No account/password/mail/backend changes. Historical investigation is separate from this release.
+- Provenance: T3 could not authenticate a forwarded export within its permission review and made no acceptance changes. The coordinator independently read the original conversation through the supported thread tool and records this entry. Public PR record: https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935784359 .

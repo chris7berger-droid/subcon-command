@@ -1,3 +1,5 @@
+RELEASE STATUS UPDATE — 2026-10-01: Chris accepted the tested PR #73 fix and approved release, substituting the completed AIOS T5/T6 reviews for disabled Bugbot for this PR only. Original approval verified directly by the coordinator; exact evidence is in docs/AUDIT_LOG.md. Merge and production verification are the remaining execution steps. Earlier blocked/pending-acceptance statements below are superseded by this update. Final deployment evidence will be recorded on PR #73. No live customer password or native login has been verified.
+
 ## Status
 
 **B124 — password-recovery lifecycle fix. Code, tests, both reviews and the Vercel preview are complete. Not merged. Not in production.**
