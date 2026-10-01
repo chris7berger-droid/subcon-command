@@ -62,11 +62,28 @@ settings, migrations, lib/auth.js, invite/WelcomeScreen flow, native apps,
 other worktrees and the original sales-command checkout. No live auth call,
 reset email, or customer write was made.
 
+ROUND 2 — T5 FINDING 1 FIXED (same day)
+T5 (session 5b538650) returned 1 BLOCKS-SHIP, recorded in docs/AUDIT_LOG.md
+"Gate records" (commit bf13720). The recovery marker was cleared on paths
+that left the recovery session alive: refresh -> failed startup sign-out ->
+Back / Request a new code, and a failed password sign-in. Fixed: the marker
+is cleared only after a confirmed sign-out or a successful password sign-in;
+a fresh form recognises a still-live marked session when leaving.
+Evidence (production builds, synthetic): browser script 8/8 on the fix, 6/8
+on 36ce1c0 (the two new scenarios fail there); unit 24/24.
+T5 finding 2 (SHOULD-FIX, saved-status messaging after refresh) is NOT fixed;
+it is a residual on B124.
+Draft PR #73 and the Ready preview at 36ce1c0 are the round-1 build:
+SUPERSEDED, not final. The round-2 commit is not pushed.
+
 NEXT SESSION POINTERS
-1. Independent Code Review, then Security Review, of origin/main..HEAD on
-   fix/recovery-save-stability. The builder does not review.
-2. Then push + Ready Vercel preview; rerun the browser script with
-   BASE_URL=<preview URL>; walk a real reset once.
+1. Independent T5 re-review of the complete diff, then Security Review. The
+   builder does not review.
+2. Then push + a Ready Vercel preview of the reviewed commit; rerun the
+   browser script with BASE_URL=<preview URL>. That step uses SYNTHETIC
+   fixtures only (every auth request intercepted). A real customer password
+   save and login is Jacob's action after a separately approved release; it
+   is not a QA step here. No live auth has been verified.
 3. Residuals listed in BUILD-REPORT.md "Issues / Follow-up" — decide whether
    any becomes its own row.
 4. docs/runbooks/rls-deploy-gates.md is still missing (pre-existing, BACKLOG
@@ -81,6 +98,7 @@ docs/agent-handoffs/BUILD-REPORT.md
 docs/BACKLOG.md (B124)
 
 GIT STATE
-Branch fix/recovery-save-stability, one commit on top of origin/main 90f890d.
-Not pushed. Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
+Branch fix/recovery-save-stability on origin/main 90f890d: 36ce1c0 (build,
+pushed, PR #73 draft), bf13720 (T5 gate record), then the round-2 fix commit.
+bf13720 and the fix commit are not pushed. Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
 (node_modules installed there, untracked). Working tree clean after commit.

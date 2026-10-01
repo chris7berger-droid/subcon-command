@@ -4,7 +4,7 @@ import PublicSigningPage from "./pages/PublicSigningPage";
 import { C, F, GLOBAL_CSS } from "./lib/tokens";
 import { supabase } from "./lib/supabase";
 import { getSession, onAuthStateChange, getCurrentTeamMember } from "./lib/auth";
-import { authEventAction, forgetSessionOnOpen, isRecoveryHoldActive, isUnfinishedRecovery, RECOVERY_USER_KEY } from "./lib/passwordRecovery";
+import { authEventAction, forgetSessionOnOpen, isRecoveryHoldActive, isUnfinishedRecovery, onPasswordLogin, RECOVERY_USER_KEY } from "./lib/passwordRecovery";
 import Login from "./pages/Login";
 import SubConCommandPage from "./pages/SubConCommandPage";
 import FeatureDetailPage from "./pages/FeatureDetailPage";
@@ -231,7 +231,13 @@ function SalesCommandApp() {
       });
     }
 
-    return () => sub.unsubscribe();
+    // A confirmed password sign-in whose SIGNED_IN was held by the recovery marker.
+    const offPasswordLogin = onPasswordLogin(async (s) => {
+      setSession(s);
+      setTeamMember(await getCurrentTeamMember());
+    });
+
+    return () => { sub.unsubscribe(); offPasswordLogin(); };
   }, [isRecovery]);
 
   // Password recovery takes precedence over everything: the link establishes a

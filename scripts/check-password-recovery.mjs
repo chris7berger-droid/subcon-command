@@ -30,12 +30,14 @@ const MSG = {
   rejected: 'New password should be different from the old password.',
   badCode: 'That code is invalid or expired. Request a new one.',
   signout: 'Password updated, but sign-out did not finish. Try again.',
+  cancel: 'Could not end the reset session. Try again.',
+  badLogin: 'Invalid login credentials',
   done: 'Password updated. Please sign in with your new password.',
 }
 
 // One isolated browser context per scenario. `plan` scripts the auth server:
-// verify: 'ok' | 'bad' · saves / logouts: one entry per call ('ok' | 'reject' | 'hold' | 'fail').
-async function open({ verify = 'ok', saves = [], logouts = [], seed = {}, path = '/login' } = {}) {
+// verify: 'ok' | 'bad' · saves / logouts / passwords: one entry per call ('ok' | 'reject' | 'hold' | 'fail' | 'bad').
+async function open({ verify = 'ok', saves = [], logouts = [], passwords = [], seed = {}, path = '/login' } = {}) {
   const calls = { verify: 0, save: 0, logout: 0, password: 0, blocked: [] }
   let releaseSave = null
   const context = await browser.newContext()
@@ -70,8 +72,9 @@ async function open({ verify = 'ok', saves = [], logouts = [], seed = {}, path =
       return (logouts.shift() ?? 'ok') === 'ok' ? route.fulfill({ status: 204, headers: cors }) : json(500, { code: 500, msg: 'fixture failure' })
     }
     if (url.pathname.endsWith('/auth/v1/token')) {
-      if (url.searchParams.get('grant_type') === 'password') calls.password += 1
-      return json(200, session)
+      if (url.searchParams.get('grant_type') !== 'password') return json(200, session)
+      calls.password += 1
+      return (passwords.shift() ?? 'ok') === 'ok' ? json(200, session) : json(400, { code: 400, error_code: 'invalid_credentials', msg: MSG.badLogin })
     }
     if (url.pathname.endsWith('/rest/v1/team_members') && (req.headers().accept || '').includes('vnd.pgrst.object')) return json(200, member)
     return json(200, [])
@@ -193,6 +196,67 @@ await run('typed code: refresh after a verified code does not admit the app', as
   await s.page.reload()
   await resetForm(s)
   assert.deepEqual([s.calls.logout, await s.inApp(), await s.marker()], [1, false, null], 'recovery session ended on return')
+  return s
+})
+
+// T5 finding 1 — the marker must outlive every path that leaves the recovery session alive.
+const returnToTab = page => page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))) // auth-js re-emits SIGNED_IN
+
+await run('refresh, sign-out fails, Back / Request a new code: recovery session never admitted', async () => {
+  const s = await open({ seed: pending, saves: ['reject'], logouts: ['fail', 'fail', 'fail', 'ok'] })
+  await resetForm(s)
+  await s.fill({ code: '000000', password: 'fixture-old-value' })
+  await s.submit()
+  await s.see(MSG.rejected)
+  await s.page.reload() // startup sign-out fails
+  await resetForm(s)
+  assert.deepEqual([s.calls.logout, await s.marker(), await s.inApp()], [1, user.id, false], 'marker kept after the failed startup sign-out')
+  await s.page.click('button:has-text("Back to sign in")')
+  await s.see(MSG.cancel)
+  assert.deepEqual([s.calls.logout, await s.marker()], [2, user.id], 'Back tried to end the session; marker kept on failure')
+  await s.page.click('button:has-text("Request a new code")')
+  await s.page.waitForFunction(() => !document.querySelector('button[type="submit"]').disabled)
+  assert.deepEqual([s.calls.logout, await s.marker()], [3, user.id], 'Request a new code: same')
+  await resetForm(s)
+  await returnToTab(s.page)
+  await s.page.waitForTimeout(1500)
+  assert.equal(await s.inApp(), false, 'returning to the tab does not admit the recovery session')
+  await s.page.reload() // startup sign-out now succeeds
+  await resetForm(s)
+  assert.deepEqual([s.calls.logout, await s.marker(), await s.inApp()], [4, null, false], 'marker cleared only after a confirmed sign-out')
+  return s
+})
+
+await run('second tab: failed password sign-in keeps the marker; a correct one is admitted', async () => {
+  const s = await open({ saves: ['reject'], passwords: ['bad', 'ok'] })
+  const signInForm = page => page.waitForSelector('button[type="submit"]:has-text("Sign In")', { timeout: 15000 })
+  await signInForm(s.page)
+  const tab2 = await s.context.newPage()
+  await tab2.goto(base + '/login')
+  await signInForm(tab2)
+  // Tab 1: request a code, verify it, have the save rejected.
+  await s.page.click('button:has-text("Forgot password?")')
+  await s.page.fill('input[type="email"]', EMAIL)
+  await s.submit()
+  await resetForm(s)
+  await s.fill({ code: '000000', password: 'fixture-old-value' })
+  await s.submit()
+  await s.see(MSG.rejected)
+  const tab2State = () => tab2.evaluate(() => [localStorage.getItem('sc_recovery_user'), Boolean(document.querySelector('[data-app-shell]'))])
+  // Tab 2: wrong password.
+  await tab2.fill('input[type="email"]', EMAIL)
+  await tab2.fill('input[type="password"]', 'fixture-wrong-value')
+  await tab2.click('button[type="submit"]')
+  await tab2.waitForFunction(n => document.body.innerText.includes(n), MSG.badLogin)
+  assert.deepEqual(await tab2State(), [user.id, false], 'failed sign-in leaves the recovery session marked')
+  await returnToTab(tab2)
+  await tab2.waitForTimeout(1500)
+  assert.deepEqual(await tab2State(), [user.id, false], 'and it is still not admitted')
+  // Tab 2: correct password.
+  await tab2.fill('input[type="password"]', 'fixture-new-value')
+  await tab2.click('button[type="submit"]')
+  await tab2.waitForSelector('[data-app-shell]', { timeout: 15000 })
+  assert.deepEqual([(await tab2State())[0], s.calls.password], [null, 2], 'a successful password sign-in clears the marker and is admitted')
   return s
 })
 

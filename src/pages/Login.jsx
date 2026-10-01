@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { signIn } from '../lib/auth'
 import { supabase } from '../lib/supabase'
-import { createRecoveryFlow, endRecoveryHold, RECOVERY_MESSAGES, RECOVERY_USER_KEY } from '../lib/passwordRecovery'
+import { announcePasswordLogin, createRecoveryFlow, endRecoveryHold, RECOVERY_MESSAGES, RECOVERY_USER_KEY } from '../lib/passwordRecovery'
 import { C as _C } from '../lib/tokens'
 import { getTenantConfig, DEFAULTS } from '../lib/config'
 import Checkbox from '../components/Checkbox'
@@ -25,6 +25,7 @@ export default function Login() {
   // Reset lifecycle for THIS mounted form: it remembers a verified code and a
   // saved password so a retry never repeats a completed step.
   const [recovery] = useState(() => createRecoveryFlow(supabase.auth, {
+    get: () => localStorage.getItem(RECOVERY_USER_KEY),
     set: (userId) => localStorage.setItem(RECOVERY_USER_KEY, userId),
     clear: () => localStorage.removeItem(RECOVERY_USER_KEY),
   }))
@@ -76,10 +77,14 @@ export default function Login() {
     setLoading(true)
     try {
       localStorage.setItem("sc_remember", remember ? "true" : "false")
-      // A password sign-in is a real login, never an unfinished reset.
-      localStorage.removeItem(RECOVERY_USER_KEY)
       localStorage.setItem("sc_last_email", email.trim())
-      await signIn(email.trim(), password)
+      const session = await signIn(email.trim(), password)
+      // Only a password sign-in that SUCCEEDED ends an unfinished reset. App
+      // held its SIGNED_IN while the marker was set, so hand it the session.
+      if (localStorage.getItem(RECOVERY_USER_KEY)) {
+        localStorage.removeItem(RECOVERY_USER_KEY)
+        announcePasswordLogin(session)
+      }
       if (!remember) {
         // Mark session as "forget on close" — App.jsx will clear on tab close
         sessionStorage.setItem("sc_session_only", "true")

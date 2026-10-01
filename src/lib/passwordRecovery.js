@@ -43,6 +43,18 @@ export function isUnfinishedRecovery(session, recoveryUserId) {
   return Boolean(recoveryUserId) && session?.user?.id === recoveryUserId
 }
 
+// A password sign-in for the marked user is the one session-bearing event that
+// must be admitted. The marker is still set while signInWithPassword emits
+// SIGNED_IN (it is only cleared once the sign-in has succeeded), so App holds
+// that event; Login announces the confirmed login here instead.
+let passwordLoginListener = null
+
+export function onPasswordLogin(listener) {
+  passwordLoginListener = listener
+  return () => { if (passwordLoginListener === listener) passwordLoginListener = null }
+}
+export function announcePasswordLogin(session) { passwordLoginListener?.(session) }
+
 // "Remember me" unchecked → sign out when a fresh tab opens. Never for a tab a
 // recovery link opened: that would end the very session the new password has
 // to be saved against.
@@ -74,7 +86,7 @@ async function attempt(call) {
   }
 }
 
-export function createRecoveryFlow(auth, marker = { set() {}, clear() {} }) {
+export function createRecoveryFlow(auth, marker = { get() { return null }, set() {}, clear() {} }) {
   let busy = false
   let verified = false
   let saved = false
@@ -104,12 +116,12 @@ export function createRecoveryFlow(auth, marker = { set() {}, clear() {} }) {
 
   // "same" — still the verified user's session; "gone" — signed out;
   // "other" — a different account; "unknown" — the session can't be read.
-  async function sessionState() {
+  async function sessionState(ownerId = verifiedUserId) {
     const { data, error } = await attempt(() => auth.getSession())
     if (error) return "unknown"
     const session = data?.session
     if (!session) return "gone"
-    return session.user?.id === verifiedUserId ? "same" : "other"
+    return session.user?.id === ownerId ? "same" : "other"
   }
   const lost = (state) => state === "gone" || state === "other"
 
@@ -171,7 +183,12 @@ export function createRecoveryFlow(auth, marker = { set() {}, clear() {} }) {
     if (busy) return { ok: false, reason: "busy" }
     busy = true
     try {
-      if (verified ? !lost(await sessionState()) : viaLink) {
+      // A form mounted after a refresh has no verified stage of its own, but
+      // the marker may still name a live recovery session (startup could not
+      // sign it out). The marker is only cleared once that session is gone.
+      const ownerId = verifiedUserId ?? marker.get()
+      const live = (!verified && viaLink) || (Boolean(ownerId) && !lost(await sessionState(ownerId)))
+      if (live) {
         const { error } = await attempt(() => auth.signOut())
         if (error) return fail("signout", RECOVERY_MESSAGES.cancel)
       }

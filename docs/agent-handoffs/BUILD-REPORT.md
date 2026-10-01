@@ -2,9 +2,11 @@
 
 **B124 — password-recovery lifecycle fix: built, stopped at the build gate. Do not merge.**
 
-Not done: Code Review, Security Review, Vercel preview, Chris's acceptance. Not pushed.
+Round 2 (fixes for T5): the one BLOCKS-SHIP finding is fixed and committed. Not done: T5 re-review, Security Review, a preview of this commit, Chris's acceptance. The round-2 commit is not pushed.
 
-- Role: T3 Build · mode: build (initial, `/fix` path) · agent/session `recovery-t3` / `bb07d938-e6cb-4b33-bb24-b7110693ccf1`
+Draft PR #73 and the Ready preview at `36ce1c0` are the round-1 build and are **superseded**, not final.
+
+- Role: T3 Build · mode: build (initial, then fixes for T5, `/fix` path) · agent/session `recovery-t3` / `bb07d938-e6cb-4b33-bb24-b7110693ccf1`
 - Branch: `fix/recovery-save-stability`, based on `origin/main` `90f890d`
 - Path: in-flow bug fix (`/fix`), no plan document; scope from the T7 routing packet of 2026-10-01
 
@@ -45,7 +47,32 @@ No dependency, migration, edge-function, mail, or native change.
 - **Back to sign in from a link reloads `/login`.** `App` pins a link-opened tab to the reset form until reload; without the reload a normal sign-in afterwards would stay stuck on the login card.
 - **`auth.js` unchanged.** Its listener invokes the App callback without returning its promise; nothing here depends on that.
 
+## Round 2 — fix for T5 finding 1 (BLOCKS-SHIP)
+
+Gate record: `docs/AUDIT_LOG.md` § Gate records, commit `bf13720`. Only finding 1 was routed.
+
+**Reproduction (on `36ce1c0`).** Verify a code, have the save rejected, refresh. Startup tries to sign the recovery session out and fails, so the marker stays. The form is new and has no verified stage. "Back to sign in" or "Request a new code" then skipped the sign-out and cleared the marker, leaving a live, unmarked recovery session: the next reload, or the tab regaining focus, admitted the app with no password saved. Separately, the sign-in form cleared the marker *before* the sign-in resolved, so a wrong password in a second tab unmarked the session the same way.
+
+**Fix.**
+- `passwordRecovery.js` `cancel()`: a form with no verified stage reads the marker. If the session for that user is still live, it must be signed out first; a failed sign-out blocks leaving and keeps the marker. The marker is cleared only once that session is gone. A different account's session is never signed out.
+- `Login.jsx` sign-in: the marker is cleared only after the password sign-in succeeds.
+- `App.jsx`: because the marker is now still set while that sign-in emits `SIGNED_IN`, App holds the event; Login hands the confirmed session to App through `announcePasswordLogin` / `onPasswordLogin`.
+
+**Evidence.** Production builds, synthetic auth:
+
+| Run | Result |
+|---|---|
+| `scripts/check-password-recovery.mjs` on this commit | 8/8 pass |
+| Same script on `36ce1c0` | 6/8 — the two new scenarios fail, as expected |
+| `node src/lib/passwordRecovery.test.mjs` | 24/24 pass (3 new) |
+
+New browser scenarios: (7) refresh with a failing sign-out → Back and Request a new code both blocked with the marker kept, tab-return does not admit, marker cleared only after a sign-out succeeds; (8) second tab, wrong password keeps the marker and is not admitted, correct password clears it and is admitted.
+
+**Not fixed, by routing.** T5 finding 2 (SHOULD-FIX): after "saved, sign-out failed, refresh" the user is not told the password was saved. Logged as a residual on B124.
+
 ## Verification Performed
+
+Round-1 table below; scenario counts are now 24 unit and 8 browser (see Round 2), build passes and full lint is unchanged at 219.
 
 Run from the worktree. All auth traffic synthetic; fake credentials only.
 
@@ -101,4 +128,6 @@ None. Two items beyond the first diagnosis, both inside "recovery links must als
 - **Abandoned link tab.** If a recovery link is opened and the tab is closed before anything is submitted, the link's session stays in storage with no marker; a new tab would admit it. Pre-existing. Reset emails send codes, not links.
 - **Stale reset form after "Remember me"-off startup.** Returns to the code screen with a consumed code; the user must request a new one. Pre-existing shape.
 - The browser script needs Playwright, which is not a repo dependency (same as the other `scripts/check-*.mjs`).
-- Not run: Bugbot, `/code-review`, `/security-review`. This change touches auth and sessions, so Security Review cannot be skipped.
+- **Saved-but-not-signed-out, then refresh (T5 SHOULD-FIX).** The user is not told the password was saved: the link form re-asks and rejects the same password; the typed path lands on a bare sign-in form. Recoverable; nothing is wrongly admitted.
+- A failed sign-out blocks Back and Request a new code until it succeeds. Fail-closed by design.
+- Not run by T3: Bugbot, `/security-review`. This change touches auth and sessions, so Security Review cannot be skipped.

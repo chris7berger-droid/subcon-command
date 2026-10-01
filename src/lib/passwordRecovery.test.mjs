@@ -300,7 +300,7 @@ await run("recovery link: back signs the link session out", async () => {
 
 // ── Identity binding, marker, refresh/return ────────────────────────────────
 function fakeMarker() {
-  const m = { value: null, set: (id) => { m.value = id; }, clear: () => { m.value = null; } };
+  const m = { value: null, get: () => m.value, set: (id) => { m.value = id; }, clear: () => { m.value = null; } };
   return m;
 }
 const OTHER = { access_token: "fake-other-token", user: { id: "fake-other-user", email: "other@example.test" } };
@@ -359,6 +359,46 @@ await run("identity: back after an account change leaves the other account alone
   await submitTyped(flow);
   auth.setSession(OTHER);
   assert((await flow.cancel()).ok && auth.calls.signOut === 0, "cancel does not sign out a different account");
+});
+
+// T5 finding 1: refresh → startup sign-out fails → Back / Request a new code.
+// The form is new (no verified stage), the recovery session is still live and
+// still marked; leaving must not clear the marker while that session exists.
+await run("refresh then failed sign-out: a fresh form keeps the marker until the session is gone", async () => {
+  const auth = fakeAuth({ updateUser: ["Password should be at least 6 characters."], signOut: ["fail", "fail"] });
+  const marker = fakeMarker();
+  await submitTyped(createRecoveryFlow(auth, marker));
+  endRecoveryHold(); // the refresh: module state and the old flow are gone
+  const app = mountApp(auth, (event, s, ctx) => authEventAction(event, s, { ...ctx, recoveryUserId: marker.value }));
+  const fresh = createRecoveryFlow(auth, marker);
+  const back = await fresh.cancel();
+  assert(!back.ok && back.message === RECOVERY_MESSAGES.cancel, "Back is blocked while the session cannot be ended");
+  assert(marker.value === "fake-user", "marker kept after a failed sign-out");
+  const newCode = await fresh.cancel();
+  assert(!newCode.ok && marker.value === "fake-user", "Request a new code is blocked the same way");
+  auth.emit("SIGNED_IN", auth.session()); // auth-js re-emits this when the tab becomes visible
+  auth.emit("TOKEN_REFRESHED", auth.session());
+  assert(app.session === null, "the still-marked recovery session is not admitted");
+  const done = await fresh.cancel();
+  assert(done.ok && auth.session() === null && marker.value === null, "marker cleared only after a confirmed sign-out");
+  assert(auth.calls.signOut === 3, "each attempt really tried to sign out");
+});
+
+await run("refresh: a fresh form with a marker but no session just clears the marker", async () => {
+  const auth = fakeAuth();
+  const marker = fakeMarker();
+  marker.set("fake-user");
+  assert((await createRecoveryFlow(auth, marker).cancel()).ok, "nothing to end");
+  assert(auth.calls.signOut === 0 && marker.value === null, "no sign-out call; marker cleared");
+});
+
+await run("refresh: a fresh form never signs out a different account", async () => {
+  const auth = fakeAuth();
+  const marker = fakeMarker();
+  marker.set("fake-user");
+  auth.setSession(OTHER);
+  assert((await createRecoveryFlow(auth, marker).cancel()).ok && auth.calls.signOut === 0, "other account untouched");
+  assert(auth.session() === OTHER, "still signed in");
 });
 
 await run("refresh/return: a persisted recovery session is not a login", async () => {
