@@ -199,3 +199,27 @@ Acceptance: standing (§9). Ordinary NO-GO verdict; routed back to T3. No scope 
 ```
 
 Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. Reviewer's full findings (1–7), check table and disclosures: `t4-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo). Blocking: finding 1 (B1 fails as written) and finding 2 (acceptance checks missing from `scripts/check-mobile-preview.mjs`).
+
+### Mobile web preview — T4 Build vs Plan, round 2 (delta recheck)
+
+```text
+    Role:        T4 Build vs Plan (round 2, delta recheck) · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..db14d25 (app source cc4d733)
+    Checks:      finding 2 closed · finding 7 closed · B1 failed as written, judged immaterial, coordinator disposition on record · gaps as listed
+    Brand check: unchanged from round 1; not rechecked
+    Verdict:     GO — with B1 carried as an unwaived test failure
+    Date:        2026-09-30
+    Next:        T7 → T5, T6 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary GO verdict. B1 is not waived by this record: the reviewer carries it as an unwaived test failure, and no acceptance by Chris is claimed.
+```
+
+Reviewer's B1 exception, verbatim:
+
+```text
+- **Literal result:** failed, and not waived by the script. Eleven of 13 screens are exact. Call Log differs by 16 px (max channel 1) and Time Clock by 1 px (max channel 10), against a base repeat of 0 on both.
+- **My judgment: immaterial.** Two same-source captures of this build differ from each other by 64,766 px and 40,991 px on the home screens, per the same results file. The capture's noise is therefore far larger than the build-versus-base difference. Time Clock sits under `src/field`, which has zero diff, and `metadata.txt` lists scripts and docs only in this commit.
+- **Desktop behaviour is preserved in source:** no rule applies at ≥769px, and the markup changes are attributes and class names.
+- **Disposition on record:** the coordinator accepted it as a raster-only technical deviation; the failure stays in `results.json`. No acceptance by Chris is claimed.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. App source unchanged at `cc4d733`; reviewed build `db14d25`. Reviewer's full recheck, including its evidence gaps: `t4-verdict-round2.txt` in the coordinator's review packet for this slice (kept outside the repo).
