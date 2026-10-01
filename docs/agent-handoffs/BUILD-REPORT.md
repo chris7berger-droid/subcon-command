@@ -2,7 +2,7 @@
 
 **B124 — password-recovery lifecycle fix. Code, tests, both reviews and the Vercel preview are complete. Not merged. Not in production.**
 
-Pending, in order: Bugbot result (invoked, pending) · Chris's acceptance · explicit merge / production approval.
+**Blocked on Bugbot: it was invoked and skipped — disabled for this repository. No automated review ran.** Pending, in order: Chris's decision on Bugbot (enable it, or explicitly waive it / accept the completed T5 + T6 reviews as the substitute) · Chris's acceptance · explicit merge / production approval.
 
 | | |
 |---|---|
@@ -136,5 +136,5 @@ None. Beyond the first diagnosis, and inside "recovery links must also work": th
 - While a sign-out keeps failing, Back and Request a new code stay blocked. Fail-closed by design.
 - An abandoned recovery-link tab (opened, nothing submitted) leaves a session a new tab would admit. Pre-existing; B125 item 3.
 - The browser script needs Playwright, which is not a repo dependency (same as the other `scripts/check-*.mjs`).
-- Bugbot was invoked on PR #73 by the coordinator (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940); its result was pending when this was written.
+- Bugbot was invoked on PR #73 by the coordinator (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940); result: **skipped, Bugbot is disabled for this repository** (https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935477064, request id `serverGenReqId_8ffb0f08-00d0-4816-9809-cb0f49d17dba`). It reviewed nothing; this is not a clear or passed result. `session-wrap.mdc` requires one Bugbot pass before merging an app change, so merge is blocked until Chris enables Bugbot or explicitly waives or substitutes it. No settings change was authorized or made.
 - **Test-server cleanup caveat.** The build terminal stopped its local test servers with pattern kills (`pkill -f` on `vite --port 5197`, `vite --port 5198`, `vite preview --outDir`), not by PID. Existing office dev servers were seen running afterwards, but it cannot be shown that no other matching process was interrupted. Detail in handoff v298.

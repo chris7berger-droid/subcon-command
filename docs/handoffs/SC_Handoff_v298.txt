@@ -4,8 +4,9 @@ SESSION SUMMARY
 In-flow /fix for a failed customer password recovery, run through the AIOS
 dev roles. Code, tests, Code Review (2 rounds), Security Review and the
 Vercel preview are COMPLETE on fix/recovery-save-stability (draft PR #73).
-NOT merged. NOT in production. Pending: Bugbot, Chris's acceptance, and
-explicit merge/production approval.
+NOT merged. NOT in production. BLOCKED on Bugbot: it did not run (disabled
+for this repository). Pending: Chris's decision on Bugbot, Chris's
+acceptance, and explicit merge/production approval.
 
 Everything was verified with synthetic fixtures. No real account, no live
 auth, no native app, no customer confirmation.
@@ -108,7 +109,15 @@ step.
 NEXT SESSION POINTERS
 1. Bugbot on PR #73: invoked by the coordinator with parent authorization,
    https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940
-   Result PENDING when this was written. Read it before merge.
+   RESULT: SKIPPED — Bugbot is disabled for this repository. It did not
+   review anything. Evidence:
+   https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935477064
+   request id serverGenReqId_8ffb0f08-00d0-4816-9809-cb0f49d17dba
+   This is NOT a clear or passed automated review. The repo rule requires
+   one Bugbot pass before merging an app change, so merge is blocked until
+   Chris either enables Bugbot and it runs, or explicitly waives it /
+   accepts the completed AIOS T5 + T6 reviews as the substitute. No
+   settings change was authorized or made.
 2. Chris walks the preview and accepts, or not. Then explicit merge and
    production approval. Nothing here is that approval.
 3. A real customer password save and login is Jacob's action AFTER a
@@ -138,7 +147,8 @@ Branch fix/recovery-save-stability on origin/main 90f890d:
 Closeout commit 7a711810fec019ff1a18b99bb1ab13efd7d665f7 is pushed: local
 HEAD and origin/fix/recovery-save-stability both resolved to it after a
 fetch. This correction commit follows it, docs only, and is not pushed by
-the build terminal — the coordinator pushes after the Bugbot result.
+the build terminal — the coordinator pushes. A further docs-only commit
+records the Bugbot result (skipped, disabled for the repository).
 No source change and no test rerun since e508736 / the preview run.
 Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
 (node_modules installed there, untracked). The coordinator's temporary
