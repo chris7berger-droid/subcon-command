@@ -187,3 +187,80 @@ Reviewer's limitations (verbatim):
 - **No doc changes in the diff.** The acceptance scope mentions "required docs"; the patch touches only the script, App, Login, the helper and its test. I did not assess whether docs are owed.
 - **No certification of the customer incident.** The actual incident cause is unproven, per the acceptance text.
 - Builder transcript and `BUILD-REPORT.md` were not opened.
+
+### 2026-10-01 — B124 password recovery — T6 Security Review
+
+Transcribed verbatim from the reviewer's proposed gate record (`recovery-t6`, emitted to `/tmp/recovery-t6-review.txt`), followed by its findings, coverage and limitations, also verbatim, as the supporting record. Only the heading level of the three supporting sections was changed to nest them here.
+
+- **Role:** T6 / Security Review
+- **Agent/session:** Claude Opus 5.5, session `521dd74e-d33b-4ef6-b288-4533da8abb87` (distinct from T3 `bb07d938-e6cb-4b33-bb24-b7110693ccf1` and T5 `5b538650-d476-4e72-9ad4-c1ff1fb58cf8`)
+- **Date:** 2026-10-01
+- **Artifact:** `90f890dcd5be5a8134af545d5a23f9b0654d9150..e5087360c4a5b4ceebecb7193ef09c0b98a2e729`
+- **Verdict:** 0 exploitable-today; 0 BLOCKS-SHIP; 0 SHOULD-FIX; 3 HARDENING (1 introduced, 2 preexisting) to backlog as one item. Safe to ship. Coverage and limitations as stated above; source-only, no probes.
+- **Acceptance:** standing (§9) — ordinary verdict, with no scope change, locked-decision change, scope cut or human gate. Production acceptance remains with Chris.
+
+Supporting record (verbatim):
+
+**Zero exploitable-today findings; safe to ship from the security lens.** After this change I found no path by which an unauthorized actor updates an account or password, or is admitted to the protected app, through the recovery flows. Three non-blocking hardening items are below.
+
+Nothing was executed: this is a source-only review of the patch plus the current `App.jsx`, `Login.jsx`, `lib/passwordRecovery.js`, `lib/auth.js`, `lib/supabase.js` and `index.html`. Bash was denied in this session, so T3's test counts are taken as reported, not re-run.
+
+#### Findings
+
+| # | Finding | Exploitable today? | Materiality | Scope |
+|---|---|---|---|---|
+| 1 | A tokenless `#type=recovery` URL opens a code-less "set new password" form against whatever session is already in the browser | No — requires an existing live session, whose holder can already change the password through the auth API | HARDENING | Introduced |
+| 2 | The identity check and the save are not atomic | No — only the same browser profile signing into a second account in a millisecond window | HARDENING | Preexisting, narrowed by this change |
+| 3 | A recovery-link session can still be admitted in a second tab before the first submit | No — same session holder, frontend navigation only | HARDENING | Preexisting |
+
+**1. Tokenless recovery hash.**
+- **Path:** `index.html:14-15` sets `sc_recovery_mode` for any hash containing `type=recovery`. `src/App.jsx:154-156` and `:247-248` then pin `Login`, and `src/pages/Login.jsx:54-58` sets `viaLink`, which hides the code field (`Login.jsx:276`). `src/lib/passwordRecovery.js:133-136` adopts the current session and `:154` saves the password against it.
+- **What changed:** at base, the same URL showed a code field and always called `verifyOtp` first.
+- **Why not a blocker:** someone with walk-up access to an unlocked signed-in browser can set a new password without the current one, but the session token already allows that server-side. A lured victim only sets their own password.
+- **Side effect:** "Back to sign in" on that form signs the user out (`passwordRecovery.js:190-193`).
+- **Action:** backlog. Set `viaLink` only when the hash carries a token or a `PASSWORD_RECOVERY` event was seen.
+
+**2. Non-atomic identity check.**
+- **Path:** `passwordRecovery.js:150` checks the session owner, then `:154` calls `updateUser`. If another tab swaps the stored session to a different account in between, the password lands on that account. The same applies when the session read errors ("unknown") and the flow proceeds.
+- **What the user sees:** `:155-158` detects the swap afterwards and reports "expired", although a save did happen.
+- **Why not a blocker:** the actor holds both sessions. Base had no check at all.
+- **Action:** backlog.
+
+**3. Link session in a second tab.**
+- **Path:** the marker is written only at first submit (`passwordRecovery.js:113`). Before that, a second tab's `SIGNED_IN` on becoming visible falls through to "apply" (`passwordRecovery.js:27-30`, `App.jsx:200`).
+- **Action:** backlog.
+
+#### Coverage
+
+- **Identity binding:** the verified user id is taken from the `verifyOtp` or link session. The save is refused if the session is gone or belongs to another account, and the retained stage is invalidated on sign-out or account switch (`passwordRecovery.js:150-152`, `:204-207`; `Login.jsx:39-46`).
+- **Save confirmation:** success requires no error and a returned user id equal to the verified one (`passwordRecovery.js:155`). It is not assumed.
+- **Session transitions and event ordering:**
+  - The hold is raised before `verifyOtp` (`passwordRecovery.js:138`), so the `PASSWORD_RECOVERY` emitted before return is held (`App.jsx:192`).
+  - `USER_UPDATED`, `TOKEN_REFRESHED` and `SIGNED_IN` with a session are held by the hold or the marker.
+  - `SIGNED_OUT` and a rejected refresh still apply.
+  - I found no deadlock; the wrapper in `lib/auth.js:10-15` does not await the callback.
+- **Marker ownership and cleanup:**
+  - The marker holds a user id only, never a code, token or password.
+  - It is cleared only after a confirmed sign-out (`App.jsx:211-212`, `:221-222`; `passwordRecovery.js:191-195`) or a successful password sign-in (`Login.jsx:81-87`).
+  - A failed sign-in leaves it in place.
+  - A stale marker cannot lock anyone out of password sign-in.
+- **Cancel, retry, double submit:** the busy guard blocks concurrent submit and cancel. A retry never re-verifies the consumed code or re-saves. Back and "Request a new code" end the session first and stay put if sign-out fails.
+- **Refresh, return, remember-off:** a persisted recovery session is signed out at startup rather than admitted (`App.jsx:216-225`). The remember-off sign-out is skipped for a link tab.
+- **Persistence and logging:** the changed files add no console output. The password and code live only in React state. The only new storage key is `sc_recovery_user`.
+- **Test fixtures:**
+  - The browser script answers every auth/rest/functions call from fixtures and aborts all other third-party requests.
+  - It refuses the three production hosts.
+  - The Vercel token is sent only to the `BASE_URL` origin and is not logged.
+  - Credentials are fake.
+- **Scope:** the diff touches `App.jsx`, `Login.jsx`, the new helper and two test files. There are no server, edge-function, migration, RLS, security-setting or customer-data changes.
+
+**Frontend vs server:** holding the form and blocking app admission are navigation UX. A recovery session is a full session server-side, and its holder proved control of the mailbox. None of this change is, or needs to be, an authorization boundary.
+
+#### Limitations
+
+- No live or preview probes and no test execution; T3's 24 unit and 8 browser results are not independently confirmed.
+- auth-js behaviour is taken from the routing note and test comments, not read from the installed package. This covers emit-before-return, sign-out keeping the local session on a 5xx, and cross-tab broadcast.
+- Supabase project settings (secure password change, OTP expiry, rate limits) were not inspected.
+- The actual incident cause remains unproven; this does not certify the customer's password is fixed.
+- I did not read the T3 or T5 transcripts, or `t5-first-review.txt`.
+- The known residual (refresh after saved-plus-sign-out-failure loses the saved-status message) is acknowledged as filed and not re-raised.
