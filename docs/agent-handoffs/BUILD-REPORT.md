@@ -60,29 +60,42 @@ New Inquiry is inside base jitter. Call Log and Calendar are 136 pixels one leve
 
 ## Brand check
 
-Sources, resolved through the registry `assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md` in the AIOS checkout (`/Users/chrisberger/aios`; the directory is untracked there, so no commit — sha256 `253e3637bdf6d87b…`):
+Authority resolved through the registry `assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md` in the AIOS checkout `/Users/chrisberger/aios` (sha256 `253e3637bdf6d87b…`; the directory is untracked there, so there is no commit to cite). Both source documents govern. Read by this T3 session:
 
-- `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` (sha256 `b9e80294646d1dd3…`), sections opened by this session: §1, §10 (Sidebar, Top bar, Inputs, Modals / drawers), §13, §14, §17, §18 acceptance checklist.
-- Visual Brand Guide and "Locked Subcon Command identity mark": not opened by this session. The slice adds no theme, surface, typography, imagery, mark or icon.
+| Source | What was opened |
+|---|---|
+| `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` (sha256 `b9e80294646d1dd3…`) | §1, §10 (Sidebar, Top bar, Inputs, Modals / drawers), §13, §14, §17, §18 acceptance checklist. Other sections were not opened by this session. |
+| `source-docs/Subcon_Command_Visual_Brand_Guide.docx` (sha256 `9833d17f2ec88c0a…`), read through the registry's faithful copy `Subcon_Command_Visual_Brand_Guide.readable.txt` (sha256 `b3f05c6eb526f3f5…`, which records that same DOCX hash) | In full: 02 Color System, 03 Surfaces, 04 Typography / Geometry / Motion, 05 Component Language, 07 Guardrails, 08 Implementation, The Locked Identity Mark. The DOCX itself was not unpacked by this session. |
+| `visual/crew-schedule-canonical.png` | Opened. A 1672×941 desktop composition: persistent espresso sidebar, cyan active item, warm linen work surface. |
 
 Changed surfaces: header menu button, drawer and scrim, Directory panel width, wizard layout, P1/P2 spacing and wrapping.
 
-- §1 — information architecture and interactions preserved: the drawer is the existing sidebar, same groups, items, order and gating.
-- §10 Modals / drawers — the drawer keeps the sidebar's existing espresso surface; the scrim reuses the wizard overlay's existing `rgba(28,24,20,0.65)`. No pure black slab.
-- §13 — drawer transition 200ms `cubic-bezier(.2,.8,.2,1)`, inside the 120–240ms range, off under `prefers-reduced-motion`. No looping motion.
-- Plan Beat 9 — no new color, font or radius; no logo or mark asset added. `.sc-calllog` is not extended to other routes; outside `/sales/calllog` new chrome uses the legacy palette those screens already carry.
-- Sizes — 44px drawer and wizard controls, 36px buttons, 16px text entry. The standard states 36–44px for desktop only; the phone values are the plan's Beat 6.
+Checked against those sections:
+
+- **Structure** (Standard §1; Guide 08 "Non-negotiable instruction") — information architecture and interactions preserved. The drawer is the existing sidebar: same groups, items, order, gating and active marker.
+- **Color** (Guide 02; Standard §18 checklist) — no color value is added. The menu button takes its border and glyph from the tokens the header already uses; the scrim reuses the wizard overlay's existing `rgba(28,24,20,0.65)`; the drawer keeps the sidebar's existing espresso surface. No white-dominant surface is introduced.
+- **Typography** (Guide 04) — no font family, weight or type role is added or changed. The only size change is text-entry controls to 16px at ≤600px on P1 screens and Login (plan Beat 6); the guide's 13–15px body/data range is stated without a phone case.
+- **Geometry and spacing** (Guide 04, "4 / 6 / 9 / 12 px radius scale") — no radius is changed on an existing element. The new menu button uses 7px, matching the existing sidebar buttons rather than the scale. Phone padding (16px page, 12px header) and the 44 / 36px control sizes come from plan Beats 3 and 6; neither document states a phone value.
+- **Mark** (Guide "The Locked Identity Mark"; registry "Preserve the official logo/icon") — the existing mark and wordmark components render unchanged in the drawer. No mark asset is added, redrawn, traced or generated. The mission line stays in the sidebar footer.
+- **Modals / drawers** (Standard §10; Guide 05) — the drawer is the existing dark sidebar surface over a dimmed page, not a pure black slab.
+- **Motion** (Standard §13; Guide 04) — 200ms `cubic-bezier(.2,.8,.2,1)`, inside 120–240ms; off under `prefers-reduced-motion`; nothing loops.
 
 Deviations:
 
-1. **Focus ring is not cyan outside the Call Log route.** §14 says "Maintain visible keyboard focus using cyan". The menu button and drawer buttons use a 2px `currentColor` outline. On `/sales/calllog` the route theme makes it cyan; elsewhere it is the control's text color. Reason: Beat 9 forbids new colors on routes still on the legacy palette.
-2. **Legacy palette outside `/sales/calllog`** (teal accent, pre-standard surfaces) is carried, not introduced: re-theming is out of scope (plan §4).
+1. **Keyboard focus on the new controls is not cyan.** Standard §14: "Maintain visible keyboard focus using cyan"; Guide 07: "Use cyan for clear keyboard focus states". The slice's own rule (`mobile-shell.css`) is a 2px `currentColor` outline, so the ring takes each control's text color:
+   - menu button — the header's heading ink (`#1c1814`);
+   - inactive drawer rows, close and Sign out — translucent off-white;
+   - the active drawer row — the legacy teal accent (`#30cfac`), which is not the guide's cyan (`#12D8F2`).
+
+   The ring is visible in every case (coordinator's focus checks passed). On `/sales/calllog` only, the route theme's existing rule (`calllog-brand.css:113`, `!important`, `--cl-teal: #12D8F2`) should override the color to cyan for buttons inside the shell; that is read from the cascade in source and was not measured in a browser by this session. Reason for the deviation: plan Beat 9 forbids new colors on routes still on the legacy palette. No recolor was made.
+2. **Legacy palette outside `/sales/calllog`** — teal accent and pre-standard opaque surfaces, against Guide 02 ("Do not drift back toward teal") and 03. Carried, not introduced: re-theming beyond the Call Log route is out of scope (plan Beat 9, §4).
+3. **Menu button radius 7px** is off the guide's radius scale; it matches the sidebar buttons beside it.
 
 Not performed:
 
-- **Phone-width comparison against a brand reference** — none exists; the canonical Crew Schedule image is a 1672×941 desktop composition (plan §0.7).
-- **Canonical image comparison at desktop** — not run by this session; desktop rendering is unchanged apart from the pixel exception above.
-- **WCAG contrast measurement** of the new controls.
+- **Phone-width comparison against a brand reference** — none exists. Neither document defines a phone layout, breakpoint, phone navigation pattern or touch-target size, and the canonical image is desktop only.
+- **Side-by-side comparison of the changed screens with the canonical image** — this session opened the reference but viewed no screenshot of the build, so it makes no fidelity claim. At desktop the build's rendering is unchanged apart from the pixel exception above.
+- **WCAG contrast measurement** of the new controls and their focus rings.
 
 ## Scope boundaries
 
