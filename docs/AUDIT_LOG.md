@@ -184,3 +184,18 @@ Acceptance: standing (§9). Ordinary converged verdict; no scope change or produ
 ```
 
 Transcribed verbatim by Codex coordinator in task-3, which did not author either review. T1 plan-lock pause is waived by the explicit plan-then-build task instruction; no personal plan lock or final user acceptance is claimed. Plan at87e820f; subsequent e3e1aa7 changes only the T2 audit manifest.
+
+### Mobile web preview — T4 Build vs Plan, round 1
+
+```text
+    Role:        T4 Build vs Plan · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..32fe67a (source cc4d733)
+    Checks:      as tabled above
+    Brand check: sources verified as listed; DOCX not opened; finding 3 open
+    Verdict:     NO-GO — B1 failed as written (needs recorded acceptance); acceptance checks in finding 2 not implemented
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary NO-GO verdict; routed back to T3. No scope change is accepted by this record, and B1 is not waived by it.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. Reviewer's full findings (1–7), check table and disclosures: `t4-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo). Blocking: finding 1 (B1 fails as written) and finding 2 (acceptance checks missing from `scripts/check-mobile-preview.mjs`).
