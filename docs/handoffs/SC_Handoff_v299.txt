@@ -95,6 +95,21 @@ Evidence qa/mobile-smoke/login-buttons.json.
 Correction: the fixtures script was first committed in cc4d733 and has not
 changed since; only check-mobile-preview.mjs was extended in db14d25.
 
+PREVIEW (plan G1-G4)
+Pushed by the coordinator after the reviews and Smoke. Draft PR #72:
+https://github.com/chris7berger-droid/subcon-command/pull/72
+Vercel preview Ready at commit 2092cea8ec9991bc4251a9bcdd4194ee37d17f6f
+(deployment dpl_8wNFvnp3Jsas1YZgHTY1ZYfys5Xc), observed by the coordinator:
+https://sales-command-k1m6b6wos-chris7berger-droids-projects.vercel.app
+2092cea is docs-only on top of the reviewed build db14d25 (app source
+cc4d733). The commit carrying this text is docs-only too and will deploy
+again when pushed; the coordinator verifies that one separately.
+Hosted checks (G3): NOT PERFORMED. The preview redirects to Vercel sign-in;
+no cookie, session or bypass was acquired or used. No hosted behaviour is
+claimed; the evidence is the local synthetic Smoke run.
+The preview uses the production Supabase project. It is not a test sandbox.
+The Call Log's existing archive update on load is unchanged and runs there.
+
 NOT TOUCHED
 main, production, the Vercel project, database/schema/RLS/auth, edge
 functions, package.json and build config, src/schedule, src/field, src/ar,
@@ -102,8 +117,12 @@ Invoices.jsx and the other money-path files, tokens.js, the logo, native Field
 Command, AIOS.
 
 NEXT SESSION POINTERS
-Reviews and Smoke are done. Next the coordinator pushes for the Vercel preview and adds
-the SHA and URL here. A commit after the reviews re-opens them.
+Reviews, Smoke and the preview are done. What is left is Chris's look at the
+preview and his acceptance. No merge or production release without it.
+A source or script commit after the reviews re-opens them (plan G4).
+Not phone-ready, by scope: Schedule, Field web, AR, Proposal and Invoice
+detail, WTC, Settings, Team, History Locker, Import.
+Non-blocking follow-ups: backlog O12 and O13.
 The preview shares the production database: a phone look should be read-only.
 Chris's look on a real phone is his step; emulated Chrome cannot show Safari's
 toolbar, keyboard, safe areas or focus zoom.
@@ -126,4 +145,5 @@ Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-3/mobile-preview
 Branch feat/mobile-web-preview. Slice base 34af375. App source cc4d733,
 Brand check correction 32fe67a, T4 gate record 8cd3f62, then the scripts and
 docs revision that carries this text.
-Not pushed.
+Pushed by the coordinator through 2092cea (draft PR #72). This commit is
+not pushed by T3.

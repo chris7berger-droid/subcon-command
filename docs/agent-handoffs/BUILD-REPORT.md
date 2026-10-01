@@ -1,18 +1,18 @@
 ## Status
 
-Mobile web preview (F65) — built, reviewed and smoke-tested on `feat/mobile-web-preview`, **not pushed**. T4, T5 and T6 are recorded clear in `docs/AUDIT_LOG.md`. The formal Smoke Test ran on the reviewed source: **166 of 167 checks passed; the one failure is B1 (desktop pixels), which fails as written and is not waived.** Next is the coordinator's push for the Vercel preview, then Chris's acceptance. **Do not merge.**
+Mobile web preview (F65) — built, reviewed, smoke-tested and **published as a Vercel preview** from `feat/mobile-web-preview` (draft PR #72). T4, T5 and T6 are recorded clear in `docs/AUDIT_LOG.md`. The formal Smoke Test ran on the reviewed source: **166 of 167 checks passed; the one failure is B1 (desktop pixels), which fails as written and is not waived.** The hosted walk was **not performed** (the preview is behind Vercel sign-in). What remains is Chris's look and acceptance. **Do not merge.**
 
-    Role:        T3 Build · mode: build (smoke) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
+    Role:        T3 Build · mode: build (preview record) · agent/session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b
                  (continues builder session 0dd426b3-d40d-4c3a-97af-393dc105f6f3, which wrote most of the source)
     Plan:        docs/plans/mobile_web_preview.md @ 87e820f · plan diff 87e820f → working tree is inside `## Audit manifest` only
                  · T1: no personal lock exists; build authorised by Chris directly (plan §A)
     Gates:       T2 CONVERGED (a4b831b) · T4 NO-GO round 1 (8cd3f62) → GO round 2, B1 carried unwaived (82b61fa)
                  · T5 0 BLOCKS-SHIP (3704b9c) · T6 0 exploitable-today (307feb8) — all in docs/AUDIT_LOG.md `## Gate records`
-    Branch:      feat/mobile-web-preview · slice base 34af375 · app source cc4d733 · reviewed build db14d25 (src and scripts byte-identical since) · this commit (docs only)
+    Branch:      feat/mobile-web-preview · slice base 34af375 · app source cc4d733 · reviewed build db14d25 (src and scripts byte-identical since) · deployed 2092cea · this commit (docs only)
     Outcome:     Smoke: every acceptance check passes except B1, which fails as written (see "Formal Smoke Test")
     Completion:  code built yes · data applied n.a. (none) · access verified no (not exercised) · Chris accepted: not T3's to claim
-    Push:        not pushed
-    Next:        T7 → coordinator preview push (plan G1–G4)
+    Push:        pushed by the coordinator as the approved preview step (plan G1), through 2092cea; this commit not pushed by T3
+    Next:        T7 → Chris Acceptance
 
 ## Summary
 
@@ -45,6 +45,23 @@ Run by T3 after T6 cleared, on T7's routing, against the coordinator's compiled 
 **Login buttons, measured by hand** (agreed with T7 because the reviewed script measures Login inputs only; the reviewed scripts were not changed). Signed-out fixture context at 360, compiled build, no sign-in: Remember me 36px, Sign In 41px, Forgot password? 36px — all ≥36px, all inside the viewport and tappable at their centre; Sign In is in view; no sideways scroll; 0 errors, 0 writes. Evidence: `qa/mobile-smoke/login-buttons.json`, `login-360.png`, and the one-off probe `login-buttons.mjs` beside them.
 
 Not covered by Smoke: real devices, real data, authenticated access, and the hosted preview (plan G1–G4).
+
+## Preview (plan G1–G4)
+
+| | |
+|---|---|
+| G1 push | By the coordinator, after T4, T5, T6 and Smoke. Never to `main`, never forced. T3 confirmed by `git fetch` that `origin/feat/mobile-web-preview` and draft PR #72 both sit at `2092cea`. |
+| G2 deployment | **Ready**, environment preview, commit `2092cea8ec9991bc4251a9bcdd4194ee37d17f6f`, deployment `dpl_8wNFvnp3Jsas1YZgHTY1ZYfys5Xc`. Observed by the coordinator (`qa/mobile-preview-deployment.json`); T3 did not query Vercel. |
+| URL | https://sales-command-k1m6b6wos-chris7berger-droids-projects.vercel.app |
+| PR | https://github.com/chris7berger-droid/subcon-command/pull/72 (draft) |
+| G3 hosted checks | **Not performed.** An unauthenticated request is redirected (HTTP 302) to Vercel sign-in. No cookie, session or bypass was acquired or used, per plan Beat 10 and H6. |
+| G4 | `2092cea` and this commit are docs-only on top of the reviewed build `db14d25`; `src` and `scripts` are identical to it. This commit will deploy again when pushed; the coordinator verifies that deployment separately, so its SHA and URL are not recorded here. |
+
+No hosted behaviour is claimed. The evidence for this slice is the local synthetic run against the compiled reviewed source (Formal Smoke Test, above).
+
+**The preview is not a test sandbox.** It uses the production Supabase project; no environment setting was changed. Signing in loads real records, and Save, Send, Delete, Move to Old Jobs and Invite change them. The Call Log's existing archive update on load is unchanged by this slice and runs on the preview exactly as in production. A look on a phone should be read-only.
+
+**Not phone-ready, by scope:** Schedule (including Crew Schedule and Calendar), Field web, AR, Proposal detail and the WTC calculator, Invoice detail and its modals, Settings, Team, History Locker and Import. They are reachable at full width and load without error; several scroll sideways or clip.
 
 ## Evidence (pre-review build self-check)
 
@@ -159,6 +176,6 @@ Not performed:
 
 ## Remaining
 
-A recorded disposition for B1 · coordinator push and Vercel preview (G1–G4), SHA and URL to be added by the coordinator · Chris's look on a real phone and his acceptance. Non-blocking review findings are backlog rows O12 (T4) and O13 (T5, T6).
+A recorded disposition for B1 · Chris's look at the preview on a real phone and his acceptance · no merge or production release without it. Non-blocking review findings are backlog rows O12 (T4) and O13 (T5, T6).
 
 **The preview is not a test sandbox.** It runs against the production database (plan §0.8): signing in loads real records, and Save, Send, Delete, Move to Old Jobs and Invite change them. A look on a phone should be read-only.
