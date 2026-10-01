@@ -7,7 +7,7 @@
 // card sit the dormant + gone-quiet lists, each $-tagged so a call feels like
 // chasing money.
 import { useState, useMemo } from "react";
-import { C, F, R, SP } from "../../lib/tokens";
+import { CALLLOG_C as C, F, R, SP } from "../../lib/tokens";
 import { fmt$ } from "../../lib/utils";
 import Btn from "../Btn";
 import OutboundCard from "./OutboundCard";
@@ -66,12 +66,12 @@ export default function HuntBox({ goneQuiet, dormant, onGoTo, onLog }) {
   const pileValue = pile.reduce((s, x) => s + (x.value || 0), 0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SP.lg }}>
+    <div className="cl-hunt" style={{ display: "flex", flexDirection: "column", gap: SP.lg }}>
       <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: C.textLight, fontFamily: F.ui }}>Where To Hunt</div>
 
       {/* served card — the hero of this box, dark panel, one clear move */}
       {served ? (
-        <div style={{ background: C.dark, borderRadius: R.hero, padding: SP.xl, display: "flex", flexDirection: "column", gap: SP.md }}>
+        <div className="cl-hunt-hero" style={{ background: C.dark, borderRadius: R.hero, padding: SP.xl, display: "flex", flexDirection: "column", gap: SP.md }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: C.teal, fontFamily: F.ui }}>
               {served.crit}

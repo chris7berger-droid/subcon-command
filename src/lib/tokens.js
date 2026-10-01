@@ -24,6 +24,34 @@ export const C = {
   purple:       "#8e44ad",
 };
 
+// Opt-in UI colors: CSS fallbacks preserve every existing consumer outside the
+// Call Log preview. Keep C literal for PDF/export code and the approved logo.
+export const CALLLOG_C = Object.fromEntries(
+  Object.entries(C).map(([key, value]) => [key, `var(--cl-${key}, ${value})`])
+);
+
+// Saved brand source: AIOS 565a1ba, UI Standard §§4–10, 14, 18.
+// Darker semantic inks are for AA readability on Light Glass; instrumentation
+// keeps the canonical bright semantic colors on dark command surfaces.
+export const CALLLOG_THEME = {
+  "--cl-linen": "rgba(242,233,217,.76)",
+  "--cl-linenLight": "rgba(246,239,227,.88)",
+  "--cl-linenCard": "rgba(246,239,227,.88)",
+  "--cl-linenDeep": "#E7DAC4",
+  "--cl-textHead": "#161513", "--cl-textBody": "#302B26",
+  "--cl-textMuted": "#584534", "--cl-textLight": "#584534", "--cl-textFaint": "#584534",
+  "--cl-border": "rgba(62,45,34,.18)", "--cl-borderStrong": "rgba(62,45,34,.28)",
+  "--cl-teal": "#12D8F2", "--cl-tealDark": "#075763", "--cl-tealDeep": "#075763",
+  "--cl-tealGlow": "rgba(18,216,242,.16)", "--cl-tealBorder": "rgba(18,216,242,.72)",
+  "--cl-dark": "#241B16", "--cl-darkRaised": "#3C2E25", "--cl-darkBorder": "rgba(255,255,255,.14)",
+  "--cl-red": "#A9231C", "--cl-amber": "#765000", "--cl-green": "#1E633B", "--cl-purple": "#6330B5",
+  "--cl-dark-glass": "rgba(24,21,18,.70)", "--cl-dark-glass-strong": "rgba(17,16,14,.82)",
+  "--cl-brown-glass": "rgba(75,57,44,.34)",
+  "--cl-ivory": "#F2E9D9", "--cl-muted-dark": "#D4C3AA",
+  "--cl-shell": "#8B735E", "--cl-shell-light": "#D4C3AA",
+  "--cl-success": "#37D47F", "--cl-warning": "#FFAA2D", "--cl-danger": "#FF4D43", "--cl-category": "#7637F5",
+};
+
 export const F = {
   display: "'Barlow Condensed', sans-serif",
   body:    "'Barlow', sans-serif",

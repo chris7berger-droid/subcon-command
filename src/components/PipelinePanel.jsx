@@ -1,4 +1,4 @@
-import { C, F, R, SP } from "../lib/tokens";
+import { CALLLOG_C as C, F, R, SP } from "../lib/tokens";
 
 // Dark hero "pipeline" panel — the top-of-screen stat strip on Call Log,
 // Proposals, and Invoices (matches the 2026-08-22 mockup). Generic: each screen
@@ -13,17 +13,19 @@ const LIGHT_MUTED = "rgba(243,237,225,0.60)";
 export default function PipelinePanel({ label, footnote, items = [], segments = [] }) {
   const segTotal = segments.reduce((s, x) => s + (x.value || 0), 0);
   return (
-    <div style={{ background: C.dark, borderRadius: R.hero, padding: `${SP.lg}px ${SP.xl}px` }}>
+    <div className="cl-pipeline" style={{ background: C.dark, borderRadius: R.hero, padding: `${SP.lg}px ${SP.xl}px` }}>
       {label && (
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: LIGHT_MUTED, fontFamily: F.ui, marginBottom: SP.md }}>
           {label}
         </div>
       )}
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: SP.lg }}>
+      <div className="cl-pipeline-grid" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: SP.lg }}>
         {items.map(it => {
           const clickable = !!it.onClick;
           return (
             <button
+              className="cl-pipeline-item"
+              aria-pressed={clickable ? !!it.active : undefined}
               key={it.key}
               type="button"
               onClick={it.onClick}
@@ -39,7 +41,7 @@ export default function PipelinePanel({ label, footnote, items = [], segments = 
               onMouseEnter={e => { if (clickable && !it.active) e.currentTarget.style.background = "rgba(243,237,225,0.05)"; }}
               onMouseLeave={e => { if (clickable && !it.active) e.currentTarget.style.background = "transparent"; }}
             >
-              <span style={{
+              <span className="cl-pipeline-icon" style={{
                 flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: it.color,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 20, color: C.dark, fontWeight: 800,
@@ -47,7 +49,7 @@ export default function PipelinePanel({ label, footnote, items = [], segments = 
                 {it.glyph}
               </span>
               <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                <span style={{ fontSize: 30, fontWeight: 800, color: LIGHT, fontFamily: F.display, lineHeight: 1, letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums" }}>
+                <span className="cl-pipeline-value" style={{ fontSize: 30, fontWeight: 800, color: LIGHT, fontFamily: F.display, lineHeight: 1, letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums" }}>
                   {it.value}
                 </span>
                 <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: LIGHT_MUTED, fontFamily: F.ui, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

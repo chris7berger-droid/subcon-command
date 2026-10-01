@@ -1,0 +1,144 @@
+/* Call Log only. Brand palette lives in tokens.js; shared components retain
+   their literal fallbacks on every other route. One fine woven shell, quiet
+   Light Glass work surfaces, espresso command framing (UI Standard §§5–6). */
+.cl-mission { display: none; }
+.sc-calllog[data-app-shell] {
+  background-color: var(--cl-shell) !important;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(36,27,22,.018) 2px 3px),
+    repeating-linear-gradient(90deg, transparent 0 2px, rgba(242,233,217,.035) 2px 3px),
+    linear-gradient(115deg, var(--cl-shell-light), var(--cl-shell)) !important;
+  color: var(--cl-textBody);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.sc-calllog [data-app-sidebar] {
+  background: var(--cl-dark-glass-strong) !important;
+  border-right: 1px solid var(--cl-darkBorder) !important;
+}
+.sc-calllog [data-app-sidebar] button { color: var(--cl-ivory) !important; min-height: 36px; }
+.sc-calllog [data-app-sidebar] button:hover { background: var(--cl-brown-glass) !important; }
+.sc-calllog [data-app-sidebar] button[aria-current='page'] {
+  color: var(--cl-teal) !important;
+  background: var(--cl-tealGlow) !important;
+}
+.sc-calllog [data-app-sidebar] button > span { font-size: 13px !important; }
+.sc-calllog .cl-mission {
+  display: block; padding: 20px 18px; color: var(--cl-ivory);
+  font: 700 16px/1.35 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  letter-spacing: .09em;
+}
+.sc-calllog .cl-mission::after {
+  content: ''; display: block; width: 36px; height: 3px;
+  margin-top: 12px; background: var(--cl-teal);
+}
+.sc-calllog [data-app-header] {
+  background: var(--cl-linen) !important;
+  border-color: var(--cl-borderStrong) !important;
+}
+.sc-calllog [data-app-header] span { color: var(--cl-textHead) !important; font-size: 13px !important; }
+.sc-calllog [data-app-content] { padding: 24px 28px 80px !important; }
+.sc-calllog .cl-command { gap: 18px !important; min-width: 0; }
+.sc-calllog .cl-command > .cl-section-header { margin-bottom: 4px !important; gap: 16px; }
+.sc-calllog .cl-command > .cl-section-header h2 { font-size: 36px !important; line-height: 1.1; }
+.sc-calllog .cl-tab { border-radius: 6px !important; min-height: 36px; font-size: 13px !important; }
+.sc-calllog .cl-tab[aria-pressed='true'] { border-color: var(--cl-teal) !important; }
+.sc-calllog .cl-tab span { opacity: 1 !important; }
+.sc-calllog .cl-pipeline,
+.sc-calllog .cl-hunt-hero,
+.sc-calllog .cl-hunt-results {
+  background: var(--cl-dark-glass) !important;
+  border: 1px solid var(--cl-darkBorder);
+  border-radius: 9px !important;
+  box-shadow: 0 8px 24px rgba(49,36,26,.10), inset 0 1px 0 rgba(255,255,255,.05);
+  color: var(--cl-ivory);
+  --cl-red: var(--cl-danger); --cl-amber: var(--cl-warning);
+  --cl-green: var(--cl-success); --cl-purple: var(--cl-category);
+  --cl-tealDark: var(--cl-teal);
+}
+.sc-calllog .cl-pipeline { padding: 20px 24px !important; }
+.sc-calllog .cl-pipeline > div:first-child { color: var(--cl-teal) !important; font-size: 12px !important; }
+.sc-calllog .cl-pipeline > div:last-child { color: var(--cl-muted-dark) !important; text-align: left !important; }
+.sc-calllog .cl-pipeline-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px !important; }
+.sc-calllog .cl-pipeline-item { min-width: 0; padding: 12px 8px !important; }
+.sc-calllog .cl-pipeline-item + .cl-pipeline-item { border-left-color: var(--cl-darkBorder) !important; }
+.sc-calllog .cl-pipeline-item[aria-pressed='true'] { border-color: var(--cl-teal) !important; background: var(--cl-tealGlow) !important; }
+.sc-calllog .cl-pipeline-icon { width: 38px !important; height: 38px !important; font-size: 17px !important; }
+.sc-calllog .cl-pipeline-value { font-size: 44px !important; }
+.sc-calllog .cl-pipeline-value + span { color: var(--cl-ivory) !important; }
+.sc-calllog .cl-pipeline-value ~ span:last-child { color: var(--cl-teal) !important; white-space: normal !important; }
+.sc-calllog .cl-intelligence { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 20px !important; }
+.sc-calllog .cl-dig,
+.sc-calllog .cl-hunt {
+  min-width: 0; padding: 18px; border-radius: 9px;
+  border: 1px solid var(--cl-border); background: var(--cl-linen);
+}
+.sc-calllog .cl-dig > div:first-child > span,
+.sc-calllog .cl-hunt > div:first-child {
+  color: var(--cl-textHead) !important;
+  font: 700 19px/1.2 'Barlow Condensed', 'Arial Narrow', sans-serif !important;
+  letter-spacing: .06em !important;
+}
+.sc-calllog .cl-dig-card { background: var(--cl-linenLight) !important; min-height: 72px; }
+.sc-calllog .cl-dig-card:hover { background: var(--cl-linenDeep) !important; }
+.sc-calllog .cl-hunt-hero { padding: 20px !important; }
+.sc-calllog .cl-hunt-hero > div:nth-child(2) { font-size: 28px !important; }
+.sc-calllog .cl-hunt-hero button { min-height: 36px; }
+.sc-calllog .cl-hunt-hero button:not(.cl-button) { color: var(--cl-teal) !important; }
+.sc-calllog .cl-hunt-hero > div:nth-child(3) { color: var(--cl-ivory) !important; font-family: 'Inter',system-ui,sans-serif !important; }
+.sc-calllog .cl-outbound { flex-wrap: wrap; }
+.sc-calllog .cl-outbound > div { flex-basis: 180px !important; flex-wrap: wrap; gap: 3px 8px !important; }
+.sc-calllog .cl-outbound > div > span { max-width: 100% !important; font-size: 13px !important; }
+.sc-calllog .cl-jobs {
+  min-width: 0; display: flex; flex-direction: column; gap: 16px;
+  padding: 20px; background: var(--cl-linenCard);
+  border: 1px solid var(--cl-border); border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(49,36,26,.10);
+}
+.sc-calllog .cl-jobs > div:first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: 0 !important; }
+.sc-calllog .cl-jobs input,
+.sc-calllog .cl-jobs select { font-size: 13px !important; min-height: 38px; background: var(--cl-linenDeep) !important; }
+.sc-calllog input::placeholder,
+.sc-calllog textarea::placeholder { color: var(--cl-textMuted); opacity: 1; }
+.sc-calllog .cl-table { border-radius: 6px !important; }
+.sc-calllog .cl-table table { min-width: 850px; font-variant-numeric: tabular-nums; }
+.sc-calllog .cl-table thead tr { background: var(--cl-dark-glass-strong) !important; }
+.sc-calllog .cl-table th { color: var(--cl-ivory) !important; font-size: 11px !important; padding-block: 14px !important; }
+.sc-calllog .cl-table th span { color: var(--cl-teal) !important; }
+.sc-calllog .cl-table tbody tr { background: transparent !important; }
+.sc-calllog .cl-table tbody tr:nth-child(even) { background: var(--cl-linen) !important; }
+.sc-calllog .cl-table tbody tr:hover { background: var(--cl-linenDeep) !important; }
+.sc-calllog .cl-button { min-height: 36px; font-size: 13px !important; border-radius: 6px !important; }
+.sc-calllog .cl-button-primary { background: var(--cl-teal) !important; color: var(--cl-dark) !important; }
+.sc-calllog .cl-jump { border-radius: 6px !important; background: var(--cl-dark-glass-strong) !important; }
+.sc-calllog :is(button,input,select,textarea,a):focus-visible { outline: 2px solid var(--cl-teal) !important; outline-offset: 3px; }
+.sc-calllog :is(input,select,textarea):focus-visible { box-shadow: 0 0 0 4px var(--cl-dark); }
+.sc-calllog button { transition: background 120ms, border-color 120ms, opacity 120ms; }
+.sc-calllog button:disabled { cursor: not-allowed; }
+@media (max-width: 1200px) {
+  .sc-calllog [data-app-content] { padding: 20px 20px 80px !important; }
+  .sc-calllog .cl-pipeline-icon { display: none !important; }
+  .sc-calllog .cl-intelligence { gap: 14px !important; }
+  .sc-calllog .cl-dig, .sc-calllog .cl-hunt { padding: 14px; }
+}
+@media (max-width: 900px) {
+  .sc-calllog .cl-intelligence { grid-template-columns: minmax(0,1fr) !important; }
+  .sc-calllog .cl-pipeline-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  .sc-calllog [data-app-content] { padding: 16px 12px 76px !important; }
+  .sc-calllog .cl-jobs, .sc-calllog .cl-pipeline { padding: 14px !important; }
+  .sc-calllog .cl-command > .cl-section-header { flex-wrap: wrap; }
+  .sc-calllog .cl-jobs input { max-width: 100%; }
+  .sc-calllog .cl-jump { right: 12px !important; bottom: 12px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-calllog *, .sc-calllog *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+.sc-calllog .cl-dig-card > span:nth-child(2) > span:last-child { font-size: 13px !important; font-family: Inter,system-ui,sans-serif !important; }
+
+.sc-calllog .cl-dialog { border-radius: 12px !important; backdrop-filter: blur(10px); }
+.sc-calllog .cl-inquiry-number > div:first-child { color: var(--cl-muted-dark) !important; }
+
+.sc-calllog .cl-select-trigger { background: var(--cl-linenDeep) !important; color: var(--cl-textBody) !important; min-height: 38px; }
+.sc-calllog .cl-select-trigger > span { color: var(--cl-textBody) !important; }

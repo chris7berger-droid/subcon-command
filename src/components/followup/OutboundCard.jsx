@@ -1,14 +1,14 @@
 // Compact outbound row (docs/plans/home-follow-up-screen.md §2.4).
 // The hero action in the action-first layout: who to call. One dense line —
 // name, why they're here (last job / gone quiet), a tap-to-call phone, and Log.
-import { C, F } from "../../lib/tokens";
+import { CALLLOG_C as C, F } from "../../lib/tokens";
 import { fmtD, fmt$ } from "../../lib/utils";
 import Btn from "../Btn";
 
 export default function OutboundCard({ item, onLog, onOpen }) {
   const reason = item.source === "gone_quiet" ? "gone quiet since" : "last job";
   return (
-    <div
+    <div className="cl-outbound"
       onClick={onOpen ? () => onOpen(item) : undefined}
       title={onOpen ? "Open this job" : undefined}
       style={{

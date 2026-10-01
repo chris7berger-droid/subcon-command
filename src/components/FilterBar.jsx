@@ -1,4 +1,4 @@
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 const inputStyle = {
   padding: "7px 12px", borderRadius: 7, border: `1.5px solid ${C.borderStrong}`,

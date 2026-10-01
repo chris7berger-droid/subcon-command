@@ -6,7 +6,7 @@
 // write. Leaf components (HuntBox / HuntResultsPanel / …) are reused as-is.
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { C, F, SP, R } from "../../lib/tokens";
+import { CALLLOG_C as C, F, SP, R } from "../../lib/tokens";
 import { fmt$ } from "../../lib/utils";
 import { useAlerts } from "../../lib/alerts";
 import { owedItems, huntResults, dormantCustomers, goneQuietBids, digSummary, SUPPRESSION_WINDOWS } from "../../lib/followUp";
@@ -21,7 +21,7 @@ const OWED_PREVIEW = 8;
 // Clickable → filters the Call Log table to that bucket.
 function DigCard({ n, color, title, sub, onClick }) {
   return (
-    <button onClick={onClick} disabled={!onClick}
+    <button className="cl-dig-card" onClick={onClick} disabled={!onClick}
       style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: SP.md, background: C.linen, border: `1px solid ${C.border}`, borderLeft: `3px solid ${color}`, borderRadius: R.chip, padding: "14px 16px", cursor: onClick ? "pointer" : "default", transition: "background 0.12s" }}
       onMouseEnter={e => { if (onClick) e.currentTarget.style.background = C.linenLight; }}
       onMouseLeave={e => { if (onClick) e.currentTarget.style.background = C.linen; }}>
@@ -71,10 +71,10 @@ export default function SalesIntelligence({ repName = "", displayName = "", onDi
   );
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: SP.xl, alignItems: "start" }}>
+    <div className="cl-intelligence" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: SP.xl, alignItems: "start" }}>
 
       {/* ── LEFT · WHERE TO DIG (compact priority summary) ────────────────── */}
-      <div>
+      <div className="cl-dig">
         {label("Where To Dig (Priority)", owed.length > 0 && (
           <button onClick={() => setShowAllOwed(s => !s)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.tealDark, fontFamily: F.ui }}>
             {showAllOwed ? "Hide list ▴" : `See all (${owed.length}) →`}

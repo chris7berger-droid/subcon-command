@@ -114,7 +114,7 @@ export default function Home({ displayName = "there", repName = "" }) {
   const openTile = (stage) => navigate("/sales/calllog", { state: { stageFilter: stage, sales: repName } });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: SP.xxl, maxWidth: 1600 }}>
+    <div className="sc-m-p1" style={{ display: "flex", flexDirection: "column", gap: SP.xxl, maxWidth: 1600 }}>
 
       {/* ── BOX 1 · YOU (personal win) ───────────────────────────────────── */}
       <div style={{ position: "relative", overflow: "hidden", borderRadius: R.hero, background: C.dark, minHeight: 190 }}>

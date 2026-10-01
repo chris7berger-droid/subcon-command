@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 import { selectableWorkTypes } from "../lib/workTypes";
 import { supabase } from "../lib/supabase";
 import { STAGES } from "../lib/mockData";
@@ -55,8 +55,8 @@ const AddressBlock = ({ label, required, fields, set, sectionKey }) => (
   </div>
 );
 
-const NavCircle = ({ onClick, disabled, children, primary }) => (
-  <button onClick={onClick} disabled={disabled} style={{
+const NavCircle = ({ onClick, disabled, children, primary, label }) => (
+  <button onClick={onClick} disabled={disabled} aria-label={label} style={{
     width: 48, height: 48, borderRadius: "50%", border: `2px solid ${C.teal}`,
     background: primary ? C.teal : C.dark, color: primary ? C.dark : C.teal,
     fontSize: 20, fontWeight: 900, cursor: disabled ? "default" : "pointer",
@@ -866,28 +866,28 @@ function NewInquiryWizard({ onClose, onSaved, team, customers, allJobs, workType
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(28,24,20,0.65)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="sc-inquiry" style={{ position: "fixed", inset: 0, background: "rgba(28,24,20,0.65)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
       {/* Left arrow — absolutely positioned, always same spot */}
-      <div style={{ position: "fixed", top: "50%", left: "calc(50% - 364px)", transform: "translateY(-50%)", zIndex: 101 }}>
+      <div className="sc-inquiry-nav sc-inquiry-nav-back" style={{ position: "fixed", top: "50%", left: "calc(50% - 364px)", transform: "translateY(-50%)", zIndex: 101 }}>
         {step > (preset ? 2 : 0) ? (
-          <NavCircle onClick={back}>←</NavCircle>
+          <NavCircle onClick={back} label="Previous step">←</NavCircle>
         ) : (
           <div style={{ width: 48 }} />
         )}
       </div>
       {/* Right arrow — absolutely positioned, always same spot */}
-      <div style={{ position: "fixed", top: "50%", right: "calc(50% - 364px)", transform: "translateY(-50%)", zIndex: 101 }}>
-        <NavCircle onClick={handleNext} disabled={saving} primary>
+      <div className="sc-inquiry-nav sc-inquiry-nav-next" style={{ position: "fixed", top: "50%", right: "calc(50% - 364px)", transform: "translateY(-50%)", zIndex: 101 }}>
+        <NavCircle onClick={handleNext} disabled={saving} primary label={isLastStep ? "Save inquiry" : "Next step"}>
           {isLastStep ? "✓" : "→"}
         </NavCircle>
       </div>
       {/* Modal body — auto-height, grows/shrinks with content like original */}
-      <div style={{ background: C.linenCard, borderRadius: 14, padding: 32, width: 620, maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div className="cl-dialog sc-inquiry-dialog" role="dialog" aria-modal="true" aria-label="New Inquiry" style={{ background: C.linenCard, borderRadius: 14, padding: 32, width: 620, maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.45)", border: `1px solid ${C.borderStrong}` }}>
+        <div className="sc-inquiry-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em", textTransform: "uppercase" }}>New Inquiry</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: C.textFaint }}>✕</button>
+          <button className="sc-inquiry-close" aria-label="Close inquiry" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: C.textFaint }}>✕</button>
         </div>
-        <div style={{ background: C.dark, borderRadius: 9, padding: "10px 16px", marginBottom: 24, border: `1px solid ${C.tealBorder}` }}>
+        <div className="cl-inquiry-number" style={{ background: C.dark, borderRadius: 9, padding: "10px 16px", marginBottom: 24, border: `1px solid ${C.tealBorder}` }}>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", fontFamily: F.ui, marginBottom: 3 }}>Job Number Preview</div>
           <div style={{ fontSize: 18, fontWeight: 800, color: C.teal, fontFamily: F.display, letterSpacing: "0.04em" }}>{previewDisplay}</div>
         </div>

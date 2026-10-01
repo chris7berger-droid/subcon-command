@@ -17,6 +17,8 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-06-01 | feat/retention-invoice-process @ e831912 · retention_invoice_process.md (Loop #30 per-invoice retention release; 3-round audit, R1 6→R2 plateau→R3 1) | 1 (doc nit; cut verified) | 1 Low | converged — build-ready | converged |
 | 2026-07-02 | feat/invoice-email-attachments @ c0764d2 · invoice_email_attachments.md (Round 1) | 14 (6 top / 4 over-cap / 4 adjacent) | 2H/8M (top-6: 2H 4M) | accepted-pending-changes | copied-mechanism-misfit |
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
+| 2026-09-30 | Mobile web preview — T5 Code Review · build 34af375..db14d25 (app source cc4d733) | 6 | 0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING | zero blockers — review ends; non-blockers to backlog | focus-management-gaps |
+| 2026-09-30 | Mobile web preview — T6 Security Review · build 34af375..db14d25 (app source cc4d733) | 1 | 0 BLOCKS-SHIP, 1 HARDENING | zero exploitable-today — review ends; non-blocker to backlog | clean |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -148,3 +150,142 @@ Migration `20260513000000_multi_gc_allocation` applied to prod (`pbgvgjjuhnpsumn
 **Post-apply smokes:** Smoke 1 (read path on scmybiz.com) — DEFERRED to next session per session-close. Smoke 2 (UX guard) — moot, guard reverted in `44f7c59` before smoke run. Smoke 3 (trigger NO-OP on real parent intro edit + DB query for `locally_edited_fields = {}`) — DEFERRED to next session. Migration is additive + IF NOT EXISTS-guarded + scratch-validated; smokes are due-diligence rather than risk-mitigating, low-priority deferral.
 
 Scratch project (`ibalavttrqjyijrnkwmd`, sc-scratch-multi-gc-1a) deleted post-validation per H5/S1 cleanup pattern.
+
+
+## Gate records
+
+### Mobile web preview — independent plan reviews
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 7efcebb · round 1 · manifest b268478
+    Verdict:     NOT CONVERGED  (proposed)
+    Findings:    top-7 0C/4H/3M/0L · regressions 0 · over-cap 10 · adjacent 6
+      A1 · High · CAUSED-BY · §5 / §1 / H3 · preview backend is production, plan says unknown · real writes on sign-in and Save · state it, default-deny, do-not-Save guidance
+      A2 · High · CAUSED-BY · H4 vs A8/C2/H5 · write rule fails required routes · gate unexecutable · method + allowlist
+      A3 · High · CAUSED-BY · G / H6 / §6 / Phase · protected preview, unnamed push, G before reviews · gate unexecutable or stale · name access, push, actor, re-run
+      B1 · High · CAUSED-BY · Beat 8 [LOCKED · user] / A1 / B2 / B3 · one boolean, no permitted viewport detection · builder must break a lock · state model + authorise detection
+      B2 · Med  · CAUSED-BY · E2 vs P0.2/P0.5/A4/C4 · preservation rule forbids required handlers; Back not on every step · checks cannot pass · widen E2, reword C4
+      C1 · Med  · CAUSED-BY · §2 P2 vs D/G/A8/H5 · escape clause contradicts bar; D misfits two screens; no Manager fixture · pass/fail undecidable · per-screen D, fixture
+      C2 · Med  · CAUSED-BY · P0.3/P0.9/A3/A4/C4 · Directory overlay and layer order unspecified · unusable overlay, occluded Save passes · scope it, state layers
+    Human gate:  [LOCKED] change + §11 production data — B1 changes a decision locked in Chris's name (Beat 8); A1 means the preview walk signs into production data. Both need Chris personally. No plan lock by Chris is recorded; this audit ran on the delegated plan-then-build authorization and claims no acceptance.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 7efcebb · Verdict NOT CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+Acceptance: Historical proposed result; not accepted as a personal gate. The user directly instructed this task to correct the false user-lock attribution and concrete issues in one revision on 2026-10-01. No production-data authorization is claimed.
+```
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 87e820f · round 2 (delta) · manifest e3e1aa7
+    Verdict:     CONVERGED  (proposed)
+    Findings:    none in cap · regressions 0 · over-cap 8 carried from round 1 · adjacent 6
+    Human gate:  none for this verdict. No plan lock by Chris is recorded; the audit ran on the delegated plan-then-build authorization. Chris Acceptance after the preview is unchanged.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 87e820f · Verdict CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance (standing) → T3 transcription → T7 re-reads the gate → T3 Build
+Acceptance: standing (§9). Ordinary converged verdict; no scope change or production-data gate.
+```
+
+Transcribed verbatim by Codex coordinator in task-3, which did not author either review. T1 plan-lock pause is waived by the explicit plan-then-build task instruction; no personal plan lock or final user acceptance is claimed. Plan at87e820f; subsequent e3e1aa7 changes only the T2 audit manifest.
+
+### Mobile web preview — T4 Build vs Plan, round 1
+
+```text
+    Role:        T4 Build vs Plan · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..32fe67a (source cc4d733)
+    Checks:      as tabled above
+    Brand check: sources verified as listed; DOCX not opened; finding 3 open
+    Verdict:     NO-GO — B1 failed as written (needs recorded acceptance); acceptance checks in finding 2 not implemented
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary NO-GO verdict; routed back to T3. No scope change is accepted by this record, and B1 is not waived by it.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. Reviewer's full findings (1–7), check table and disclosures: `t4-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo). Blocking: finding 1 (B1 fails as written) and finding 2 (acceptance checks missing from `scripts/check-mobile-preview.mjs`).
+
+### Mobile web preview — T4 Build vs Plan, round 2 (delta recheck)
+
+```text
+    Role:        T4 Build vs Plan (round 2, delta recheck) · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..db14d25 (app source cc4d733)
+    Checks:      finding 2 closed · finding 7 closed · B1 failed as written, judged immaterial, coordinator disposition on record · gaps as listed
+    Brand check: unchanged from round 1; not rechecked
+    Verdict:     GO — with B1 carried as an unwaived test failure
+    Date:        2026-09-30
+    Next:        T7 → T5, T6 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary GO verdict. B1 is not waived by this record: the reviewer carries it as an unwaived test failure, and no acceptance by Chris is claimed.
+```
+
+Reviewer's B1 exception, verbatim:
+
+```text
+- **Literal result:** failed, and not waived by the script. Eleven of 13 screens are exact. Call Log differs by 16 px (max channel 1) and Time Clock by 1 px (max channel 10), against a base repeat of 0 on both.
+- **My judgment: immaterial.** Two same-source captures of this build differ from each other by 64,766 px and 40,991 px on the home screens, per the same results file. The capture's noise is therefore far larger than the build-versus-base difference. Time Clock sits under `src/field`, which has zero diff, and `metadata.txt` lists scripts and docs only in this commit.
+- **Desktop behaviour is preserved in source:** no rule applies at ≥769px, and the markup changes are attributes and class names.
+- **Disposition on record:** the coordinator accepted it as a raster-only technical deviation; the failure stays in `results.json`. No acceptance by Chris is claimed.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. App source unchanged at `cc4d733`; reviewed build `db14d25`. Reviewer's full recheck, including its evidence gaps: `t4-verdict-round2.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T5 Code Review
+
+```text
+    Role:        T5 Code Review · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not plan, build or run T4 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    drawer lifecycle/focus/layering · scoped CSS · route/job/draft and desktop preservation · business/data/auth unchanged · QA harness one bounded pass for silent fail-open
+    Limits:      limiter and audit command files unreadable (tags per _protocol.md §9) · no git verification of range, HEAD or 82b61fa · nothing executed · repo CLAUDE.md / CLAUDE_RLS.md not opened
+    Verdict:     0 BLOCKS-SHIP · 2 SHOULD-FIX · 4 HARDENING
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded. B1 stays as T4 carried it; this review does not waive it.
+Acceptance: standing (§9). Ordinary verdict, zero BLOCKS-SHIP. No scope change; B1 is not waived by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its six non-blocking findings are backlog row O13. Full review: `t5-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T6 Security Review
+
+```text
+    Role:        T6 Security Review · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not plan, build, or run T4/T5 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    changed surface (no query/RPC/auth/session/storage/schema/config/dependency line) · route guards and sidebar gating unchanged · sign-out reachable · no new injection sink or external CSS load · QA harness isolation (Supabase answered locally, writes refused, other origins aborted, sockets and service workers off, no hook in app source)
+    Limits:      ~/.claude-commands audit.md and security-review-limiter.md unreadable (tags per task definition and repo SKILL.md rubric) · no git verification of range, HEAD or 3704b9c · nothing executed · repo CLAUDE.md read in part · most changed files read from the frozen diff only · preview deployment not reviewed (pending)
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 HARDENING (backlog)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary verdict, zero exploitable-today and zero BLOCKS-SHIP. No security or tenant-isolation decision is made by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its one HARDENING finding (machine-specific paths in the two scripts) is already item 4 of backlog row O13; no new row. Full review: `t6-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+
+### Mobile web preview — T5 archive guard delta
+
+```text
+    Role:        T5 Code Review (delta recheck, archive guard) · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not author this change)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    guard correctness · production preservation · security-relevant implication. No baseline, brand or UI review.
+    Limits:      no git verification of HEAD, diffstat or secrets claim · nothing executed · Vercel setting and compiled builds not checked by this reviewer
+    Verdict:     0 BLOCKS-SHIP · 1 SHOULD-FIX · 1 HARDENING
+    Date:        2026-09-30
+    Next:        T7 → T6 delta · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T5 delta recheck · preview auto-archive guard (working tree on 099f279) | 2 | 0 BLOCKS-SHIP, 1 SHOULD-FIX, 1 HARDENING | zero blockers — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
+
+
+### Mobile web preview — T6 archive guard delta
+
+```text
+    Role:        T6 Security Review (delta recheck, archive guard) · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not author this change; did not run T4/T5)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    bundle exposure (environment name only) · no auth/session/policy/guard/setting change · guard placement over query, update and banner · production/development/empty preserve the original condition · test script local and stub-only
+    Limits:      no git verification of HEAD or scope · nothing executed · compiled-build results and Vercel setting taken from the packet · no live requests
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 SHOULD-FIX (verify deployed preview bundle carries "preview" before first sign-in)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T6 delta recheck · preview auto-archive guard (working tree on 099f279) | 1 | 0 BLOCKS-SHIP, 1 SHOULD-FIX | zero exploitable-today — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
