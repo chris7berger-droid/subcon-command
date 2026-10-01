@@ -172,7 +172,47 @@ try {
       const widths = await s.page.locator('.sch-brd-hdr').evaluateAll(els => els.map(el => Math.round(el.getBoundingClientRect().width)))
       assert(Math.max(...widths) - Math.min(...widths) <= 1, `board ${width}: day columns differ in width ${widths}`)
       assert.equal(await s.page.locator('.sch-brd-hdr').nth(6).getAttribute('class'), await s.page.locator('.sch-brd-hdr').nth(5).getAttribute('class'))
+      // Crew-pool day dots (F1/B11): all seven dots and day letters sit inside
+      // their block and inside the chip's content box.
+      const spill = await s.page.locator('.sch-chip').evaluateAll(chips => chips.flatMap(chip => {
+        const name = chip.querySelector('.sch-chip-name').textContent, cs = getComputedStyle(chip)
+        const inner = chip.getBoundingClientRect().right - parseFloat(cs.borderRightWidth) - parseFloat(cs.paddingRight)
+        const out = [...chip.querySelectorAll('.sch-cdot, .sch-crew-day-letter')]
+          .filter(el => el.getBoundingClientRect().right > inner + 0.5).map(el => `${name}: ${el.className} past the chip`)
+        const wrap = chip.querySelector('.sch-crew-days-wrap')
+        if (wrap && wrap.scrollWidth > wrap.clientWidth) out.push(`${name}: dots block overflows by ${wrap.scrollWidth - wrap.clientWidth}px`)
+        for (const row of chip.querySelectorAll('.sch-crew-days')) if (row.querySelectorAll('.sch-cdot').length !== 7) out.push(`${name}: not seven dots`)
+        return out
+      }))
+      assert.deepEqual(spill, [], `board ${width}: crew-pool day dots`)
+      assert(await s.page.locator('.sch-chip .sch-crew-days').count() >= 8, 'pool chips with day dots are present')
       assert.deepEqual(s.errors, [])
+
+      // Focused visual evidence (T4 round 1, P2).
+      const shot = (loc, name) => loc.screenshot({ path: resolve(SHOTS, `${name}-${width}.png`) })
+      await shot(s.page.locator('.sch-pool'), 'pool')
+      await tripRow(s.page, 'A1').locator('.sch-brd-job-label').click()
+      await tripRow(s.page, 'A1').locator('.sch-tg-row').first().waitFor()
+      await tripRow(s.page, 'A1').getByRole('button', { name: /Deferred Start/ }).click()
+      await tripRow(s.page, 'A1').locator('.sch-defer-day').first().waitFor()
+      await tripRow(s.page, 'A1').locator('.sch-dzone').scrollIntoViewIfNeeded()
+      await shot(tripRow(s.page, 'A1').locator('.sch-brd-detail'), 'expanded-row-toggles')
+      await tripRow(s.page, 'A1').locator('.sch-brd-job-label').click()
+      await chip(s.page, P.P1).dragTo(tripRow(s.page, 'A1').locator('.sch-brd-cell').first())
+      await s.page.locator('.sch-modal').waitFor()
+      await shot(s.page.locator('.sch-modal'), 'assign-picker')
+      await s.page.locator('.sch-modal').getByRole('button', { name: 'Cancel', exact: true }).click()
+      await chip(s.page, P.P6).dragTo(tripRow(s.page, 'C1').locator('.sch-brd-cell').first())
+      await s.page.locator('.sch-modal').waitFor()
+      await shot(s.page.locator('.sch-modal'), 'assign-picker-sunday-conflict')
+      await s.page.locator('.sch-modal').getByRole('button', { name: 'Cancel', exact: true }).click()
+      await chip(s.page, P.P2).hover()
+      await chip(s.page, P.P2).getByTitle('Sick', { exact: true }).click()
+      await shot(s.page.locator('.sch-modal'), 'sick-picker')
+      await s.page.locator('.sch-modal-overlay').click({ position: { x: 5, y: 5 } })
+      await chip(s.page, P.X).locator('.sch-chip-name').click()
+      await shot(s.page.locator('.sch-modal-detail'), 'crew-week-popup')
+      assert.equal(s.writes.length, 0, 'evidence capture writes nothing')
     }
     await s.context.close()
 
@@ -196,7 +236,7 @@ try {
     }
     await c.context.close()
   }
-  pass(BASE ? 'U1 base screenshots captured at 1440 and 1280' : 'F1/F2 seven day columns at 1440 and 1280: no sideways scroll, no clipped label, equal column widths, Sunday uses Saturday\'s classes')
+  pass(BASE ? 'U1 base screenshots captured at 1440 and 1280' : 'F1/F2 seven day columns at 1440 and 1280: no sideways scroll, no clipped label, equal column widths, Sunday uses Saturday\'s classes; all seven crew-pool day dots sit inside their chip')
 
   const W = 'Sep 28 – Oct 4, 2026'
   const board = async (path = '/schedule/schedule?week=2026-09-28', label = W, opts) => {
@@ -705,6 +745,8 @@ try {
         await page.getByRole('button', { name: /Export/ }).click()
         const [popup] = await Promise.all([context.waitForEvent('page'), page.locator('.mwt-row').filter({ hasText: label }).click()])
         await popup.waitForLoadState()
+        await popup.setViewportSize({ width: 1000, height: 700 })
+        await popup.screenshot({ path: resolve(SHOTS, `print-${label.toLowerCase().replace(/ /g, '-')}.png`), fullPage: true })
         const html = await popup.locator('body').innerText()
         await popup.close(); return { html, reads: s.reads.slice(start) }
       }
