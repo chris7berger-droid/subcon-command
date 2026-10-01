@@ -1,0 +1,38 @@
+# Every scripts/check-*.mjs and src/**/*.test.mjs on base 3145a7a (app source identical at 735b6e3), before the first app edit.
+# <exit code> <file> :: <last output line>. No dev server running; port 5199 held by another session's process.
+0 scripts/check-allocation-staffing-model.mjs :: PASS visible-week titles include all matching trips, retain full multiweek spans, and exclude undated/other-week trips.
+0 scripts/check-crew-allocation-consistency.mjs :: PASS shared board/cards/capacity: off-date, inactive, unavailable, conflict, time off, trip mismatch, no invented starts.
+1 scripts/check-crew-first-deletion.mjs :: Node.js v25.8.2
+0 scripts/check-crew-midweek-text-model.mjs :: PASS: midweek today–Saturday window, Antonio production fixture, Sunday empty, compact lines, assignment-over-off, no inferred off, weekly text unchanged
+1 scripts/check-crew-phone.mjs :: Node.js v25.8.2
+1 scripts/check-crew-schedule-eligibility.mjs :: Node.js v25.8.2
+0 scripts/check-crew-schedule-sticky-dates.mjs :: PASS Crew Schedule board date header stays put; only job rows scroll.
+0 scripts/check-crew-week-summary-model.mjs :: PASS overlapping trip requirements, UUID assignment isolation, and conservative legacy attribution match the board.
+1 scripts/check-crew-week-summary.mjs :: Node.js v25.8.2
+0 scripts/check-crew-week-text-model.mjs :: PASS: day/trip coworkers, override/inheritance, Sunday/DST, deferred start, missing jobs, board lead on unlinked days, skip empty days, duplicate/multiple a
+0 scripts/check-crew-week-text.mjs :: PASS: complete weekly copy, daily crew/lead, Sunday, picker, phone layout, delayed weeks, read failures/retry, clipboard fallback, menu and board week link; no 
+0 scripts/check-field-jobs.mjs :: PASS Field Jobs: CO identity, shared lifecycle, current/next/past contexts, exact trip/job ownership, historical exclusion, overlap deduplication, gaps, parent 
+0 scripts/check-job-card-schedule.mjs :: PASS CREW link uses first trip week/identity, local Monday, parent fallback and undated fallback.
+1 scripts/check-job-trips-model.mjs :: Node.js v25.8.2
+1 scripts/check-job-trips.mjs :: Node.js v25.8.2
+1 scripts/check-legacy-trip-conversion-preview.mjs :: Node.js v25.8.2
+0 scripts/check-overlapping-crew-trips-model.mjs :: PASS: nested/identical trips, per-trip staffing, zero, parent fallback, legacy identity
+1 scripts/check-overlapping-crew-trips.mjs :: Node.js v25.8.2
+1 scripts/check-password-recovery.mjs :: password recovery: 8 scenario(s) FAILED
+2 scripts/check-public-select-grants.mjs :: 
+1 scripts/check-required-trip-titles.mjs :: Node.js v25.8.2
+1 scripts/check-sales-trips-preview.mjs :: Node.js v25.8.2
+1 scripts/check-sales-trips-send.mjs :: Node.js v25.8.2
+0 scripts/check-schedule-allocation.mjs :: PASS no runtime errors; all database requests intercepted, zero real DB traffic.
+0 scripts/check-schedule-job-search.mjs :: PASS: CO spacing variants/identity, bare/customer/name searches, non-CO, fallback order, existing query/eligibility/IDs/cap, and query-error propagation.
+1 scripts/check-send-schedule-dates.mjs :: Node.js v25.8.2
+0 scripts/check-time-clock.mjs :: PASS Time Clock hours: lunch, overnight, missing events, drive, filters, CSV, and office writes.
+1 scripts/check-trip-owned-crew-preview.mjs :: Node.js v25.8.2
+0 src/field/lib/crewBoard.test.mjs :: crewBoard assertions passed
+0 src/lib/crewEligibility.test.mjs :: crewEligibility tests passed
+0 src/lib/jobsAmount.test.mjs :: jobsAmount tests passed
+0 src/lib/nextCoNumber.test.mjs :: nextCoNumber tests passed
+0 src/lib/passwordRecovery.test.mjs :: passwordRecovery: all scenarios passed
+0 src/schedule/lib/assignmentIdentity.test.mjs :: assignmentIdentity tests passed
+0 src/schedule/lib/crewStatus.test.mjs :: crewStatus assertions passed
+0 src/schedule/lib/scheduleCrew.test.mjs :: scheduleCrew tests passed

@@ -9,9 +9,9 @@ import {
   formatScheduledOffRange,
   groupContiguousDays,
   isCrewStatusOut,
-  nextWeekMonSat,
+  nextWeekMonSun,
   planScheduledOff,
-  thisWeekMonSat,
+  thisWeekMonSun,
 } from "./crewStatus.js";
 
 function assert(cond, msg) {
@@ -35,11 +35,13 @@ assert(eachInclusiveDay("2026-10-16", "2026-10-12").error, "TO before FROM is in
 assert(eachInclusiveDay("", "2026-10-12").error, "missing FROM is invalid");
 assert(eachInclusiveDay("2026-09-30", "2026-10-01").days.join(",") === "2026-09-30,2026-10-01", "range may cross months");
 
-const week = thisWeekMonSat("2026-09-15");
-assert(week.from === "2026-09-14" && week.to === "2026-09-19", `this week Mon-Sat ${week.from}..${week.to}`);
-const next = nextWeekMonSat("2026-09-15");
-assert(next.from === "2026-09-21" && next.to === "2026-09-26", "next week is the following Mon-Sat");
-assert(thisWeekMonSat("2026-09-15").from !== "2026-10-12", "this-week preset is not the displayed-week example");
+const week = thisWeekMonSun("2026-09-15");
+assert(week.from === "2026-09-14" && week.to === "2026-09-20", `this week Mon-Sun ${week.from}..${week.to}`);
+const next = nextWeekMonSun("2026-09-15");
+assert(next.from === "2026-09-21" && next.to === "2026-09-27", "next week is the following Mon-Sun");
+assert(thisWeekMonSun("2026-09-15").from !== "2026-10-12", "this-week preset is not the displayed-week example");
+const fromSunday = thisWeekMonSun("2026-09-20");
+assert(fromSunday.from === "2026-09-14" && fromSunday.to === "2026-09-20", "a Sunday is the last day of its own Mon-Sun week");
 
 const sundayRange = eachInclusiveDay("2026-10-11", "2026-10-12");
 assert(sundayRange.days[0] === "2026-10-11", "custom range may include Sunday");

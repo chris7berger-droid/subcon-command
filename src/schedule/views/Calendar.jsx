@@ -219,11 +219,9 @@ export default function Calendar() {
     const cells = buildGrid(year, month)
     const gStart = fmtD(cells[0])
     const gEnd = fmtD(cells[cells.length - 1])
-    const monday = parseYmd(weekStart)
-    const sun = new Date(monday); sun.setDate(monday.getDate() - 1)
-    const sat = new Date(monday); sat.setDate(monday.getDate() + 5)
-    const wStart = fmtD(sun)   // include Sunday so the weekend rule can see it
-    const wEnd = fmtD(sat)
+    const week = wkDates(parseYmd(weekStart))   // Mon–Sun
+    const wStart = week[0]
+    const wEnd = week[week.length - 1]
     return {
       start: gStart < wStart ? gStart : wStart,
       end: gEnd > wEnd ? gEnd : wEnd,
@@ -363,20 +361,9 @@ export default function Calendar() {
     return rows
   }, [year, month])
 
-  // Week columns: Mon–Sat, plus a Sunday column only when that week has Sunday
-  // work (Month/Week Sunday consistency — finding D).
-  const weekCols = useMemo(() => {
-    const monday = parseYmd(weekStart)
-    const cols = []
-    // Sunday column only when this week has Sunday work (Month/Week consistency).
-    const sunday = new Date(monday); sunday.setDate(monday.getDate() - 1)
-    const sundayWorked = filteredJobs.some(j => getCrewCountByYmd(j.job_id, fmtD(sunday)) > 0)
-    if (sundayWorked) cols.push(sunday)
-    // Mon–Sat via the canonical wkDates (queries.js) — no re-derived week math.
-    for (const ds of wkDates(monday)) cols.push(parseYmd(ds))
-    return cols
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekStart, filteredJobs, crewCountMap])
+  // Week columns: Mon–Sun, always, via the canonical wkDates (queries.js) — no
+  // re-derived week math.
+  const weekCols = useMemo(() => wkDates(parseYmd(weekStart)).map(parseYmd), [weekStart])
 
   const rows = useMemo(() => (view === 'month' ? monthRows : [weekCols]), [view, monthRows, weekCols])
   const maxLanes = showAll ? 999 : (view === 'month' ? MONTH_MAX_LANES : WEEK_MAX_LANES)

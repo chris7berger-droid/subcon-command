@@ -29,13 +29,13 @@ function fmtD(d) {
 function fmtWk(monday) {
   const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const end = new Date(monday)
-  end.setDate(end.getDate() + 5)
+  end.setDate(end.getDate() + 6)
   return ms[monday.getMonth()] + ' ' + monday.getDate() + ' - ' + ms[end.getMonth()] + ' ' + end.getDate() + ', ' + end.getFullYear()
 }
 
 function wkDates(monday) {
   const r = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const dt = new Date(monday)
     dt.setDate(dt.getDate() + i)
     r.push(fmtD(dt))
@@ -68,8 +68,8 @@ function printWin(title, bodyHtml) {
 export async function printWeekSchedule() {
   const monday = getMonday(new Date())
   const dates = wkDates(monday)
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const weStr = dates[5]
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const weStr = dates.at(-1)
   const wsStr = dates[0]
 
   const [jobs, asgnRes] = await Promise.all([
@@ -148,9 +148,9 @@ export async function printMaterialsList() {
 export async function printDailyStatus() {
   const monday = getMonday(new Date())
   const dates = wkDates(monday)
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const wsStr = dates[0]
-  const weStr = dates[5]
+  const weStr = dates.at(-1)
 
   const [crewRes, asgnRes, csRes, jobs] = await Promise.all([
     supabase.from('crew').select('*'),
@@ -167,11 +167,11 @@ export async function printDailyStatus() {
 
   let b = '<h2>Daily Crew Status</h2><div class="sub">' + fmtWk(monday) + '</div>'
   b += '<table><thead><tr><th>Crew</th>'
-  for (let i = 0; i < 6; i++) b += '<th>' + days[i] + ' ' + dates[i].split('-')[1] + '/' + dates[i].split('-')[2] + '</th>'
+  for (let i = 0; i < dates.length; i++) b += '<th>' + days[i] + ' ' + dates[i].split('-')[1] + '/' + dates[i].split('-')[2] + '</th>'
   b += '</tr></thead><tbody>'
   for (const c of crew) {
     b += '<tr><td>' + flipName(c.name) + '</td>'
-    for (let di = 0; di < 6; di++) {
+    for (let di = 0; di < dates.length; di++) {
       const st = csMap[c.name + '|' + dates[di]] || 'available'
       let assigned = null
       for (const a of assignments) {
