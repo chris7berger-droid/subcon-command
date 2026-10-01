@@ -166,3 +166,24 @@ Transcribed verbatim from the reviewer's proposed gate record (`recovery-t5`, em
 | Verdict | **BLOCKS-SHIP: 1** · SHOULD-FIX: 1 · HARDENING: 0 — gate not met |
 | Route | Finding 1 to T3, then T5 re-review of the fix |
 | Acceptance | standing (§9) |
+
+### 2026-10-01 — B124 password recovery — T5 Code Review, round 2
+
+Transcribed verbatim from the reviewer's proposed gate record and its stated limitations (`recovery-t5`, emitted to `/tmp/recovery-t5-clear.txt`).
+
+| Field | Value |
+|---|---|
+| Date | 2026-10-01 |
+| Role | T5 Code Review (existing `/fix` path, read-only), round 2 |
+| Agent/session | `5b538650-d476-4e72-9ad4-c1ff1fb58cf8` (cold; not the builder) |
+| Artifact | `90f890dcd5be5a8134af545d5a23f9b0654d9150..e5087360c4a5b4ceebecb7193ef09c0b98a2e729` |
+| Verdict | **BLOCKS-SHIP: 0** · SHOULD-FIX: 1 (round-1 residual, backlog) · HARDENING: 0 — gate met |
+| Acceptance | standing (§9) |
+
+Reviewer's limitations (verbatim):
+
+- **Nothing executed.** The 24/24 unit, 8/8 browser, and "two new cases fail against `36ce1c0`" claims are the builder's; I checked only what the tests assert.
+- **Git state not independently verified.** The target SHA is from the coordinator's `.review/target-sha.txt`; I could not confirm the worktree matches it.
+- **No doc changes in the diff.** The acceptance scope mentions "required docs"; the patch touches only the script, App, Login, the helper and its test. I did not assess whether docs are owed.
+- **No certification of the customer incident.** The actual incident cause is unproven, per the acceptance text.
+- Builder transcript and `BUILD-REPORT.md` were not opened.
