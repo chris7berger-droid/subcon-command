@@ -148,3 +148,21 @@ Migration `20260513000000_multi_gc_allocation` applied to prod (`pbgvgjjuhnpsumn
 **Post-apply smokes:** Smoke 1 (read path on scmybiz.com) — DEFERRED to next session per session-close. Smoke 2 (UX guard) — moot, guard reverted in `44f7c59` before smoke run. Smoke 3 (trigger NO-OP on real parent intro edit + DB query for `locally_edited_fields = {}`) — DEFERRED to next session. Migration is additive + IF NOT EXISTS-guarded + scratch-validated; smokes are due-diligence rather than risk-mitigating, low-priority deferral.
 
 Scratch project (`ibalavttrqjyijrnkwmd`, sc-scratch-multi-gc-1a) deleted post-validation per H5/S1 cleanup pattern.
+
+## Gate records
+
+One row per gate: Date · Role · Agent/session · Artifact · Verdict · Acceptance. Reviewer records are transcribed verbatim by T3; the reviewer's words are not edited.
+
+### 2026-10-01 — B124 password recovery — T5 Code Review
+
+Transcribed verbatim from the reviewer's proposed gate record (`recovery-t5`, emitted to `/tmp/recovery-t5-review.txt`). Only the Acceptance field is filled in by the transcriber.
+
+| Field | Value |
+|---|---|
+| Date | 2026-10-01 |
+| Role | T5 Code Review (existing `/fix` path, read-only) |
+| Agent/session | `5b538650-d476-4e72-9ad4-c1ff1fb58cf8` (cold; independent of builder `bb07d938-e6cb-4b33-bb24-b7110693ccf1`) |
+| Artifact | `90f890dcd5be5a8134af545d5a23f9b0654d9150..36ce1c0` as routed — full hash unresolved, worktree files reviewed |
+| Verdict | **BLOCKS-SHIP: 1** · SHOULD-FIX: 1 · HARDENING: 0 — gate not met |
+| Route | Finding 1 to T3, then T5 re-review of the fix |
+| Acceptance | standing (§9) |
