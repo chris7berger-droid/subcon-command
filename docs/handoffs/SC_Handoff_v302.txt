@@ -44,3 +44,15 @@ docs/agent-handoffs/evidence/sunday-parity/ · scripts/check-sunday-parity*.mjs
 
 GIT STATE
 feat/sunday-saturday-parity — local commits ahead of origin, nothing pushed by T3.
+
+UPDATE — T4 ROUND 1 FIX (same day)
+T4 Build vs Plan returned NO-GO (recorded in docs/AUDIT_LOG.md at 96e8eea).
+P1: the seventh crew-pool day dot overflowed its chip by 11px (App.css dots
+block was sized for six). Fixed in 019997b: that one rule is 125px -> 136px.
+The browser check now asserts pool-dot containment at 1440 and 1280; it fails
+on 3f6b3cf and passes on 019997b. The first build report's "no clipped" claim
+was wrong on this point and is corrected.
+P2: focused screenshots added for the pickers, crew week popup, expanded-row
+toggles, pool and both prints (evidence/sunday-parity/after/).
+Rerun: browser check 30 groups pass, model M1-M6 pass, build pass.
+NEXT: T4 delta review of 019997b, then T5, T6, Smoke, preview.

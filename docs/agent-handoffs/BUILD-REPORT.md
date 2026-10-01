@@ -1,12 +1,13 @@
 ## Status
 
-**F60 — Sunday = Saturday parity. Built and locally checked on `feat/sunday-saturday-parity`. Stopped at the T3 build gate. Not pushed, not reviewed, no preview, not merged, not in production.**
+**F60 — Sunday = Saturday parity. Built and locally checked on `feat/sunday-saturday-parity`. T4 round 1 returned NO-GO; its P1 is fixed and its P2 evidence is added in `019997b`. Stopped at the T3 gate for the T4 delta review. No preview, not merged, not in production.**
 
 | | |
 |---|---|
 | Branch | `feat/sunday-saturday-parity`, base `origin/main` `3145a7a` |
 | Plan | `docs/plans/sunday-scheduling.md` @ `bbe71e4ad1c79db530866fd63ea3631dd1f22520` (body verified identical at commit, index and working tree; only `## Audit manifest` differs) |
 | Build commit | `3f6b3cf8ac3df2ceef39654e10a429ca14f1a086` |
+| Fix for T4 round 1 | `019997ba8d5b62ea72c1b824f9ef46e127849cb9` |
 | Builder | T3 `t3-sunday-parity` · `2c23e844-d27d-4995-bdcc-7b0ef7430cb0` · https://claude.ai/code/session_01JQBVvRqXkNRVdkMBL7VRDh |
 
 Completion: code built **yes** · data applied **n/a (none)** · authenticated access verified **no** (synthetic fixtures only) · Chris accepted **no — not T3's to claim**.
@@ -21,9 +22,25 @@ Outcome: bar met locally for every §5 check T3 can run, with the limits listed 
 | T2 round 1 | NOT CONVERGED @ `745a291` | `docs/AUDIT_LOG.md`, `c6bdb7f` |
 | T2 round 2 | CONVERGED @ `bbe71e4` · standing (§9) | `docs/AUDIT_LOG.md`, `735b6e3` |
 | T3 Build | committed `3f6b3cf` | this file |
-| T4 / T5 / T6 / Smoke / Preview / Chris | not started | — |
+| T4 Build vs Plan, round 1 | NO-GO — P1 fails; several checks unverified because the reviewer could not run commands · standing (§9) | `docs/AUDIT_LOG.md`, `96e8eea` |
+| T3 fix for T4 | committed `019997b` (P1 fixed, P2 evidence added) | this file |
+| T4 delta review / T5 / T6 / Smoke / Preview / Chris | not started | — |
 
 T2's two non-blocking notes were applied as written: B13 is compared on the Monday–Saturday **day columns** (not week-wide pool totals), and the week-link check asserts that **no read for another week is sent**, which is tighter than W2's wording.
+
+## T4 round 1 — what was wrong and what changed
+
+**P1 — the seventh crew-pool day dot overflowed its chip. T4 was right, and this report's earlier "no clipped" and "deviations: none" claims were wrong on that point.** `App.css` fixed the pool chip's dots block at 125px, which fits a 62px label plus six dots. Seven need 136px, so the last dot and day letter spilled 11px. The plan's edit list did not name that rule, and my clipping check did not cover the pool dots.
+
+- Fix (`019997b`): that one rule is now 136px. No other style changed; Saturday's dot, the typography and the mobile layout are untouched.
+- New assertion in `scripts/check-sunday-parity.mjs`, at 1440 and 1280: every pool dot and day letter sits inside its block and inside the chip's content box, and each row has seven dots. It **fails on `3f6b3cf`** ("dots block overflows by 11px", on every chip with dots) and passes on `019997b`.
+- Cost of the fix: the chip's name area is 11px narrower. The fixture's names and tags fit; long real names were not tried.
+
+**P2 — missing visual evidence.** Added under `evidence/sunday-parity/after/`, at both widths unless noted, and each one opened and looked at by T3: `pool-*`, `assign-picker-*` (seven chips, Select all 7), `assign-picker-sunday-conflict-*` (only Sun enabled, other job named), `sick-picker-*`, `crew-week-popup-*`, `expanded-row-toggles-*` (deferred-start chips and per-person toggles Mo–Su), `print-week-schedule.png`, `print-daily-crew-status.png` (one size). The board, strip, Daily and Calendar screenshots were re-rendered by the same run.
+
+**P3 and the 15 base failures** are pre-existing and were not touched.
+
+Rerun for this fix: browser check 30 groups pass · model check M1–M6 pass · `npm run build` pass · ESLint on the three touched/new check files clean. The full existing suite was not rerun: only one CSS rule and the new check changed.
 
 ## Summary
 
@@ -99,7 +116,7 @@ What the browser script exercises, on the real DOM:
 - **Calendar:** week view Mon 28 … Sun 4, no column before Monday; after five Next presses the week of 11-02 reads `lte 2026-11-08` and draws the Sunday bar, which only passes with the fetch-range edit. Month view matches base.
 - **Daily, prints, texts, billing:** seven columns; prints end "Sun 10/04"; Midweek range "THU 10/1 – SUN 10/4 · today through Sunday" and the one-day Sunday case; Weekly send text matches base; billing header and forecast buckets read Monday – Sunday with rows and dollar figures equal to base.
 - **Dates:** fall-back week, year-end week and spring-forward week each show seven consecutive dates. With the clock in standard time, Monday links to daylight- and standard-time dates open the same week as base.
-- **Layout:** at 1440 and 1280, no sideways page scroll, no clipped header, count, `need N`, percent or TODAY tag; all seven day columns equal width; Sunday's header carries Saturday's classes. F4 did not trigger.
+- **Layout:** at 1440 and 1280, no sideways page scroll, no clipped header, count, `need N`, percent or TODAY tag; all seven day columns equal width; Sunday's header carries Saturday's classes; all seven crew-pool day dots inside their chip (added after T4 round 1 — the first build failed this). F4 did not trigger.
 
 ### Pre-existing failures (not caused by this build, not fixed)
 
@@ -122,12 +139,15 @@ So E5 is met only in this form: every existing check that passed on base still p
 
 - Registry: `aios/assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md`.
 - Read: `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` §1, §10 "Tables / schedules" and "Crew panels", §14, §17 (steps 9–10), §18 "AI coding-agent acceptance checklist".
-- Changed surfaces: crew board (seventh column, pickers, pool dots, popup), capacity strip (seventh card), Daily (seventh column), Calendar week view (seventh column), labels.
-- The diff adds no color, font, radius, shadow or token. Sunday uses Saturday's classes. Monday–Saturday columns differ from base in width only.
-- §14: no text size changed; dense text stays at its existing sizes at 1280.
-- Screenshots at both widths: `evidence/sunday-parity/base/` and `…/after/`.
-- deviations: none against the sections read.
-- Not performed: match to the canonical Crew Schedule image for column count (it shows six; the seventh is the requested change); §17 step 10 mobile/tablet (owned by the mobile slice); Visual Brand Guide not opened (no theme, surface, typography or imagery change); no contrast measurement (no color changed).
+- Canonical image `visual/crew-schedule-canonical.png`: **opened and compared** with `after/board-1440.png` and `base/board-1440.png`.
+  - Same in all three: dark header row over a linen grid, capacity cards with free/out badges and a percent bar, assignment blocks carrying a count and `need N`, grey placeholders for out-of-range days, pool chips with status dot and day dots.
+  - Different from the canonical image in **both** base and build, so not introduced here: the photo/sidebar shell (the check mounts the Schedule module without the app shell), the cyan accent and cyan today outline (the app shows green/teal and a green today wash), and the pool chip layout.
+  - Column count differs on purpose: six in the image, seven in the build. No match is claimed for it.
+- Surfaces looked at in screenshots (1440 and 1280): board, capacity strip, crew pool, Daily, Calendar week, assign picker (free and Sunday-conflict), Sick picker, crew week popup, expanded-row toggles and deferred-start chips; both prints at one size.
+- On those surfaces Sunday carries Saturday's classes and treatment, and the diff adds no color, font, radius, shadow or token. The one sizing change is the pool dots block (125px → 136px).
+- Deviations on the surfaces looked at: **one, found by T4 and now fixed** — the pool-dot overflow (P1). None other seen.
+- **Not looked at, so no claim is made:** Home, the Jobs page, the Billing header and forecast, the weekly-texts page and `/crew` (string and label changes only; asserted as text), the Scheduled Off modal, the three badge dialogs, the capacity day-detail modal and the Calendar month view.
+- Not performed: §17 step 10 mobile/tablet (owned by the mobile slice); Visual Brand Guide not opened (no theme, surface, typography or imagery change); no contrast measurement (no color changed); long crew names in the narrower pool chip.
 
 ## Deviations From Plan
 
