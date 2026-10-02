@@ -1,3 +1,234 @@
+## Report layout after the Sunday → mobile integration merge
+
+This file holds two prior build reports, each carried **verbatim** (byte-identical to the commit named). Neither was edited, re-tiered or re-worded by the merge. Their headings repeat (`## Status`, `## Summary`, `## Brand check`); read each inside its own marked block.
+
+- **Report A — F60 Sunday = Saturday parity**, from `0a78d32072135e9daa81d85dcb34abc8e1c83dd1:docs/agent-handoffs/BUILD-REPORT.md`.
+- **Report B — F65 Mobile web preview (phone shell)**, from `3059639108aad22c3076cf692aeea5731657b7a9:docs/agent-handoffs/BUILD-REPORT.md` (the mobile lineage; shell evidence commit `28c84681038d27e7cf481d77dd8d2787547ce250`).
+
+<!-- BEGIN REPORT A — verbatim from 0a78d32072135e9daa81d85dcb34abc8e1c83dd1 -->
+## Status
+
+**F60 — Sunday = Saturday parity. Built, reviewed (T4 GO, T5 0 blockers, T6 0 exploitable-today), smoke-tested, and walked read-only on a Ready Vercel preview with synthetic data. Stopped for Chris's preview acceptance. Not merged, not in production.**
+
+| | |
+|---|---|
+| Branch | `feat/sunday-saturday-parity`, base `origin/main` `3145a7a` |
+| Plan | `docs/plans/sunday-scheduling.md` @ `bbe71e4ad1c79db530866fd63ea3631dd1f22520` (body verified identical at commit, index and working tree; only `## Audit manifest` differs) |
+| Build commit | `3f6b3cf8ac3df2ceef39654e10a429ca14f1a086` |
+| Fix for T4 round 1 | `019997ba8d5b62ea72c1b824f9ef46e127849cb9` |
+| Builder | T3 `t3-sunday-parity` · `2c23e844-d27d-4995-bdcc-7b0ef7430cb0` · https://claude.ai/code/session_01JQBVvRqXkNRVdkMBL7VRDh |
+
+Completion: code built **yes** · data applied **n/a (none)** · authenticated access verified **no** (synthetic session and data only, locally and on the preview) · Chris accepted **no — pending his preview walk**.
+
+Outcome: bar met locally for every §5 check T3 can run, with the limits listed under "What this does not show". P (Vercel preview) and N (native device) are not T3-build steps.
+
+## Gates
+
+| Gate | Result | Recorded |
+|---|---|---|
+| T1 Planning lock | **Not recorded.** The plan's §A states Chris has not personally locked it; the coordinator directed the work forward under his "make Sunday match Saturday… go launch that work" direction. T3 built on the coordinator's explicit build instruction and carries this forward as an open provenance fact, not a resolved one. | plan §A |
+| T2 round 1 | NOT CONVERGED @ `745a291` | `docs/AUDIT_LOG.md`, `c6bdb7f` |
+| T2 round 2 | CONVERGED @ `bbe71e4` · standing (§9) | `docs/AUDIT_LOG.md`, `735b6e3` |
+| T3 Build | committed `3f6b3cf` | this file |
+| T4 Build vs Plan, round 1 | NO-GO — P1 fails; several checks unverified because the reviewer could not run commands · standing (§9) | `docs/AUDIT_LOG.md`, `96e8eea` |
+| T3 fix for T4 | committed `019997b` (P1 fixed, P2 evidence added) | this file |
+| T4 Build vs Plan, round 2 | GO · standing (§9) | `docs/AUDIT_LOG.md`, `31f1b13` |
+| T5 Code Review | 0 BLOCKS-SHIP · 0 SHOULD-FIX · 4 HARDENING · standing (§9) | `docs/AUDIT_LOG.md`, `9633576` |
+| T6 Security Review | 0 exploitable-today · 1 SHOULD-FIX (pre-existing) · 2 HARDENING · standing (§9) | `docs/AUDIT_LOG.md`, `6de19ad` |
+| Smoke + Preview | pass, with the limits below | this file |
+| Chris Acceptance | **pending** | — |
+
+All three reviews cover source `019997b`. `git diff 019997b..6de19ad` over `src`, `scripts`, `index.html`, `package.json`, `vite.config.js`, `public` and `vercel.json` is empty: only records changed after the reviewed source.
+
+T2's two non-blocking notes were applied as written: B13 is compared on the Monday–Saturday **day columns** (not week-wide pool totals), and the week-link check asserts that **no read for another week is sent**, which is tighter than W2's wording.
+
+## For Chris at the preview
+
+Preview: https://sales-command-git-feat-sund-2db8ee-chris7berger-droids-projects.vercel.app (PR #74, draft). It uses the production database, so anything saved there is real.
+
+What you will see:
+- A **Sunday column** on the crew board, the capacity strip, Daily and the Calendar week view, and Sunday in the pickers, pool dots, crew popup and prints. Weeks read "Sep 28 – Oct 4".
+- A **Sunday-only trip** now shows on its week's board and can be staffed like a Saturday trip.
+
+What comes with it, because Saturday already works this way:
+1. **Select all** on a trip that spans a weekend picks Sunday too.
+2. A trip spanning a weekend shows **Sunday as needing crew**.
+3. **Capacity and completion percentages include Sunday**, so they read lower in weeks with no Sunday crew.
+4. **Time off saved as Monday–Saturday does not cover Sunday.** That person shows free on Sunday, and their pool chip is **no longer greyed out** — it is a normal chip you can drag, with six off days and an open Sunday. Someone off all seven days is still greyed.
+5. The **Midweek Update** text runs through Sunday.
+6. **Open Crew Schedule** from a job's trips now opens the right week for trips that start on a Friday, Saturday or Sunday.
+
+Not changed: Saturday and Monday–Friday rules, the Month view, job-card day counts, billing numbers, the phone layouts, native Field, the Time Clock. There is no way to turn weekends off yet; that is the later work you set aside.
+
+None of the list above has been put to you before. Your walk is also the only signed-in check with real records.
+
+## Smoke and preview — 2026-10-01
+
+**Smoke (local, source `019997b`, tree at `6de19ad`)**
+
+| Check | Result | Run by |
+|---|---|---|
+| Browser parity check, 30 groups | pass | T3 at `019997b`; coordinator independently (exit 0, `/tmp/sunday-independent-browser.log`) |
+| Model check M1–M6, `TZ=America/Los_Angeles` | pass | T3; coordinator independently (`/tmp/sunday-independent-model.log`) |
+| `npm run build` | pass | T3; coordinator independently |
+| ESLint | 176 errors / 43 warnings, equal to base; per-file counts for every touched file equal to base | coordinator (`/tmp/sunday-independent-lint-comparison.txt`); T3 totals at `3f6b3cf` |
+| Every existing check, rerun for smoke | 23 pass, 15 fail — the same 15 as base and as the `3f6b3cf` run (`evidence/sunday-parity/checks-smoke.txt`) | T3, this pass |
+
+The smoke rerun closes the limit T4 and T5 named (the full suite had last run before the fix). It regenerated one screenshot (`after/daily-1440.png`), which was restored to the committed version; the tree was clean before these records were written.
+
+**Hosted preview walk (read-only)**
+
+- Served deployment: `dpl_77UMw7UTsm12ggwgEufM9RqBCA55`, status Ready, built from `6de19ad5f245d3d0d160ae50b8fca57a48232a3b` per the GitHub commit status and `vercel inspect` of the branch URL at 17:13 PDT. Its app source equals the reviewed `019997b`. The served bundle's hash was not read from the page itself.
+- Method: `scripts/check-sunday-parity-preview.mjs`, run through `vercel env run` from a linked checkout, the repo's existing way past Deployment Protection. Protection was left on; the short-lived token went only to the preview's own origin.
+- **What kind of evidence this is:** the real hosted bundle in the real app shell, with a **synthetic session injected into the browser — not a real sign-in** — and every database request answered from the synthetic fixture. Every write is refused and fails the run; sockets are closed; other hosts are aborted. Pickers were opened and closed; nothing was saved.
+- Result: pass (`evidence/sunday-parity/preview/run.txt`, screenshots beside it). Zero writes attempted. One auth call (`GET /auth/v1/user`) was answered by the fixture. No socket was opened. `fonts.googleapis.com` was aborted, so the preview screenshots use fallback fonts.
+- Walked, at 1440 and 1280 inside the app shell with the sidebar: seven columns MON 09/28 … SUN 10/04; week reads Monday–Sunday; the Sunday-only trip row; the SUN 4 card; no sideways scroll, no clipped label, pool dots inside their chips; assign picker with only Sun enabled; Sick picker with seven chips; crew week popup. Also: a Sunday `?week=` link opening its own week with no other week read; Calendar week Mon 28 … Sun 4; Daily's seven columns.
+- This is the first check with the sidebar present. The local harness mounts the Schedule module without the shell, so the board is narrower here; at 1280 the day cells are tight but nothing clips.
+
+**Not done, and why**
+- **No signed-in walk with real records.** No agent signs in to the preview because it shares the production database.
+- Hosted walk subset only: no assign, edit, remove, status or Scheduled Off save; no prints, texts, Home, Jobs or Billing on the hosted bundle. Those are covered locally with fixtures.
+- **Native Field:** source and synthetic checks only; no device.
+- Production was not checked for existing Sunday rows (U4).
+- Long crew names in the 11px-narrower pool chip: not tried. Worth a glance at the preview.
+
+**Follow-ups filed, not fixed:** F67 (T5's four hardening items plus T6's two), S16 (pre-existing unescaped print HTML, own track). T5's record says "filed as one backlog item"; the reviewer wrote no file — the rows were written in this pass.
+
+## T4 round 1 — what was wrong and what changed
+
+**P1 — the seventh crew-pool day dot overflowed its chip. T4 was right, and this report's earlier "no clipped" and "deviations: none" claims were wrong on that point.** `App.css` fixed the pool chip's dots block at 125px, which fits a 62px label plus six dots. Seven need 136px, so the last dot and day letter spilled 11px. The plan's edit list did not name that rule, and my clipping check did not cover the pool dots.
+
+- Fix (`019997b`): that one rule is now 136px. No other style changed; Saturday's dot, the typography and the mobile layout are untouched.
+- New assertion in `scripts/check-sunday-parity.mjs`, at 1440 and 1280: every pool dot and day letter sits inside its block and inside the chip's content box, and each row has seven dots. It **fails on `3f6b3cf`** ("dots block overflows by 11px", on every chip with dots) and passes on `019997b`.
+- Cost of the fix: the chip's name area is 11px narrower. The fixture's names and tags fit; long real names were not tried.
+
+**P2 — missing visual evidence.** Added under `evidence/sunday-parity/after/`, at both widths unless noted, and each one opened and looked at by T3: `pool-*`, `assign-picker-*` (seven chips, Select all 7), `assign-picker-sunday-conflict-*` (only Sun enabled, other job named), `sick-picker-*`, `crew-week-popup-*`, `expanded-row-toggles-*` (deferred-start chips and per-person toggles Mo–Su), `print-week-schedule.png`, `print-daily-crew-status.png` (one size). The board, strip, Daily and Calendar screenshots were re-rendered by the same run.
+
+**P3 and the 15 base failures** are pre-existing and were not touched.
+
+Rerun for this fix: browser check 30 groups pass · model check M1–M6 pass · `npm run build` pass · ESLint on the three touched/new check files clean. The full existing suite was not rerun: only one CSS rule and the new check changed.
+
+## Summary
+
+Every Schedule surface that showed, loaded or totalled Monday–Saturday now uses Monday–Sunday. Sunday is the seventh day, after Saturday, always shown, and takes Saturday's existing rules and classes. No Saturday or Monday–Friday rule changed.
+
+One fix beyond Sunday (S10): the crew board turned `?week=<date>` into a week by rounding days ÷ 7, so a Friday, Saturday or Sunday date opened the following week. Both read sites now share one helper that takes the Monday of the target date. Monday links are arithmetically unchanged.
+
+## Files Changed
+
+App (13 files, +72 / −86):
+
+- `src/schedule/views/Schedule.jsx` — day labels gain `Su` / `Sun`; week list is seven dates; week end and both reads use the list's last date; label Monday – Sunday; crew popup grid follows the list length; `weekOffsetFor()` used by both `?week=` sites.
+- `src/schedule/App.css` — board grid and capacity strip grid `repeat(7, 1fr)` (lines 1103, 6768 only).
+- `src/schedule/lib/queries.js` — `wkDates` returns seven dates; `getJobMultiWeekAlert` checks seven days per later week.
+- `src/schedule/lib/weeks.js` — `fmtWk` ends on Monday+6.
+- `src/schedule/components/HomeCapacityStrip.jsx` — `SUN` label.
+- `src/schedule/views/Calendar.jsx` — week view is `wkDates(monday)`, Sunday last, always; week fetch range is Monday–Sunday. The on-demand Sunday column before Monday is gone.
+- `src/schedule/views/Daily.jsx`, `src/schedule/lib/exports.js` — seven days.
+- `src/schedule/lib/crewWeekText.js` — Midweek Update runs today through Sunday. `src/schedule/views/CrewPhone.jsx` — five strings say Sunday.
+- `src/schedule/lib/crewStatus.js`, `src/schedule/components/ScheduledOffModal.jsx` — the two presets fill Monday → Sunday (`thisWeekMonSat` / `nextWeekMonSat` renamed `…MonSun`; no other caller).
+
+Checks:
+
+- New: `scripts/check-sunday-parity.mjs` (browser, 30 check groups), `scripts/check-sunday-parity-model.mjs` (M1–M6), `scripts/sunday-parity-fixture.mjs` (the plan's §5 fixture, synthetic names).
+- Restated for the seven-day week, as the plan's §3 lists: `scripts/check-crew-midweek-text-model.mjs`, `scripts/check-crew-phone.mjs`, `scripts/check-crew-week-summary.mjs`, `src/schedule/lib/crewStatus.test.mjs`.
+
+Records: this file, `docs/BACKLOG.md` (F60 row, F67, S16; stale "pending merge" note at line 9), `scripts/check-sunday-parity-preview.mjs` (read-only hosted walk), `docs/handoffs/SC_Handoff_v302.txt`, evidence under `docs/agent-handoffs/evidence/sunday-parity/`.
+
+No schema, migration, RLS, edge function, dependency, config or env change. No new Supabase call site.
+
+## Important Implementation Decisions
+
+- **One week list on the board (E3).** Columns, labels, pickers, dots, the popup, both reads and the capacity strip all follow `dates`; the ends are `dates.at(-1)`, not an index.
+- **Week links: one helper, both sites.** `weekOffsetFor(week)` = whole weeks between this week's Monday and the Monday of the target date. Because both sites now compute the same value, the mount effect no longer overwrites the initial state with a different week, so no wrong-week read is sent.
+- **Calendar week range starts on Monday.** Base fetched from the Sunday *before* Monday so the old leading Sunday column could see its crew. That column no longer exists, so the range is the week itself. The month-grid union is unchanged. This is inside C6 ("the Calendar week range").
+- **Left alone, per the plan:** the dead six-day code (`wkEnd` in `Schedule.jsx`, `StatsBar.jsx`, `App.css:391`, `:757`); the duplicate week helpers; `billingForecast.js:272`.
+
+## Verification Performed
+
+All data synthetic. Every backend request was answered inside the browser from an in-memory fixture; the harness refuses any write other than `POST`/`DELETE assignments` and the `crew_status` upsert. No sign-in anywhere, no production read or write.
+
+Tooling: Playwright is not a repo dependency. Run with `PLAYWRIGHT_MODULE=<path to playwright-core/index.mjs> CHROME_PATH=<Chrome> TZ=America/Los_Angeles node scripts/check-sunday-parity.mjs`.
+
+**Base evidence, recorded before the first app edit**
+
+- U1 — base screenshots of the populated board, strip, Daily and Calendar week at 1440×900 and 1280×800: `evidence/sunday-parity/base/`.
+- U2 — every `scripts/check-*.mjs` and `*.test.mjs` on base: 21 pass, 15 fail. `evidence/sunday-parity/checks-base.txt`.
+- U3 — ESLint on base: 176 errors, 43 warnings (268 files).
+- U4 — **not observed.** Production was not queried. B14 covers existing Sunday rows with the fixture.
+
+"Matches base" values were recorded by running the new scripts with `SUNDAY_PARITY_BASE=1` while the app edits were stashed (`base-snapshot.json`, `base-model-snapshot.json`), then asserted against the build.
+
+**Results on the build**
+
+| Check | Result |
+|---|---|
+| `scripts/check-sunday-parity-model.mjs` — M1–M6 | pass |
+| `scripts/check-sunday-parity.mjs` — B1–B15, H1–H2, K1–K4, D1–D2, X1–X2, T1–T2, L1, W1–W3, F1–F2 | pass, 30 groups |
+| Full run of every existing check | 23 pass, 15 fail — **the same 15 as base**, no new failure (`checks-after.txt`) |
+| `scripts/check-crew-phone.mjs` with a local fixture dev server on 5197 | pass on base (original script) and on the build (restated script) |
+| `npm run build` | pass |
+| `npx eslint .` | 176 errors, 43 warnings — equal to base; no touched file's count changed |
+| E1 zero-diff list | `git diff 3145a7a` over the §3 zero-diff files and the "expected zero diff" files is empty |
+
+What the browser script exercises, on the real DOM:
+
+- **Board:** seven columns MON 09/28 … SUN 10/04; reads `gte 2026-09-28` / `lte 2026-10-04`; Saturday-only and Sunday-only trips are rows on that week and not the next.
+- **Assign / edit / remove:** dragging a person onto a Sunday-only trip shows seven chips with only Sun enabled and sends exactly one `POST` carrying the trip id (and `team_member_id` for a linked person, `null` for an unlinked one); Saturday is identical. Su and Sa toggles each send one `POST` then one `DELETE` naming that row id. ✕ deletes only that person's rows on that trip.
+- **Overlapping trips:** turning Sunday off on the short trip deletes that one row id; the long trip's Sunday row keeps its id and date; the picker labels it "(another trip)".
+- **Select all:** 7 for a free person; 6 leaving Sunday out for someone Scheduled Off Sunday; 6 leaving Saturday out for someone Sick Saturday; the out day still saves when picked by hand.
+- **Time off:** Sick picker has seven chips and writes one row for Sunday; Scheduled Off presets fill 09-28 → 10-04 and 10-05 → 10-11; the review lists the Saturday and Sunday assignments and changes neither. A person off Monday–Saturday is a normal draggable chip with an open Sunday (greyed on base); a person off all seven days stays greyed.
+- **Capacity:** seven cards; SUN 4 reads `3 / 8`, 38%, 5 free, 2 out — the fixture's truth by Saturday's formula. Home's Crew Capacity is the rounded mean of seven percentages.
+- **Calendar:** week view Mon 28 … Sun 4, no column before Monday; after five Next presses the week of 11-02 reads `lte 2026-11-08` and draws the Sunday bar, which only passes with the fetch-range edit. Month view matches base.
+- **Daily, prints, texts, billing:** seven columns; prints end "Sun 10/04"; Midweek range "THU 10/1 – SUN 10/4 · today through Sunday" and the one-day Sunday case; Weekly send text matches base; billing header and forecast buckets read Monday – Sunday with rows and dollar figures equal to base.
+- **Dates:** fall-back week, year-end week and spring-forward week each show seven consecutive dates. With the clock in standard time, Monday links to daylight- and standard-time dates open the same week as base.
+- **Layout:** at 1440 and 1280, no sideways page scroll, no clipped header, count, `need N`, percent or TODAY tag; all seven day columns equal width; Sunday's header carries Saturday's classes; all seven crew-pool day dots inside their chip (added after T4 round 1 — the first build failed this). F4 did not trigger.
+
+### Pre-existing failures (not caused by this build, not fixed)
+
+Identical on base and build: `check-crew-first-deletion`, `check-crew-schedule-eligibility` (port 5199 held by another session's process); `check-crew-phone` (needs a dev server — passes with one); `check-crew-week-summary` (fails at the same `:115` assertion "2 / 4 assigned · needs 2 more" before and after; its week labels and day count were restated and it now runs as far as it did on base); `check-job-trips-model`, `check-job-trips`, `check-overlapping-crew-trips`, `check-required-trip-titles`, `check-sales-trips-send`, `check-send-schedule-dates`, `check-password-recovery` (assertion or timeout failures); `check-legacy-trip-conversion-preview`, `check-sales-trips-preview`, `check-trip-owned-crew-preview` (need `PREVIEW_URL`); `check-public-select-grants` (needs a linked Supabase project).
+
+So E5 is met only in this form: every existing check that passed on base still passes unedited. `check-overlapping-crew-trips.mjs` and `check-job-card-schedule.mjs`-class coverage of trip ownership rests on the model checks that pass plus B4/B7 here, because the overlapping-trips browser check was already failing on base.
+
+### What this does not show
+
+- **No signed-in user, no real records.** Fixtures only (repo `CLAUDE.md` Workflow Rule 10).
+- **No Vercel preview.** Nothing was pushed.
+- **W1 was not clicked through the Trips panel.** The check opens the exact URL `TripsPanel.jsx:100` builds (`?job=&week=<trip start>&trip=`); that file is unchanged.
+- **X2** asserts the seven column headers and that Sunday cells are filled; it compares Sunday's Scheduled Off label to Saturday's instead of pinning the string.
+- **L1** has one partly billed job (job R) in the browser fixture; the Saturday-vs-Sunday twin comparison is in the model check (M4).
+- **M4 detail worth a reviewer's eye:** the worklist's internal `arm` is `production` for the Saturday-dated twin and `null` for Sunday-dated job R, on base and build alike. That is the `billingForecast.js:272` window the plan leaves alone; row, status, label and amounts are equal, which is what the plan claims.
+- **Phone layouts, native Field, Time Clock:** not exercised beyond `check-time-clock.mjs` passing unedited.
+- **Production Sunday rows (U4):** not inspected.
+
+## Brand check
+
+- Registry: `aios/assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md`.
+- Read: `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` §1, §10 "Tables / schedules" and "Crew panels", §14, §17 (steps 9–10), §18 "AI coding-agent acceptance checklist".
+- Canonical image `visual/crew-schedule-canonical.png`: **opened and compared** with `after/board-1440.png` and `base/board-1440.png`.
+  - Same in all three: dark header row over a linen grid, capacity cards with free/out badges and a percent bar, assignment blocks carrying a count and `need N`, grey placeholders for out-of-range days, pool chips with status dot and day dots.
+  - Different from the canonical image in **both** base and build, so not introduced here: the photo/sidebar shell (the check mounts the Schedule module without the app shell), the cyan accent and cyan today outline (the app shows green/teal and a green today wash), and the pool chip layout.
+  - Column count differs on purpose: six in the image, seven in the build. No match is claimed for it.
+- Surfaces looked at in screenshots (1440 and 1280): board, capacity strip, crew pool, Daily, Calendar week, assign picker (free and Sunday-conflict), Sick picker, crew week popup, expanded-row toggles and deferred-start chips; both prints at one size.
+- On those surfaces Sunday carries Saturday's classes and treatment, and the diff adds no color, font, radius, shadow or token. The one sizing change is the pool dots block (125px → 136px).
+- Deviations on the surfaces looked at: **one, found by T4 and now fixed** — the pool-dot overflow (P1). None other seen.
+- **Not looked at, so no claim is made:** Home, the Jobs page, the Billing header and forecast, the weekly-texts page and `/crew` (string and label changes only; asserted as text), the Scheduled Off modal, the three badge dialogs, the capacity day-detail modal and the Calendar month view.
+- Not performed: §17 step 10 mobile/tablet (owned by the mobile slice); Visual Brand Guide not opened (no theme, surface, typography or imagery change); no contrast measurement (no color changed); long crew names in the narrower pool chip.
+
+## Deviations From Plan
+
+None in behavior. Two things a reviewer should know: the two preset functions were renamed (`…MonSat` → `…MonSun`), and the Calendar week fetch now starts on Monday instead of the Sunday before.
+
+## Issues / Follow-up
+
+- **Chris has not seen** the plan's expectation list or the pool-chip consequence (B15). He first sees them at the preview.
+- T2's three adjacent items (Select all replacing a saved out-of-range day; a status save overwriting Scheduled Off; the Prev/Next pulse reading the loaded week) behave for Sunday as they do for Saturday. Not changed, not filed by T3.
+- Optional weekends / Select-all reform: deferred by Chris, not designed.
+- Mobile slice integration (plan §3): not started; this build never touched the mobile worktree.
+- The 15 pre-existing check failures above are unowned by this slice.
+<!-- END REPORT A -->
+
+<!-- BEGIN REPORT B — verbatim from 3059639108aad22c3076cf692aeea5731657b7a9 -->
 ## Preview archive guard — current addendum
 
 Guard commit `44a94bd554ffd3bdafd519961a4c5812355ca6f0` is pushed on `feat/mobile-web-preview`. Vercel reports **Ready**, target **preview**, deployment `dpl_H1VZUTxhLc3LcPvELvjeF4riWgJ6`: https://sales-command-nc4um1vj7-chris7berger-droids-projects.vercel.app . This supersedes the unguarded deployment URLs below; do not reuse those older immutable URLs for a signed-in look. The final documentation commit will have its own deployment, verified separately by the coordinator.
@@ -195,3 +426,4 @@ Not performed:
 A recorded disposition for B1 · Chris's look at the preview on a real phone and his acceptance · no merge or production release without it. Non-blocking review findings are backlog rows O12 (T4) and O13 (T5, T6).
 
 **The preview is not a test sandbox.** It runs against the production database (plan §0.8): signing in loads real records, and Save, Send, Delete, Move to Old Jobs and Invite change them. A look on a phone should be read-only.
+<!-- END REPORT B -->

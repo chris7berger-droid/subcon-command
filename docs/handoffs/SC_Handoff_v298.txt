@@ -1,85 +1,158 @@
-SC Handoff v298 — Call Log brand preview — 2026-10-01
+RELEASE STATUS UPDATE — 2026-10-01: Chris accepted the tested PR #73 fix and approved release, substituting the completed AIOS T5/T6 reviews for disabled Bugbot for this PR only. Original approval verified directly by the coordinator; exact evidence is in docs/AUDIT_LOG.md. Merge and production verification are the remaining execution steps. Earlier blocked/pending-acceptance statements below are superseded by this update. Final deployment evidence will be recorded on PR #73. No live customer password or native login has been verified.
+
+SC Handoff v298 — Password recovery lifecycle fix (B124) — 2026-10-01
 
 SESSION SUMMARY
-Chris requested the existing desktop Call Log HOME screen themed using the
-uploaded standards, on a separate branch with a Vercel preview. Preview-only;
-no main merge, production deploy, data changes or mass redesign authorized.
+In-flow /fix for a failed customer password recovery, run through the AIOS
+dev roles. Code, tests, Code Review (2 rounds), Security Review and the
+Vercel preview are COMPLETE on fix/recovery-save-stability (draft PR #73).
+NOT merged. NOT in production. BLOCKED on Bugbot: it did not run (disabled
+for this repository). Pending: Chris's decision on Bugbot, Chris's
+acceptance, and explicit merge/production approval.
 
-CHANGES PREPARED FOR PREVIEW
-Route /sales/calllog keeps Pipeline, Where to Dig, Where to Hunt and All Jobs.
-Warm woven shell, espresso framing, cyan controls, readable Light Glass data
-surfaces, condensed command headings, Inter data, compact radii, clear focus.
-The theme is gated in AppShell to the exact Call Log list route (with optional
-trailing slash). Shared components use CALLLOG_C CSS variables with the exact
-old C literals as fallbacks. C itself, the logo, PDF/export logic and other
-screens retain their existing values. Job details remain outside this theme.
-No fetch, selector, monetary calculation, mutation or navigation handler changed.
+Everything was verified with synthetic fixtures. No real account, no live
+auth, no native app, no customer confirmation.
 
-DECISIONS / BRAND EVIDENCE
-Read assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md at AIOS snapshot
-565a1bac6efe01d29700162f2474283b827e8c3f in the isolated brand worktree.
-Read governing source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md, especially
-sections 4–11, 14, acceptance checklist 18 and Locked identity mark section.
-Extracted governing Subcon_Command_Visual_Brand_Guide.docx text and inspected
-visual/crew-schedule-canonical.png plus registered logo/poster reference PNGs.
-Applied high-opacity Light Glass to dense areas; photography is not required
-for this scoped pass. No invented production logo or new image asset.
-Darker cyan/semantic text inks support contrast on light surfaces; command
-instrumentation uses the specified bright cyan/semantic accents.
+CAUSE
+verifyOtp({type:"recovery"}) saves a session and emits PASSWORD_RECOVERY
+before it returns. App.jsx applied that session. The logged-out branch
+unmounted with the Login that held the reset form. A rejected or slow
+updateUser then reported to a dead component: user inside the app on the
+recovery session, old password still in force, no error.
+Reproduced against origin/main with synthetic auth. The real customer's exact
+outcome is NOT proven: no customer data, code, token or auth log was read,
+and this work has no evidence of the customer's actual save result.
 
-NEW/CLOSED BACKLOG ITEMS
-Call Log brand preview: In Progress, awaiting Chris's visual acceptance.
-Separate responsive child will build from this branch's completed commit;
-no shared navigation refactor in this task. Existing expanded sidebar is not
-phone-friendly; phone checks here use its existing Collapse control.
+CHANGES (code = e508736)
+src/lib/passwordRecovery.js (new, pure) — recovery hold, auth-event decision,
+  marker rule, startup rule, reset flow bound to the verified auth user id.
+src/App.jsx — holds session-bearing auth events during a reset; never applies
+  a hashless PASSWORD_RECOVERY; on startup ends an unfinished recovery session
+  instead of admitting it; "Remember me"-off startup sign-out skips a tab
+  opened by a recovery link; applies a confirmed password sign-in.
+src/pages/Login.jsx — one mounted form through verify -> save -> sign-out;
+  rejected save retries without re-verifying; sign-out result checked; link
+  mode (no code field); Back / Request a new code end the recovery session;
+  no longer strips a token-bearing URL hash before the auth client reads it.
+src/lib/passwordRecovery.test.mjs, scripts/check-password-recovery.mjs (new).
+No dependency, migration, edge function, mail, Supabase setting or native
+change.
+
+DECISIONS
+- Hold the App's state rather than move/remount Login mid-submit.
+- Marker localStorage sc_recovery_user = verified user id while a reset is
+  unfinished. Never a code or password. Cleared only after a confirmed
+  sign-out or a successful password sign-in.
+- Refresh/return during an unfinished reset ENDS the recovery session (new
+  code needed) rather than resuming it.
+- Link recovery was broken on origin/main too; fixed because links were in
+  scope.
+
+GATES (docs/AUDIT_LOG.md, "Gate records")
+T3 build            36ce1c0
+T5 round 1          not met, 1 BLOCKS-SHIP + 1 SHOULD-FIX     recorded bf13720
+T3 fix for T5       e508736 (marker cleared while session still alive)
+T5 round 2          met, 0 BLOCKS-SHIP                         recorded 3031f0c
+T6                  0 exploitable-today, 3 HARDENING           recorded 2a132f2
+Smoke + Preview     8/8 on the Ready preview                   BUILD-REPORT.md
+T4 does not apply (no plan on the /fix path). Both reviews were source-only;
+neither reviewer ran the tests. T5 did not review the docs.
+
+Sessions — all Claude Opus 5.5, AIOS spawn wrapper in a Codex PTY (not an
+AIOS.app-owned terminal), no orchestration changes:
+T3 recovery-t3 bb07d938-e6cb-4b33-bb24-b7110693ccf1
+   https://claude.ai/code/session_0152qUjdUWv8uCtefmLaMaE4
+T5 recovery-t5 5b538650-d476-4e72-9ad4-c1ff1fb58cf8
+   https://claude.ai/code/session_01Vi21HLkdfJJn3yhzdu7H7d
+T6 recovery-t6 521dd74e-d33b-4ef6-b288-4533da8abb87
+   https://claude.ai/code/session_01Ampob28KJy3ZWFBWu6983s
 
 VERIFICATION
-Local npm run build passed (existing dynamic/static import warning).
-Full ESLint: baseline and candidate both 176 errors, 43 warnings; same rule
-findings. Focused touched files: 8 pre-existing errors, 3 warnings.
-git diff --check passed.
-Public grants check cannot run on this unlinked checkout; public pages and
-public queries are unchanged. The installed pre-push guard only requires the
-check when those files change. No hook bypass or DB linking is needed.
-Local headless Chrome, synthetic API records and fake test auth only. API
-writes blocked at interception; no real customer actions, calls, emails or
-records. Browser plugin's required execution tool was unavailable after both
-specified discovery searches, so standalone local browser fallback was used.
-Verified pipeline drilldown, search and zero results, stage/old jobs, Rep/date
-filters, combined Clear, repeated sorting, manager scope, priority expand/
-collapse, Hunt refresh/back/pin/return, Log Outcome validation/cancel, repeated
-New Inquiry advance/close, cyan keyboard focus, detail navigation and Back,
-sidebar navigation away/back and route theme removal. Inspected 1440, 1024,
-768 and 390 pixels (existing sidebar collapsed at 390). No content overflow.
-Screenshots and test receipts are in the parent task's local qa directory,
-not committed to this public repository. They contain synthetic names only.
-Vercel deployment readiness, exact source SHA and deployed browser result are
-reported in the task completion after this commit triggers the Git integration.
-Fixture UI checks do not prove live authenticated records/RLS access.
+Preview (Ready): https://sales-command-l00n980aw-chris7berger-droids-projects.vercel.app
+  deployment dpl_9Ng1qMUpdnByUSSwjwYz1vHamHxf, git 3031f0c. App source is
+  identical to reviewed e508736 (git diff over src, scripts, index.html,
+  package.json is empty).
+  scripts/check-password-recovery.mjs, 2026-10-01 16:04-16:05 UTC: 8/8 pass.
+  Run through `vercel env run`; Deployment Protection left on.
+Local production builds: 8/8 on e508736; 6/8 on 36ce1c0 (the two T5 scenarios
+  fail, expected); first six scenarios 5/6 FAIL on origin/main 90f890d
+  (expected red).
+node src/lib/passwordRecovery.test.mjs — 24/24.
+npm run build — pass.
+npx eslint . — 219 problems, identical to origin/main; 1 pre-existing error
+  in the changed files (App.jsx /terms redirect).
+Limits: synthetic fixtures only. Every Supabase/edge request was intercepted.
+No real account, no live auth, no native app, no customer confirmation.
+The earlier preview at 36ce1c0 is superseded.
+
+NEW/CLOSED BACKLOG ITEMS
+B124 In Progress (stays open until merged and accepted).
+New B125 (T4) — T6 hardening, 3 items, none exploitable today.
+New B126 (T4) — T5 SHOULD-FIX: saved-status message lost after refresh.
+Nothing closed. B77 invite half unchanged.
 
 NOT TOUCHED
-Production/main, AIOS, database/schema/records, logo assets/geometry,
-field-command mobile app, unrelated deductive-change-order work, other pending
-feature branches, authentication, app permissions, Vercel settings/security.
+Edge functions (reset-password, invite-user), email templates and sending,
+Supabase auth settings, Vercel config and protection, migrations,
+lib/auth.js, invite/WelcomeScreen flow, native apps, other worktrees' files,
+and the original sales-command checkout's files.
+
+OPERATIONAL CAVEAT — test-server cleanup
+While restarting its own local test servers the build terminal used pattern
+kills: pkill -f "vite --port 5197", pkill -f "vite --port 5198", and
+pkill -f "vite preview --outDir" (twice). These were not limited to its own
+PIDs. Existing office dev servers on 127.0.0.1:5173, :5199, :5201 and :5387
+were seen running afterwards, but that does not prove no other matching
+process was interrupted. If a `vite preview` server, or a dev server on 5197
+or 5198, was found dead around 15:30-15:55 UTC on 2026-10-01, this is the
+likely cause. No pattern kills were used after that; none in the preview
+step.
 
 NEXT SESSION POINTERS
-Review the Vercel preview with Chris. Do not merge/release without approval.
-The responsive child may use this branch commit as its base and coordinate
-App.jsx/AppSidebar/tokens/CSS changes. Avoid applying this theme globally by
-accident. All Call Log rules live under .sc-calllog in calllog-brand.css.
+1. Bugbot on PR #73: invoked by the coordinator with parent authorization,
+   https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935475940
+   RESULT: SKIPPED — Bugbot is disabled for this repository. It did not
+   review anything. Evidence:
+   https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935477064
+   request id serverGenReqId_8ffb0f08-00d0-4816-9809-cb0f49d17dba
+   This is NOT a clear or passed automated review. The repo rule requires
+   one Bugbot pass before merging an app change, so merge is blocked until
+   Chris either enables Bugbot and it runs, or explicitly waives it /
+   accepts the completed AIOS T5 + T6 reviews as the substitute. No
+   settings change was authorized or made.
+2. Chris walks the preview and accepts, or not. Then explicit merge and
+   production approval. Nothing here is that approval.
+3. A real customer password save and login is Jacob's action AFTER a
+   separately approved release. It is not a QA step in this work.
+4. Bounced reset email (Resend) is a SEPARATE issue, not addressed here.
+   Smallest supported follow-up per the routing: review the provider's
+   bounce metadata / support, with no further sends and no settings changes.
+5. B125 item 1 was introduced by this change; fold B125 into the next auth
+   touch.
+6. docs/runbooks/rls-deploy-gates.md is still missing (pre-existing, BACKLOG
+   O4 -> handoff v83 lines 64-89). No RLS change in this slice.
 
 FILES TO KNOW
-src/pages/CallLog.jsx
-src/styles/calllog-brand.css
-src/lib/tokens.js (additive CALLLOG_C and CALLLOG_THEME)
-src/App.jsx (exact route gate)
-Shared components changed only for scoped tokens/CSS hooks/pressed semantics.
-docs/BACKLOG.md
+src/lib/passwordRecovery.js
+src/lib/passwordRecovery.test.mjs
+scripts/check-password-recovery.mjs
+src/App.jsx (auth effect), src/pages/Login.jsx (handleReset, leaveReset,
+  handleSubmit)
+docs/agent-handoffs/BUILD-REPORT.md
+docs/AUDIT_LOG.md (Gate records)
+docs/BACKLOG.md (B124, B125, B126)
 
 GIT STATE
-Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-2/calllog-preview
-Branch feat/calllog-brand-preview
-Base 90f890dcd5be5a8134af545d5a23f9b0654d9150 verified against GitHub main
-and Vercel production dpl_5fkyShmqucV9wYRDzEWpSut2i3HH.
-Original /Users/chrisberger/sales-command remains on feat/deductive-change-orders
-with its unrelated untracked AGENTS.md/.agents preserved.
+Branch fix/recovery-save-stability on origin/main 90f890d:
+  36ce1c0 build · bf13720 T5 r1 gate · e508736 T5 fix · 3031f0c T5 r2 gate ·
+  2a132f2 T6 gate · then this closeout commit (docs only).
+Closeout commit 7a711810fec019ff1a18b99bb1ab13efd7d665f7 is pushed: local
+HEAD and origin/fix/recovery-save-stability both resolved to it after a
+fetch. This correction commit follows it, docs only, and is not pushed by
+the build terminal — the coordinator pushes. A further docs-only commit
+records the Bugbot result (skipped, disabled for the repository).
+No source change and no test rerun since e508736 / the preview run.
+Worktree: /Users/chrisberger/Documents/Codex/2026-10-01/task/recovery-fix
+(node_modules installed there, untracked). The coordinator's temporary
+.review/ inputs were removed after review; the worktree was clean before
+this commit. No deployment, no merge.

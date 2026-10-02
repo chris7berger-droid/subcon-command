@@ -19,6 +19,9 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
 | 2026-09-30 | Mobile web preview — T5 Code Review · build 34af375..db14d25 (app source cc4d733) | 6 | 0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING | zero blockers — review ends; non-blockers to backlog | focus-management-gaps |
 | 2026-09-30 | Mobile web preview — T6 Security Review · build 34af375..db14d25 (app source cc4d733) | 1 | 0 BLOCKS-SHIP, 1 HARDENING | zero exploitable-today — review ends; non-blocker to backlog | clean |
+| 2026-10-01 | feat/sunday-saturday-parity @ 745a291 · sunday-scheduling.md (Round 1) | 6 (6 top / 0 over-cap) + 3 adjacent | 0H/4M/2L | accepted-pending-changes | acceptance-bar-gaps |
+| 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -153,6 +156,8 @@ Scratch project (`ibalavttrqjyijrnkwmd`, sc-scratch-multi-gc-1a) deleted post-va
 
 
 ## Gate records
+
+One row per gate: Date · Role · Agent/session · Artifact · Verdict · Acceptance. Reviewer records are transcribed verbatim by T3; the reviewer's words are not edited.
 
 ### Mobile web preview — independent plan reviews
 
@@ -289,3 +294,536 @@ Transcribed verbatim by the Codex builder/coordinator (task-3), which did not au
 | 2026-09-30 | Mobile web preview — T6 delta recheck · preview auto-archive guard (working tree on 099f279) | 1 | 0 BLOCKS-SHIP, 1 SHOULD-FIX | zero exploitable-today — review ends; confirm preview bundle before sign-in | fail-open-default |
 
 Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
+
+### 2026-10-01 — B124 password recovery — T5 Code Review
+
+Transcribed verbatim from the reviewer's proposed gate record (`recovery-t5`, emitted to `/tmp/recovery-t5-review.txt`). Only the Acceptance field is filled in by the transcriber.
+
+| Field | Value |
+|---|---|
+| Date | 2026-10-01 |
+| Role | T5 Code Review (existing `/fix` path, read-only) |
+| Agent/session | `5b538650-d476-4e72-9ad4-c1ff1fb58cf8` (cold; independent of builder `bb07d938-e6cb-4b33-bb24-b7110693ccf1`) |
+| Artifact | `90f890dcd5be5a8134af545d5a23f9b0654d9150..36ce1c0` as routed — full hash unresolved, worktree files reviewed |
+| Verdict | **BLOCKS-SHIP: 1** · SHOULD-FIX: 1 · HARDENING: 0 — gate not met |
+| Route | Finding 1 to T3, then T5 re-review of the fix |
+| Acceptance | standing (§9) |
+
+### 2026-10-01 — B124 password recovery — T5 Code Review, round 2
+
+Transcribed verbatim from the reviewer's proposed gate record and its stated limitations (`recovery-t5`, emitted to `/tmp/recovery-t5-clear.txt`).
+
+| Field | Value |
+|---|---|
+| Date | 2026-10-01 |
+| Role | T5 Code Review (existing `/fix` path, read-only), round 2 |
+| Agent/session | `5b538650-d476-4e72-9ad4-c1ff1fb58cf8` (cold; not the builder) |
+| Artifact | `90f890dcd5be5a8134af545d5a23f9b0654d9150..e5087360c4a5b4ceebecb7193ef09c0b98a2e729` |
+| Verdict | **BLOCKS-SHIP: 0** · SHOULD-FIX: 1 (round-1 residual, backlog) · HARDENING: 0 — gate met |
+| Acceptance | standing (§9) |
+
+Reviewer's limitations (verbatim):
+
+- **Nothing executed.** The 24/24 unit, 8/8 browser, and "two new cases fail against `36ce1c0`" claims are the builder's; I checked only what the tests assert.
+- **Git state not independently verified.** The target SHA is from the coordinator's `.review/target-sha.txt`; I could not confirm the worktree matches it.
+- **No doc changes in the diff.** The acceptance scope mentions "required docs"; the patch touches only the script, App, Login, the helper and its test. I did not assess whether docs are owed.
+- **No certification of the customer incident.** The actual incident cause is unproven, per the acceptance text.
+- Builder transcript and `BUILD-REPORT.md` were not opened.
+
+### 2026-10-01 — B124 password recovery — T6 Security Review
+
+Transcribed verbatim from the reviewer's proposed gate record (`recovery-t6`, emitted to `/tmp/recovery-t6-review.txt`), followed by its findings, coverage and limitations, also verbatim, as the supporting record. Only the heading level of the three supporting sections was changed to nest them here.
+
+- **Role:** T6 / Security Review
+- **Agent/session:** Claude Opus 5.5, session `521dd74e-d33b-4ef6-b288-4533da8abb87` (distinct from T3 `bb07d938-e6cb-4b33-bb24-b7110693ccf1` and T5 `5b538650-d476-4e72-9ad4-c1ff1fb58cf8`)
+- **Date:** 2026-10-01
+- **Artifact:** `90f890dcd5be5a8134af545d5a23f9b0654d9150..e5087360c4a5b4ceebecb7193ef09c0b98a2e729`
+- **Verdict:** 0 exploitable-today; 0 BLOCKS-SHIP; 0 SHOULD-FIX; 3 HARDENING (1 introduced, 2 preexisting) to backlog as one item. Safe to ship. Coverage and limitations as stated above; source-only, no probes.
+- **Acceptance:** standing (§9) — ordinary verdict, with no scope change, locked-decision change, scope cut or human gate. Production acceptance remains with Chris.
+
+Supporting record (verbatim):
+
+**Zero exploitable-today findings; safe to ship from the security lens.** After this change I found no path by which an unauthorized actor updates an account or password, or is admitted to the protected app, through the recovery flows. Three non-blocking hardening items are below.
+
+Nothing was executed: this is a source-only review of the patch plus the current `App.jsx`, `Login.jsx`, `lib/passwordRecovery.js`, `lib/auth.js`, `lib/supabase.js` and `index.html`. Bash was denied in this session, so T3's test counts are taken as reported, not re-run.
+
+#### Findings
+
+| # | Finding | Exploitable today? | Materiality | Scope |
+|---|---|---|---|---|
+| 1 | A tokenless `#type=recovery` URL opens a code-less "set new password" form against whatever session is already in the browser | No — requires an existing live session, whose holder can already change the password through the auth API | HARDENING | Introduced |
+| 2 | The identity check and the save are not atomic | No — only the same browser profile signing into a second account in a millisecond window | HARDENING | Preexisting, narrowed by this change |
+| 3 | A recovery-link session can still be admitted in a second tab before the first submit | No — same session holder, frontend navigation only | HARDENING | Preexisting |
+
+**1. Tokenless recovery hash.**
+- **Path:** `index.html:14-15` sets `sc_recovery_mode` for any hash containing `type=recovery`. `src/App.jsx:154-156` and `:247-248` then pin `Login`, and `src/pages/Login.jsx:54-58` sets `viaLink`, which hides the code field (`Login.jsx:276`). `src/lib/passwordRecovery.js:133-136` adopts the current session and `:154` saves the password against it.
+- **What changed:** at base, the same URL showed a code field and always called `verifyOtp` first.
+- **Why not a blocker:** someone with walk-up access to an unlocked signed-in browser can set a new password without the current one, but the session token already allows that server-side. A lured victim only sets their own password.
+- **Side effect:** "Back to sign in" on that form signs the user out (`passwordRecovery.js:190-193`).
+- **Action:** backlog. Set `viaLink` only when the hash carries a token or a `PASSWORD_RECOVERY` event was seen.
+
+**2. Non-atomic identity check.**
+- **Path:** `passwordRecovery.js:150` checks the session owner, then `:154` calls `updateUser`. If another tab swaps the stored session to a different account in between, the password lands on that account. The same applies when the session read errors ("unknown") and the flow proceeds.
+- **What the user sees:** `:155-158` detects the swap afterwards and reports "expired", although a save did happen.
+- **Why not a blocker:** the actor holds both sessions. Base had no check at all.
+- **Action:** backlog.
+
+**3. Link session in a second tab.**
+- **Path:** the marker is written only at first submit (`passwordRecovery.js:113`). Before that, a second tab's `SIGNED_IN` on becoming visible falls through to "apply" (`passwordRecovery.js:27-30`, `App.jsx:200`).
+- **Action:** backlog.
+
+#### Coverage
+
+- **Identity binding:** the verified user id is taken from the `verifyOtp` or link session. The save is refused if the session is gone or belongs to another account, and the retained stage is invalidated on sign-out or account switch (`passwordRecovery.js:150-152`, `:204-207`; `Login.jsx:39-46`).
+- **Save confirmation:** success requires no error and a returned user id equal to the verified one (`passwordRecovery.js:155`). It is not assumed.
+- **Session transitions and event ordering:**
+  - The hold is raised before `verifyOtp` (`passwordRecovery.js:138`), so the `PASSWORD_RECOVERY` emitted before return is held (`App.jsx:192`).
+  - `USER_UPDATED`, `TOKEN_REFRESHED` and `SIGNED_IN` with a session are held by the hold or the marker.
+  - `SIGNED_OUT` and a rejected refresh still apply.
+  - I found no deadlock; the wrapper in `lib/auth.js:10-15` does not await the callback.
+- **Marker ownership and cleanup:**
+  - The marker holds a user id only, never a code, token or password.
+  - It is cleared only after a confirmed sign-out (`App.jsx:211-212`, `:221-222`; `passwordRecovery.js:191-195`) or a successful password sign-in (`Login.jsx:81-87`).
+  - A failed sign-in leaves it in place.
+  - A stale marker cannot lock anyone out of password sign-in.
+- **Cancel, retry, double submit:** the busy guard blocks concurrent submit and cancel. A retry never re-verifies the consumed code or re-saves. Back and "Request a new code" end the session first and stay put if sign-out fails.
+- **Refresh, return, remember-off:** a persisted recovery session is signed out at startup rather than admitted (`App.jsx:216-225`). The remember-off sign-out is skipped for a link tab.
+- **Persistence and logging:** the changed files add no console output. The password and code live only in React state. The only new storage key is `sc_recovery_user`.
+- **Test fixtures:**
+  - The browser script answers every auth/rest/functions call from fixtures and aborts all other third-party requests.
+  - It refuses the three production hosts.
+  - The Vercel token is sent only to the `BASE_URL` origin and is not logged.
+  - Credentials are fake.
+- **Scope:** the diff touches `App.jsx`, `Login.jsx`, the new helper and two test files. There are no server, edge-function, migration, RLS, security-setting or customer-data changes.
+
+**Frontend vs server:** holding the form and blocking app admission are navigation UX. A recovery session is a full session server-side, and its holder proved control of the mailbox. None of this change is, or needs to be, an authorization boundary.
+
+#### Limitations
+
+- No live or preview probes and no test execution; T3's 24 unit and 8 browser results are not independently confirmed.
+- auth-js behaviour is taken from the routing note and test comments, not read from the installed package. This covers emit-before-return, sign-out keeping the local session on a 5xx, and cross-tab broadcast.
+- Supabase project settings (secure password change, OTP expiry, rate limits) were not inspected.
+- The actual incident cause remains unproven; this does not certify the customer's password is fixed.
+- I did not read the T3 or T5 transcripts, or `t5-first-review.txt`.
+- The known residual (refresh after saved-plus-sign-out-failure loses the saved-status message) is acknowledged as filed and not re-raised.
+
+
+### Chris acceptance — B124 / PR #73 — 2026-10-01
+
+- Role: release coordinator; original approval verified directly with the supported `mcp__codex_app__read_thread` tool.
+- Artifact: PR #73 candidate `48ab14392be71f25713c0e641a642221c01c523e`; application source reviewed at `e508736`, eight-scenario preview tested at `3031f0c`.
+- Verdict: release approved; production verification pending.
+- Source: parent thread `01a0f447-ce26-721f-a345-7097d9bbc012`, approval turn `01a0f848-cf4f-7282-b911-88650521039b`, original user message `01a0f848-d104-74a5-ac25-d64993bf54d8`, 2026-10-01 16:25 UTC. The preceding delivered question is in turn `01a0f83d-67a5-7782-9273-6d0979fb3130`.
+- Question: “One release decision: Bugbot is disabled for this repository, so it skipped the review. The independent AIOS code and security reviews both passed. Do you approve using those reviews instead and releasing the tested password-reset fix? That replaces my previous approval question.”
+- Acceptance, Chris: “The reset fix is approved. I want to know how, why, and when it happened because I've had this issue in the past and we fixed it.”
+- Scope: one-time substitution of the completed independent AIOS T5/T6 reviews for disabled Bugbot on PR #73 only; no permanent waiver or settings change. No account/password/mail/backend changes. Historical investigation is separate from this release.
+- Provenance: T3 could not authenticate a forwarded export within its permission review and made no acceptance changes. The coordinator independently read the original conversation through the supported thread tool and records this entry. Public PR record: https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935784359 .
+
+### 2026-10-01 — F60 Sunday parity — T2 Plan Audit, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record and gate block (`t2-sunday-parity`, emitted to `/tmp/sunday-t2-r1-verdict-20261001.md`). Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · Verdict NOT CONVERGED — 6 caused-by (4 Med, 2 Low), 0 regressions, no scope-cut · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's gate block (verbatim):
+
+```
+Role:        T2 Plan Audit · agent/session t2-sunday-parity · 471c2a52-fb03-4034-ac24-0dcf72bf2f23
+Audited:     subcon-command · plan docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · round 1 · manifest 54f4849
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-6 0C/0H/4M/2L · regressions 0 · over-cap 0 · adjacent 3
+Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no scope-cut). Open provenance: no personal plan lock by Chris is recorded (§A).
+Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · Verdict NOT CONVERGED — 6 caused-by (4 Med, 2 Low), 0 regressions, no scope-cut · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+```
+
+### 2026-10-01 — F60 Sunday parity — T2 Plan Audit, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record, gate block, two non-blocking notes and stated limits (`t2-sunday-parity`, emitted to `/tmp/sunday-t2-r2-verdict-20261001.md`). Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's gate block (verbatim):
+
+```
+Role:        T2 Plan Audit · agent/session t2-sunday-parity · 471c2a52-fb03-4034-ac24-0dcf72bf2f23
+Audited:     subcon-command · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · round 2 (delta since 745a291) · manifest d431a3497ae7a15b365a7729840c44accfd84b5f
+Verdict:     CONVERGED  (proposed)
+Findings:    none in cap · regressions 0 · over-cap 0 · adjacent 0 new · 2 non-blocking notes (B13 carve-out, W2 wording)
+Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no scope-cut). Open provenance: no personal plan lock by Chris is recorded (§A).
+Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+Reviewer's two non-blocking notes (verbatim):
+
+The reviewer tagged both Low / caused-by. Under the T2 card any counted caused-by finding blocks convergence, so this is a judgment call that acceptance can overrule.
+
+1. **B13's carve-out names only P8's pool chip.**
+   - What also changes: a person whose only crew days that week are on Sunday (P7) becomes a Booked chip, and the pool's "N free this week" count drops by one (`Schedule.jsx:429–436`, `:1307`).
+   - Why it doesn't block: this is exactly how a Saturday-only person behaves today, and B14 already says those Sunday rows show in the pool dots. Only the count is unstated.
+   - For T3: read B13 as the Monday–Saturday day columns.
+2. **W2's "so both read sites agree" is looser than it sounds.**
+   - What slips through: a build that fixes only the mount effect still settles on the right week and passes W2, after one wasted fetch of the wrong week.
+   - Why it doesn't block: S10 and §3 both instruct the fix at both sites, the diff reviews read both, and the stale-response guard (`:260`, `:278–283`) keeps the wrong week from being shown.
+   - For T3: a tighter W2 would assert that no read for another week is sent.
+
+A third round for these would change check wording only, not what gets built.
+
+Reviewer's limits (verbatim):
+
+- Nothing was built or run beyond reading and throwaway date arithmetic. Production was not probed (U4 stays open).
+- The plan still states that Chris has not personally locked this artifact, and that the D1 pool-chip change is expected but not accepted by him. This verdict does not change either.
+- This was a delta review only; unchanged sections were not re-audited.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r1-verdict-20261001.md`), followed by its limits, punch list, source-read passes and brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: NO-GO.** One layout check fails, and several required checks could not be verified because this session could not run commands.
+
+```
+Role:        T4 Build vs Plan · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a..adf27b4 (source 3f6b3cf8ac3df2ceef39654e10a429ca14f1a086)
+Checks:      passed by source read: S1–S10 logic, C4, C5, E3
+             failed: F1/B11 crew-pool day dots (P1 below)
+             unverified: reviewed revision, E1, E2 (diff), E4, E5, live run of M/B/H/K/D/X/T/L/W
+             deferred: P (preview), N (native device), U4 (production Sunday rows)
+Brand check: sources and 1280 screenshots verified; one unreported deviation (P1);
+             picker, popup, toggle and print evidence missing
+Verdict:     NO-GO — P1 fails; the unverified checks above must be closed in a session that can run git and the checks
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+No personal plan lock is claimed; the plan's §A provenance stands as written.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### Limits of this review
+
+- **No shell:** Bash was denied, so there was no `git diff`, no `npm run build`, no ESLint and no check run.
+- **Procedure not read:** `/Users/chrisberger/.claude/commands/buildvsplan.md` was denied, so I followed the T4 card and protocol §9 and §14 only.
+- **Revision not confirmed:** I could not read the worktree HEAD, so I reviewed the working tree as found; it matches the build report's description.
+- **Repo invariants not read:** I did not open the repo `CLAUDE.md` or `docs/DEVELOPMENT_PROTOCOL.md`.
+
+#### Punch list
+
+**P1 — fails F1/B11; caused by this build.** The seventh day dot overflows the crew-pool chip.
+- `src/schedule/App.css:959` fixes the dots block at 125px, which is exactly a 62px label plus six 8px dots with 3px gaps.
+- Seven dots need 136px, so the row spills 11px, about 3px past the chip's right edge.
+- It shows in `after/board-1280.png` and `after/board-1440.png`: the last dot and the last "S" sit on or over the chip border.
+- The plan's edit list named only `App.css:1103` and `:6768`, and the new check's clipping test does not cover the pool dots (`scripts/check-sunday-parity.mjs:170`).
+- The build report's "no clipped" and "deviations: none" claims are wrong on this point.
+
+**P2 — brand evidence gap.** The screenshots cover the board, strip, Daily and Calendar week only. Nothing shows the seven-chip assign and Sick pickers, the crew week popup, the expanded-row day toggles or the prints.
+
+**P3 — E5 holds only in the weakened form the report states.** `check-crew-week-summary.mjs` and `check-overlapping-crew-trips.mjs` fail on base and on the build, so they give no trip-ownership coverage. These are original failures, not regressions.
+
+#### Passed by source read
+
+- **Sunday row ownership (C4):** assign and remove still go through `changeRowAssignments` with the trip id as `mobilization_id` and deletes by row id (`Schedule.jsx:483–526`).
+- **One week list (E3):** columns, pickers, dots, popup, both reads and the strip all follow `dates`, with ends at `.at(-1)` (`Schedule.jsx:197–205`, `:250–251`).
+- **Capacity:** the strip is seven cards, and the screenshot's SUN 4 (3 / 8, 38%, 5 free, 2 out) matches the fixture by Saturday's formula.
+- **Read ranges:** the board, Daily (`Daily.jsx:100`, `:180`) and both prints (`exports.js:72`, `:153`) run Monday through Sunday.
+- **Calendar boundary (K4):** the week fetch is Monday–Sunday unioned with the month grid, so the week of 11-02 reads through 11-08 (`Calendar.jsx:218–229`). Sunday is the last column, with none before Monday (`:366`).
+- **Week links and DST (S10, W2, W3):** both read sites use `weekOffsetFor`, which rounds the difference between two local Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). The check asserts no other week's read is sent (`check-sunday-parity.mjs:643–652`).
+- **Select all and time off (C5, B15):** Select all still skips out days (`Schedule.jsx:461–465`). The chip greys only when out on all seven days (`:1191–1193`), and the screenshot shows the Monday–Saturday person as a normal chip.
+- **Other surfaces:**
+  - Multi-week alert counts seven days (`queries.js:974`).
+  - Midweek text runs through Sunday (`crewWeekText.js:110–114`).
+  - The five phone strings say Sunday (`CrewPhone.jsx:151–210`).
+  - Presets fill Monday to Sunday (`crewStatus.js:65–73`).
+  - `fmtWk` ends on Monday+6 (`weeks.js:32–39`).
+- **Seventh-column fit at 1280:** the board, strip, Daily and Calendar week each show seven columns with no visible clipping of headers, counts, `need N`, percent or the TODAY tag.
+- **Dead six-day code left alone, as planned:** `wkEnd`, `StatsBar.jsx`, `App.css:391` and `:757`.
+
+#### Brand check
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and the report correctly claims no column-count match.
+- **Sunday treatment:** in the four screenshots Sunday's column and card carry Saturday's treatment, with no new colour, type or radius visible.
+- **Gaps:** P1 is an unreported deviation, and P2 is missing evidence.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r2-verdict-20261001.md`), followed by how each check was established, its limits and its brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: GO.** P1 is fixed and P2's evidence is present. The shell-dependent checks are now covered by the coordinator's runs, except the full existing check suite, which rests on the builder's log from before the fix.
+
+```
+Role:        T4 Build vs Plan (delta) · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a49984015cbfa30013f502d24c45c9358a..0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+             (source 3f6b3cf + fix 019997ba8d5b62ea72c1b824f9ef46e127849cb9)
+Checks:      passed: P1, P2, E1, E2, E3, E4, M1–M6, B1–B15, H1–H2, K1–K4, D1–D2, X1–X2,
+             T1–T2, L1, W1–W3, F1–F2
+             passed on builder record only: E5 (full existing suite, run at 3f6b3cf, not rerun)
+             failed: none
+             deferred: P (preview), N (native device), U4 (production Sunday rows), mobile slice
+Brand check: sources and screenshots verified; the one deviation (P1) is fixed and now reported
+Verdict:     GO
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+```
+BUILD vs PLAN · docs/plans/sunday-scheduling.md · 1 reviewer
+🔴 Tier 1 blockers: 0   🟠 Tier 2 bugs: 0   🟢 deferred: 4
+SMOKE TEST: GO
+Top blocker: none
+```
+
+This is an ordinary verdict: it changes no scope and no locked decision. No personal plan lock or acceptance by Chris is claimed; the plan's §A provenance stands.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### How each check was established
+
+I ran no shell commands. I was one read-only reviewer with no delegation tool, so I applied the procedure's layer checks directly, not through parallel reviewers.
+
+**My own source and image inspection**
+- **P1 fixed:** `src/schedule/App.css:960` is now 136px, which is the 62px label plus seven 8px dots with 3px gaps. In `after/pool-1280.png`, `after/pool-1440.png` and the re-rendered `after/board-1280.png`, all seven dots and day letters sit inside the chip.
+- **P1 now guarded:** the check asserts no dot or letter passes the chip's content box, at both widths (`scripts/check-sunday-parity.mjs:175–188`).
+- **P2 evidence present:** I opened these, and each shows seven days with Sunday in Saturday's treatment and no clipping.
+  - At 1280: assign picker, Sunday-conflict picker, Sick picker, crew week popup, expanded-row toggles and deferred-start chips.
+  - At one size: both prints.
+- **Build report:** it now states that P1 was a real deviation, and it lists the surfaces it did not look at.
+
+**Coordinator-executed, assessed by me**
+- **Reviewed revision:** HEAD is `0197e0f`.
+- **Plan unchanged:** the plan diff since `bbe71e4` touches only the audit manifest.
+- **E1:** the diff over the protected and expected-zero-diff paths is empty.
+- **E2 and scope:** I read the full `src` diff. It contains only the seven-day changes, `weekOffsetFor` and the one pool rule. There is no new Supabase call and no change to the save, status or Scheduled Off write paths.
+- **E5 "unedited":** the changed-file list shows only the four named existing checks were modified.
+- **No schema objects:** nothing under `supabase/` changed, so the procedure's live-schema probe does not apply.
+- **Model and browser checks:** M1–M6 pass with the required timezone set, and all 30 browser groups pass, including the new pool-dot assertion. These match what the code does on my read.
+- **E4:** `npm run build` exits 0. ESLint totals are 176 errors and 43 warnings, equal to base.
+
+#### Limits and named gaps
+
+- **E5 not rerun after the fix.** The full suite result (23 pass, same 15 failing as base) is the builder's log at `3f6b3cf`. The later change is one CSS rule, the new check and docs, so I accept it; smoke should rerun the suite. The 15 failures are original, not regressions. Trip ownership is covered by B4, B7 and the model checks.
+- **ESLint per file.** Only totals were supplied, so "no new finding in a touched file" rests on equal totals plus the builder's statement.
+- **Final working-tree status missing.** The coordinator's last `git status` output was cut off in the packet. Two screenshots were regenerated and reportedly restored (`daily-1440.png`, `sick-picker-1440.png`); I did not open either.
+- **1440 variants not opened.** For the new pickers, popup and toggles I looked at 1280 only.
+- **Long crew names untried.** The pool chip's name area is 11px narrower, and only fixture names were rendered. Worth a glance at the preview.
+- **Repo rules read by search.** For the repo `CLAUDE.md` and `docs/DEVELOPMENT_PROTOCOL.md`, I read the matching sections (UI rules, Workflow Rule 8, the Build vs Plan gate), not the whole files. Nothing there conflicts with this verdict.
+
+#### Brand check (corrected)
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and no column-count match is claimed.
+- **Changed UI:** across the board, strip, pool, Daily, Calendar week, pickers, popup, toggles and prints, Sunday carries Saturday's treatment. The diff adds no colour, font, radius, shadow or token. The only sizing change is the pool dots block.
+- **Deviations:** one, P1, now fixed and reported.
+- **Not introduced by this build:** the report notes the app's teal accent differs from the standard's cyan on both base and build.
+- **Not looked at by anyone:** Home, Jobs, Billing, the weekly-texts page, `/crew`, the Scheduled Off modal and Calendar month, as the report states. Those are label and text changes, asserted by the checks.
+
+### 2026-10-01 — F60 Sunday parity — T5 Code Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T5, emitted to `/tmp/sunday-t5-verdict-20261001.md`), followed by its findings, source coverage and limits, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer proposed no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **T5 Code Review: 0 BLOCKS-SHIP findings on the Sunday-parity product diff.** This is a source read only: my runtime could not execute anything, so every "passes" below about builds, checks or git state rests on the coordinator's supplied evidence, not on my own run.
+
+```
+Role:        T5 Code Review
+Agent/session: 89ac91c6-50b9-4818-aaf9-d14f70875541 · https://claude.ai/code/session_01CCHNrCEyrAYz9L7FCNXFKT
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0
+              and T4 reviewer 243c99d8-6bea-415b-af05-c302ca3e194b)
+Artifact:    product diff 3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+             · read at HEAD 0197e0fc535543dd7a4c1985ce2af29fc86f91ae (coordinator-reported)
+             · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+Verdict:     0 BLOCKS-SHIP · 0 SHOULD-FIX · 4 HARDENING (one backlog item) — review ends, round 1
+Coverage:    source read only; no commands run; execution evidence is the coordinator's
+Date:        2026-10-01
+Next:        T7 · proposed record only
+```
+
+The session id is taken from this session's scratchpad path and attribution link; I could not run the environment check to confirm it. This is an ordinary verdict: no scope change, no locked decision changed.
+
+No audit-table row is proposed: that table holds plan-audit rounds, and T4 emitted none for the same reason. Chris's preview acceptance and release remain pending.
+
+- **Acceptance:** standing (§9)
+
+Notes that are not the reviewer's words:
+
+- Coordinator's factual note, as given in the T7 routing for this transcription: the reviewer consumed earlier metadata showing two regenerated screenshots as dirty (`daily-1440.png`, `sick-picker-1440.png`). The coordinator had already restored them before the review. The reviewer's "4 filed as one backlog item" is a proposal only: the reviewer edited no file. The grouped follow-up is routed to T3's smoke/report pass.
+- Transcriber's own observation at recording time: `git status` was clean at `31f1b13`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+#### Findings
+
+Target status: the 13 app files are PRODUCT; the new and restated check scripts are SAFETY-NET (one pass, net rule applied).
+
+| # | Finding | Severity | Materiality | Action |
+|---|---|---|---|---|
+| 1 | Two read-bound assertions use `.every()` with no length guard, so they pass on zero reads (`scripts/check-sunday-parity.mjs:517`, `:570`). Not a silent lie: the same scenarios assert rendered dates and counts that need the read (`:514`, `:569`). | Low | HARDENING | Backlog |
+| 2 | The Monday–Saturday "matches base" comparison filters build rows down to rows base already has (`check-sunday-parity.mjs:265`). An unexpected extra row on the build would not fail it; only the Sunday-only trip is checked explicitly (`:272–273`). | Low | HARDENING | Backlog |
+| 3 | Capacity card labels are picked by position, not by the date's weekday (`HomeCapacityStrip.jsx:85`, `:101`). Correct today because all three callers pass a Monday-first seven-day list. | Low | HARDENING | Backlog |
+| 4 | Stale "Mon–Sat" comments in untouched files (`Jobs.jsx:140`, `calendarBars.js:6`) and the dead `wkEnd` helper (`Schedule.jsx:52–56`). The plan leaves these alone. | Trivial | HARDENING | Backlog |
+
+`0 ship-blockers; 4 filed as one backlog item. Done.`
+
+#### What I checked in the source
+
+- **Week links and clock changes:** both `?week=` sites use one helper that rounds the gap between two local-midnight Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). A Friday, Saturday or Sunday date now opens its own week.
+- **Query ranges:** every week read ends on the list's last date.
+  - Board: `Schedule.jsx:199`, `:250–251`
+  - Daily: `Daily.jsx:100–105`, `:180`
+  - Prints: `exports.js:72–77`, `:153–158`
+  - Home, Jobs, band, Subcon summary: `Home.jsx:46–56`, `Jobs.jsx:143`, `WeeklyCapacityBand.jsx:20–28`, `subconSummary.js:92–100`
+  - Calendar: the week range is Monday–Sunday unioned with the month grid (`Calendar.jsx:218–229`).
+- **Leftover six-day assumptions:** a repo-wide search of `src/` found none in live code. The only hits are the unmounted `StatsBar.jsx`, the dead `wkEnd`, and two unused CSS rules.
+- **Trip identity and data preservation:**
+  - The save path is unchanged; deletes are by row id on that trip's rows only (`Schedule.jsx:494`, `:510–512`).
+  - Sunday rows now load into `row.assignments`, and every entry point seeds its selection from that same list: the picker (`:446`), the day toggle (`:543–544`), and the remove button (`:539`). Showing Sunday therefore cannot drop a saved crew day.
+  - Inserts still carry the trip id (`:501–507`).
+- **Seven-date consumers:**
+  - Board rows, capacity and summary follow the passed `dates` (`crewScheduleRows.js:83–102`, `crewWeekSummary.js:14–27`, `CrewWeekCapacity.jsx:12–16`).
+  - `computeHomeDashboard` uses `dates[0]` and `dates[length-1]` (`queries.js:1821–1822`, `:1845`, `:1917`).
+  - The multi-week alert counts seven days (`queries.js:974`) and Jobs passes it the full assignments list (`Jobs.jsx:300`).
+  - Calendar bars handle arbitrary columns (`calendarBars.js:109–139`).
+- **Calculations:** the Home capacity mean divides by the number of days (`Home.jsx:142–146`). Completion % and the lower Sunday-inclusive percentages are the plan's stated consequence, not a defect.
+- **Presets, text, labels:**
+  - The Scheduled Off presets run Monday+6, with all importers renamed (`crewStatus.js:65–73`).
+  - The midweek text on a Sunday returns that one day (`crewWeekText.js:110–114`).
+  - `fmtWk` has no consumer outside Billing and the forecast (`weeks.js:32–39`).
+- **UI bindings:** every label array is seven long and indexed against `dates` (`Schedule.jsx:18–19`, `:1143`, `:1356`, `:1394`, `:1438`, `:1497–1503`; `Daily.jsx:13`; `exports.js:71`, `:151`). The board's full-width rows use `1 / -1`, so the eighth grid column needs no other CSS change (`App.css:1362`, `:1385`, `:1393`).
+- **Safety net:** the "matches base" snapshots cannot be regenerated from the build unnoticed. The checks assert two values only base code produces (`check-sunday-parity.mjs:535–536`, `check-sunday-parity-model.mjs:92`), and a missing snapshot key fails rather than passes.
+- **Recorded T4 result:** read before reviewing; round 2 is GO (`docs/AUDIT_LOG.md:425–500`).
+
+#### Limits
+
+- **Coordinator evidence, not mine:** HEAD `0197e0f`, the changed-file list, the empty diff over protected paths, the build and ESLint totals, and all check runs. The supplied `src` diff matches the files I read.
+- **Full existing suite not rerun after the fix commit:** the "same 15 failures as base" result is the builder's log at `3f6b3cf`. Smoke should rerun it.
+- **Not opened:**
+  - `scripts/sunday-parity-fixture.mjs` and the three restated existing scripts (`check-crew-phone.mjs`, `check-crew-week-summary.mjs`, `crewStatus.test.mjs`) — only the diff of the last one was read.
+  - The zero-diff libs `allocations.js`, `trips.js`, `scheduleCrew.js`, `assignmentIdentity.js`.
+  - `CLAUDE_RLS.md` (no SQL in the diff).
+  - The `/code-review` command file, which is unreadable from this runtime; I followed protocol §9 and the pasted limiter.
+- **Working tree:** two evidence screenshots show as modified and uncommitted (`daily-1440.png`, `sick-picker-1440.png`). Not product; T7 may want them restored before anything is recorded.
+- **Not verified by anyone here:** signed-in real data, the preview, production Sunday rows, and long crew names in the 11px-narrower pool chip.
+
+### 2026-10-01 — F60 Sunday parity — T6 Security Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T6, emitted to `/tmp/sunday-t6-verdict-20261001.md`), followed by its reviewed range, coverage, unverified limitations and findings, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer's proposed audit-log row is transcribed verbatim into the audit table above, with its pattern tag as emitted.
+
+Reviewer's title (verbatim): T6 Security Review — Sunday parity (PR #74): 0 exploitable-today, safe to ship
+
+```
+Role:          T6 Security Review
+Agent/session: f01835a3-31f2-43a3-84ef-27f2ed30888d
+               (independent of builder 2c23e844-d27d-4995-bdcc-7b0ef7430cb0,
+                T4 243c99d8-6bea-415b-af05-c302ca3e194b,
+                T5 89ac91c6-50b9-4818-aaf9-d14f70875541)
+Artifact:      subcon-command · feat/sunday-saturday-parity · PR #74 (draft)
+               3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+               · evidence @ 0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+Verdict:       0 exploitable-today · safe to ship · 0 BLOCKS-SHIP,
+               1 SHOULD-FIX (pre-existing), 2 HARDENING · source read only;
+               git state and live access not verified by reviewer
+Date:          2026-10-01
+```
+
+The session identity is taken from this session's scratchpad path, because I could not query it directly. T7 should confirm it against the session registry before transcription.
+
+- **Acceptance:** standing (§9)
+
+Reviewer's proposed audit-log row and closing notes (verbatim):
+
+```
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
+```
+
+The pattern tag is new: I read only the Sunday rows of the log, not its full tag vocabulary. T3 should swap in an existing tag if one fits.
+
+This is a T6 verdict only. It is not Chris's acceptance, and it is not a release or merge claim.
+
+Notes that are not the reviewer's words:
+
+- Coordinator's note, as given in the T7 routing for this transcription: the reviewer's identity `f01835a3-31f2-43a3-84ef-27f2ed30888d` was confirmed by the coordinator against the session registry. The transcriber did not check the registry itself.
+- The pattern tag was not swapped: transcription is verbatim, so the row carries the tag the reviewer emitted.
+- Transcriber's own observation at recording time: `git status` was clean at `9633576`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+**No BLOCKS-SHIP findings.** The product diff only widens existing signed-in schedule reads and screens from six days to seven. I found no new path for an unauthorized party to read, write or escalate.
+
+This was a source read only. My runtime could not run git or any check, so the hashes, the changed-file list and the "protected paths have no diff" result are the coordinator's evidence, not mine.
+
+#### Reviewed range
+
+- **Range:** `3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9` (source), with build report and evidence at `0197e0fc535543dd7a4c1985ce2af29fc86f91ae`.
+- **Mode:** per-branch diff under `.claude/commands/audit.md`, gated by `/security-review-limiter`. Round 1.
+- **What I read myself:**
+  - the supplied `src` diff, plus the working-tree files behind it where I needed context (`exports.js` in full, `Schedule.jsx:20–69` and its `?week=` and read sites, `Calendar.jsx:185–259`);
+  - the three new scripts in full (`sunday-parity-fixture.mjs`, `check-sunday-parity.mjs`, `check-sunday-parity-model.mjs`);
+  - `check-crew-phone.mjs` in full;
+  - repo `CLAUDE.md`, `CLAUDE_RLS.md`, `.claude/commands/audit.md` and the Sunday rows of `docs/AUDIT_LOG.md`.
+
+#### Coverage
+
+- **No access-control surface in the diff.** Every changed `src` file is under `src/schedule/` (views, components, lib, CSS). The file list shows nothing under `supabase/`, no `package.json` or lockfile, no public or anon page, no auth or session code. `CLAUDE_RLS.md` is therefore not triggered: no policy, grant or token-gated read is written or changed.
+- **Reads:** same tables, same columns, same signed-in client. Only the upper date bound moves from Monday+5 to Monday+6.
+  - Board: `Schedule.jsx:250–251`.
+  - Prints: `exports.js:77`, `:157–158`.
+  - Calendar: `Calendar.jsx:245–249`. Its range now starts Monday instead of the prior Sunday.
+- **Writes:** no write path is added or changed in the diff. Sunday rows go through the existing assign, remove and status saves.
+- **Date input (`?week=`):** the raw value never reaches a query. It is parsed to a date, an invalid value falls back to the current week, and the read bounds are re-formatted from that date (`Schedule.jsx:61–65`, `:130`, `:197–199`). No injection path and no unbounded read.
+- **Exports and texts:** the diff adds no new output sink.
+  - The prints gain a Sunday column (`exports.js:71–73`, `:151–153`, `:170–174`).
+  - The midweek text gains Sunday (`crewWeekText.js:110–114`).
+  - The phone copy changes are fixed strings (`CrewPhone.jsx`).
+- **Money:** no calculation file is in the diff; the Billing change is the week label only (`weeks.js:32–38`).
+- **Fixture harness, network:** it cannot reach a real database.
+  - The server binds to `127.0.0.1` only (`check-sunday-parity.mjs:28–29`).
+  - Every request to any host other than the fake fixture host is aborted (`:72–73`), and the fixture host is answered in memory.
+  - Any write other than the three expected ones is refused and recorded as an error (`:105–106`).
+  - The Supabase URL and key are placeholders (`:16–17`).
+- **Fixture harness, shipped data:** synthetic.
+  - Names, tenant (`fixture-tenant`), customer and IDs in `sunday-parity-fixture.mjs:11–23`, `:71–78` are invented.
+  - A pattern search of the new scripts, the evidence folder, the build report, handoff v302 and the plan found no keys, tokens, real project hosts, emails or phone numbers.
+  - The two snapshot files carry only the fixture names.
+  - I opened 2 of the 37 screenshots (`after/board-1440.png`, `after/print-daily-crew-status.png`); both show fixture data only.
+
+#### Unverified limitations
+
+- **Git state:** not verified by me. If the working tree I read differs from `019997b` in source, my context reads are of the later tree; the lines I read matched the supplied diff.
+- **Script and doc diffs:** not supplied.
+  - For the three pre-existing scripts I cannot say which lines changed.
+  - `check-crew-midweek-text-model.mjs` and `check-crew-week-summary.mjs` were pattern-searched only, not read.
+  - `crewStatus.test.mjs` was read from the supplied diff only.
+  - The changed docs were pattern-searched for secrets, not read for content.
+- **Screenshots:** 35 of 37 not opened.
+- **Live system:** nothing was checked. I did not verify the tenant policies on `assignments`, `crew_status`, `crew` or `jobs`, the preview, or production Sunday rows. The verdict rests on the diff not changing who can reach those tables.
+
+#### Findings
+
+| # | Finding | Exploitable today? (how) | Materiality | Action |
+|---|---|---|---|---|
+| 1 | **Pre-existing, not from this diff.** The print pages build HTML from stored job names, job numbers, work types, crew names and material notes without escaping (`exports.js:108`, `:120`, `:142`, `:173`). The popup runs in the app's own origin (`:57–58`). | Only by someone who can already save those fields in the same tenant; no anonymous or cross-tenant path is shown. The diff adds a Sunday column, not a new sink. | SHOULD-FIX | Backlog, own track |
+| 2 | **Pre-existing, not from this diff.** `check-crew-phone.mjs` can be pointed at a deployed preview and loads browser cookies from a temp file (`:5`, `:30–37`). Its fixture uses real-looking names and a jobsite name (`:11–19`). | No. All database calls are answered by the fixture and writes are refused (`:61–69`). Whether the names are real people I could not determine. | HARDENING | Backlog; confirm names are synthetic |
+| 3 | The model check loads the app's database client in Node with no network block (`check-sunday-parity-model.mjs:13–14`, `:27–35`). | No. It calls pure functions only and the URL is a placeholder. | HARDENING | Backlog |
+
+**0 exploitable-today; safe to ship.** Zero blockers ends this review; no further round is needed.

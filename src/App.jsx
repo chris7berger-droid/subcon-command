@@ -4,6 +4,7 @@ import PublicSigningPage from "./pages/PublicSigningPage";
 import { C, F, GLOBAL_CSS, CALLLOG_THEME, CALLLOG_C } from "./lib/tokens";
 import { supabase } from "./lib/supabase";
 import { getSession, onAuthStateChange, getCurrentTeamMember } from "./lib/auth";
+import { authEventAction, forgetSessionOnOpen, isRecoveryHoldActive, isUnfinishedRecovery, onPasswordLogin, RECOVERY_USER_KEY } from "./lib/passwordRecovery";
 import Login from "./pages/Login";
 import SubConCommandPage from "./pages/SubConCommandPage";
 import FeatureDetailPage from "./pages/FeatureDetailPage";
@@ -173,20 +174,25 @@ function SalesCommandApp() {
   useEffect(() => {
     if (isolatedTimeClockEnabled()) return undefined;
     const sub = onAuthStateChange(async (event, s) => {
-      // PASSWORD_RECOVERY: only drop to login if the URL has a real recovery hash
-      if (event === "PASSWORD_RECOVERY") {
-        const hasRecoveryHash = (window.location.hash || "").includes("type=recovery");
-        if (hasRecoveryHash) {
-          // Real recovery link clicked — stash flag for Login, then clear hash
-          sessionStorage.setItem("sc_recovery_mode", "1");
-          window.history.replaceState({}, "", window.location.pathname);
-          setSession(null);
-          return;
-        }
-        // Stale recovery event — set session normally so the user stays logged in
-        // Stale PASSWORD_RECOVERY event — set session normally
+      const action = authEventAction(event, s, {
+        hasRecoveryHash: (window.location.hash || "").includes("type=recovery"),
+        holdActive: isRecoveryHoldActive(),
+        recoveryUserId: localStorage.getItem(RECOVERY_USER_KEY),
+      });
+      if (action === "recovery-link") {
+        // Real recovery link clicked — stash flag for Login, then clear hash
+        sessionStorage.setItem("sc_recovery_mode", "1");
+        window.history.replaceState({}, "", window.location.pathname);
+        setSession(null);
+        return;
       }
-      if (event === "TOKEN_REFRESHED" && !s) {
+      // A reset is in flight (this tab's Login) or unfinished (another tab).
+      // verifyOtp emits PASSWORD_RECOVERY (then USER_UPDATED / TOKEN_REFRESHED)
+      // with a session before the new password is saved; applying it would
+      // unmount that Login mid-submit and drop the user into the app on the
+      // recovery session.
+      if (action === "hold") return;
+      if (action === "force-logout") {
         // Refresh token was rejected — force clean logout
         supabase.auth.signOut();
         setSession(null);
@@ -203,10 +209,22 @@ function SalesCommandApp() {
     });
 
     // If "Remember me" was unchecked, clear session on fresh tab open
-    if (!sessionStorage.getItem("sc_session_only") && localStorage.getItem("sc_remember") === "false") {
-      supabase.auth.signOut().then(() => setSession(null));
+    if (forgetSessionOnOpen({ isRecovery, sessionOnly: sessionStorage.getItem("sc_session_only"), remember: localStorage.getItem("sc_remember") })) {
+      supabase.auth.signOut().then(({ error }) => {
+        if (!error) localStorage.removeItem(RECOVERY_USER_KEY);
+        setSession(null);
+      });
     } else {
       getSession().then(async (s) => {
+        // Refresh / return during an unfinished typed-code reset: the persisted
+        // session is the recovery session, not a login. End it instead of
+        // admitting the app; the marker stays if sign-out fails.
+        if (!isRecovery && isUnfinishedRecovery(s, localStorage.getItem(RECOVERY_USER_KEY))) {
+          const { error } = await supabase.auth.signOut();
+          if (!error) localStorage.removeItem(RECOVERY_USER_KEY);
+          setSession(null);
+          return;
+        }
         setSession(s ?? null);
         if (s) {
           const member = await getCurrentTeamMember();
@@ -215,8 +233,14 @@ function SalesCommandApp() {
       });
     }
 
-    return () => sub.unsubscribe();
-  }, []);
+    // A confirmed password sign-in whose SIGNED_IN was held by the recovery marker.
+    const offPasswordLogin = onPasswordLogin(async (s) => {
+      setSession(s);
+      setTeamMember(await getCurrentTeamMember());
+    });
+
+    return () => { sub.unsubscribe(); offPasswordLogin(); };
+  }, [isRecovery]);
 
   // Password recovery takes precedence over everything: the link establishes a
   // (recovery) session, but the user must land on the "set new password" form,

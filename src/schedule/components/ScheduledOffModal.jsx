@@ -4,8 +4,8 @@ import {
   addDaysIso,
   crewStatusDateKey,
   crewStatusUiLabel,
-  nextWeekMonSat,
-  thisWeekMonSat,
+  nextWeekMonSun,
+  thisWeekMonSun,
 } from "../lib/crewStatus";
 
 function flipName(n) {
@@ -68,8 +68,8 @@ export default function ScheduledOffModal({
             <div className="sch-soff-presets">
               <button type="button" className="sch-btn" onClick={() => setRange(today, today)}>Today</button>
               <button type="button" className="sch-btn" onClick={() => { const t = addDaysIso(today, 1); setRange(t, t); }}>Tomorrow</button>
-              <button type="button" className="sch-btn" onClick={() => { const w = thisWeekMonSat(today); setRange(w.from, w.to); }}>This Week</button>
-              <button type="button" className="sch-btn" onClick={() => { const w = nextWeekMonSat(today); setRange(w.from, w.to); }}>Next Week</button>
+              <button type="button" className="sch-btn" onClick={() => { const w = thisWeekMonSun(today); setRange(w.from, w.to); }}>This Week</button>
+              <button type="button" className="sch-btn" onClick={() => { const w = nextWeekMonSun(today); setRange(w.from, w.to); }}>Next Week</button>
             </div>
             {error ? <div className="sch-soff-error" role="alert">{error}</div> : null}
             <div className="sch-modal-actions sch-soff-actions">

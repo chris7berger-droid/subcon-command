@@ -1,0 +1,76 @@
+SC Handoff v302 — Sunday = Saturday parity (F60), T3 build — 2026-10-01
+
+SESSION SUMMARY
+T3 built docs/plans/sunday-scheduling.md @ bbe71e4 (T2 CONVERGED, recorded in
+docs/AUDIT_LOG.md at 735b6e3) on feat/sunday-saturday-parity. Build commit
+3f6b3cf. Stopped at the T3 build gate. NOT pushed, NOT reviewed, NO preview,
+NOT merged, NOT in production. Everything was checked with synthetic fixtures.
+
+CHANGES SHIPPED (to the branch only)
+Every Schedule week surface runs Monday–Sunday; Sunday takes Saturday's
+treatment: crew board, capacity strip, Home/Jobs week numbers, Calendar week
+view, Daily, prints, Midweek Update, Scheduled Off presets, billing week
+labels. The board's ?week= link opens the week that contains the date (fixes
+Friday/Saturday/Sunday dates opening the next week). 13 app files.
+New checks: scripts/check-sunday-parity.mjs, check-sunday-parity-model.mjs,
+sunday-parity-fixture.mjs. Four existing checks restated for seven days.
+
+DECISIONS
+None by T3. Direction (Sunday matches Saturday now; optional weekends later)
+is Chris's, relayed by the coordinator. Chris has NOT personally locked the
+plan and has NOT seen its expectation list (plan §A) — open provenance.
+
+BACKLOG
+F60 → In Progress (built, not merged). Line 9 "pending merge" note corrected.
+
+VERIFICATION
+Model M1–M6 pass. Browser checks pass (30 groups) at 1440 and 1280.
+npm run build passes. ESLint 176 errors / 43 warnings, equal to base.
+Existing checks: 15 fail on base and the same 15 fail on the build; none new.
+Details and limits: docs/agent-handoffs/BUILD-REPORT.md.
+
+NOT TOUCHED
+Write paths, trip ownership, lib/workdays.js, billingForecast.js, schema,
+dependencies, native Field, Time Clock, the mobile worktree, production.
+
+NEXT SESSION POINTERS
+1. Coordinator pushes the branch and routes T4 (Build vs Plan), then T5, T6.
+2. Smoke + Vercel preview after reviews clear; Chris's walk is the signed-in check.
+3. Then integrate with the mobile slice per plan §3.
+
+FILES TO KNOW
+docs/plans/sunday-scheduling.md · docs/agent-handoffs/BUILD-REPORT.md
+docs/agent-handoffs/evidence/sunday-parity/ · scripts/check-sunday-parity*.mjs
+
+GIT STATE
+feat/sunday-saturday-parity — local commits ahead of origin, nothing pushed by T3.
+
+UPDATE — T4 ROUND 1 FIX (same day)
+T4 Build vs Plan returned NO-GO (recorded in docs/AUDIT_LOG.md at 96e8eea).
+P1: the seventh crew-pool day dot overflowed its chip by 11px (App.css dots
+block was sized for six). Fixed in 019997b: that one rule is 125px -> 136px.
+The browser check now asserts pool-dot containment at 1440 and 1280; it fails
+on 3f6b3cf and passes on 019997b. The first build report's "no clipped" claim
+was wrong on this point and is corrected.
+P2: focused screenshots added for the pickers, crew week popup, expanded-row
+toggles, pool and both prints (evidence/sunday-parity/after/).
+Rerun: browser check 30 groups pass, model M1-M6 pass, build pass.
+NEXT: T4 delta review of 019997b, then T5, T6, Smoke, preview.
+
+UPDATE — REVIEWS, SMOKE AND PREVIEW (same day)
+Gates recorded in docs/AUDIT_LOG.md: T4 round 2 GO (31f1b13), T5 0 BLOCKS-SHIP
+(9633576), T6 0 exploitable-today (6de19ad). All cover source 019997b; no app
+or script change after it until this pass's new read-only preview script.
+SMOKE: browser 30 groups, model M1-M6, build pass (T3 and coordinator
+independently). Full existing suite rerun: 23 pass, 15 fail, same 15 as base.
+PREVIEW: https://sales-command-git-feat-sund-2db8ee-chris7berger-droids-projects.vercel.app
+(PR #74 draft), deployment dpl_77UMw7UTsm12ggwgEufM9RqBCA55 Ready, from 6de19ad.
+Walked READ-ONLY with scripts/check-sunday-parity-preview.mjs: real hosted
+bundle, synthetic injected session (NOT a real sign-in), all backend requests
+answered from fixtures, writes refused. Pass, zero writes attempted.
+NOT DONE: signed-in walk with real records (Chris's), native device, any save
+on the preview, production Sunday rows.
+BACKLOG: F60 -> In Progress (awaiting acceptance). New F67 (T5/T6 hardening),
+S16 (pre-existing unescaped print HTML).
+NEXT: Chris's preview acceptance. Then merge/release approval. Then mobile
+integration (coordinator). Nothing is merged or released.

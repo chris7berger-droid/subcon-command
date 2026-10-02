@@ -15,8 +15,8 @@ import ScheduleTripDetails from '../components/ScheduleTripDetails'
 import CrewWeekCapacity from '../components/CrewWeekCapacity'
 import ScheduledOffModal from '../components/ScheduledOffModal'
 
-const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const JC = ['#3498db','#e74c3c','#2ecc71','#9b59b6','#e67e22','#1abc9c','#f39c12','#c0392b','#2980b9','#8e44ad','#27ae60','#d35400','#16a085','#7f8c8d','#2c3e50','#d4a017']
 
 function getMonday(d) {
@@ -35,13 +35,13 @@ function fmtD(d) {
 function fmtWk(monday) {
   const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const end = new Date(monday)
-  end.setDate(end.getDate() + 5)
+  end.setDate(end.getDate() + 6)
   return ms[monday.getMonth()] + ' ' + monday.getDate() + ' – ' + ms[end.getMonth()] + ' ' + end.getDate() + ', ' + end.getFullYear()
 }
 
 function wkDates(monday) {
   const r = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const dt = new Date(monday)
     dt.setDate(dt.getDate() + i)
     r.push(fmtD(dt))
@@ -53,6 +53,15 @@ function wkEnd(monday) {
   const d = new Date(monday)
   d.setDate(d.getDate() + 5)
   return fmtD(d)
+}
+
+// Weeks between this week and the Monday–Sunday week that contains `week`
+// (a 'YYYY-MM-DD' from ?week=). Both ends are local-midnight Mondays, so the
+// difference is whole weeks give or take a clock-change hour.
+function weekOffsetFor(week) {
+  const target = week && new Date(week + 'T00:00:00')
+  if (!target || Number.isNaN(target.getTime())) return null
+  return Math.round((getMonday(target) - getMonday(new Date())) / (7 * 24 * 60 * 60 * 1000))
 }
 
 function effStart(j) { return j.scheduled_start || j.start_date || null }
@@ -118,13 +127,7 @@ export default function Schedule({ embedded = false } = {}) {
   const [loadedWeek, setLoadedWeek] = useState(null)
   const [error, setError] = useState(null)
   // Use the destination week on the first render, before effects can run.
-  const [weekOffset, setWeekOffset] = useState(() => {
-    const week = searchParams.get('week')
-    const target = week && new Date(week + 'T00:00:00')
-    if (!target || Number.isNaN(target.getTime())) return 0
-    const diffDays = Math.round((target - getMonday(new Date())) / (1000 * 60 * 60 * 24))
-    return Math.round(diffDays / 7)
-  })
+  const [weekOffset, setWeekOffset] = useState(() => weekOffsetFor(searchParams.get('week')) ?? 0)
   const [weekChanged, setWeekChanged] = useState(false)
   const editingTrips = useRef(new Set())
   const onTripEditStateChange = useCallback((editorKey, editing) => {
@@ -182,27 +185,24 @@ export default function Schedule({ embedded = false } = {}) {
     return m
   }, [weekOffset])
 
-  // On first render with ?week=, snap weekOffset to the target Monday.
+  // On first render with ?week=, snap weekOffset to the week containing that date.
   useEffect(() => {
     if (!focusWeek || didHandleFocusRef.current) return
-    const target = new Date(focusWeek + 'T00:00:00')
-    if (Number.isNaN(target.getTime())) return
-    const todayMonday = getMonday(new Date())
-    const diffDays = Math.round((target - todayMonday) / (1000 * 60 * 60 * 24))
-    const offset = Math.round(diffDays / 7)
+    const offset = weekOffsetFor(focusWeek)
+    if (offset == null) return
     setWeekOffset(offset)
     didHandleFocusRef.current = true
   }, [focusWeek])
 
   const requestedDates = useMemo(() => wkDates(requestedMonday), [requestedMonday])
   const requestedWeek = requestedDates[0]
-  const requestedEnd = requestedDates[5]
+  const requestedEnd = requestedDates.at(-1)
   // Keep dates and staffing on the last complete snapshot until the next is ready.
   const monday = useMemo(() => loadedWeek
     ? new Date(loadedWeek + 'T00:00:00') : requestedMonday, [loadedWeek, requestedMonday])
   const dates = useMemo(() => wkDates(monday), [monday])
   const wsStr = dates[0]
-  const weStr = dates[5]
+  const weStr = dates.at(-1)
   const todayStr = fmtD(new Date())
 
   const currentWeek = useRef(requestedWeek)
@@ -850,7 +850,7 @@ export default function Schedule({ embedded = false } = {}) {
           else summaryRowRefs.current.delete(row.key)
         }}
       >
-        {/* Job label + 6 day cells */}
+        {/* Job label + one cell per day */}
         <div className="sch-board-row" style={dimmed ? { opacity: 0.45 } : undefined}>
           <div
             className={`sch-brd-job-label${isFocused ? ' sch-label-focused' : ''}`}
@@ -1494,7 +1494,7 @@ export default function Schedule({ embedded = false } = {}) {
                 {c.phone && <>{' | Phone: '}<a href={'tel:' + c.phone} style={{ color: '#1565c0' }}>{c.phone}</a></>}
               </div>
               <div style={{ fontSize: 11, color: 'var(--sand-dark)', marginBottom: 10 }}>Week: {fmtWk(monday)}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(6, 1fr)', gap: 0 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `auto repeat(${dates.length}, 1fr)`, gap: 0 }}>
                 <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sand-dark)' }} />
                 {DAYS_LONG.map((d, i) => (
                   <div key={d} style={{ fontSize: 9, fontWeight: 700, textAlign: 'center', color: dates[i] === todayStr ? 'var(--danger)' : 'var(--sand-dark)', textTransform: 'uppercase' }}>
