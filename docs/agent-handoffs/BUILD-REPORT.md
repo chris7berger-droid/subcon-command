@@ -1,6 +1,6 @@
 ## Integration — Sunday parity merged into the mobile crew scheduler branch (2026-10-01)
 
-**Dependency integration only. The stable Sunday checkpoint is merged into `feat/mobile-crew-scheduler-preview` with both lineages kept. No new mobile UI code. The mobile crew scheduler build (F66) has not started and still waits for the revised plan and its T2 audit. Not pushed, not merged to main, not in production.**
+**Dependency integration only. The stable Sunday checkpoint is merged into `feat/mobile-crew-scheduler-preview` with both lineages kept. No new mobile UI code. The mobile crew scheduler build (F66) has not started and still waits for the revised plan and its T2 audit. Not merged to main, not in production. T3 did not push; see Push below.**
 
     Role:        T3 Build · mode: build (dependency integration) · agent/session t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9
     Plan:        docs/plans/sunday-scheduling.md §3 "Integration with the mobile slice" · body @ bbe71e4 (identical to 0a78d32 outside `## Audit manifest`) · T2 CONVERGED recorded in docs/AUDIT_LOG.md
@@ -9,7 +9,7 @@
     Gates:       T2 CONVERGED @ bbe71e4 is recorded. Chris's personal T1 lock of the Sunday plan is NOT recorded (Report A, Gates) — carried open, not resolved here.
     Authority:   coordinator routing `/tmp/mobile-integrate-sunday-20261001.md`, which relays Chris's authorization of one workstream (Sunday first, then mobile). T3 did not verify that authorization at its source.
     Completion:  code built: integration only · data applied: n.a. · access verified: no · Chris accepted: not T3's to claim
-    Push:        not pushed
+    Push:        T3 did not push. Merge `7608b0e` was published to origin by another session while this report was being written (remote-tracking reflog: "update by push"); the report commit after it was not pushed by T3
 
 ### Conflicts and how each was resolved
 
@@ -56,7 +56,7 @@ Run on the merged tree, synthetic fixtures only, no sign-in, no real record, no 
 - **B1 (desktop pixels against base) was not run.** No base captures were made for this merge, so the mobile check's one desktop comparison is skipped, not passed.
 - The full existing check suite was not rerun. Report A records 15 checks that already fail on base; that baseline was not re-established here. `scripts/check-password-recovery.mjs` is one of them and was not run.
 - ESLint was not run.
-- Nothing was checked on a hosted preview, on a phone, with a real sign-in or with real records. No preview was published.
+- Nothing was checked on a hosted preview, on a phone, with a real sign-in or with real records. T3 published no preview. A branch push can start an automatic Vercel preview build; whether one exists for `7608b0e` was not checked.
 - Sunday's Schedule surfaces were checked at desktop widths only. How the Schedule views behave at phone widths is the pending mobile slice, not this integration.
 - The mobile check ran against a local build made with a synthetic backend name (`calllog-fixture`), which is what the fixture's session key expects.
 - Dependencies were not installed from the network: this worktree had none, so the sibling `mobile-preview` worktree's `node_modules` (identical `package-lock.json`) was copied in. It is git-ignored.
@@ -67,7 +67,7 @@ Run on the merged tree, synthetic fixtures only, no sign-in, no real record, no 
 - Independent baseline check of this combined tree before any further app edit (plan §3 item 4). Routed by the coordinator.
 - T1 revision of `docs/plans/crew_mobile_preview.md` and its T2 audit. No mobile UI build until that converges.
 - Chris's acceptance of the Sunday preview and of the mobile web preview are both still open; this merge implies neither.
-- Publishing this branch is the coordinator's step.
+- Publishing is the coordinator's step; the merge commit is already on origin (see Push).
 
 ---
 

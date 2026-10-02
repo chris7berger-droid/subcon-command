@@ -5,8 +5,8 @@ T3 (t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9), routed by the
 coordinator, did one thing: merged the stable Sunday checkpoint into
 feat/mobile-crew-scheduler-preview, as docs/plans/sunday-scheduling.md §3
 "Integration with the mobile slice" (body bbe71e4) describes. Dependency
-integration only. NO new mobile UI code. NOT pushed, NO preview, NOT merged
-to main, NOT in production. Numbered v303 from fetched state (v302 is the
+integration only. NO new mobile UI code. NOT merged to main, NOT in
+production. T3 did not push and published no preview (see GIT STATE). Numbered v303 from fetched state (v302 is the
 highest on any remote branch).
 
 CHANGES SHIPPED (to the branch only)
@@ -66,7 +66,7 @@ dependency, schema, RLS, env, auth or config change. Mobile plan body and
 audit manifest. No force push, rebase, reset or stash.
 
 NEXT SESSION POINTERS
-1. Coordinator publishes this branch checkpoint.
+1. Coordinator publishes the remaining report commits.
 2. Independent baseline check of the combined tree (plan §3 item 4).
 3. T1 revises docs/plans/crew_mobile_preview.md; independent T2 delta.
 4. Only then the mobile crew scheduler build and a combined preview.
@@ -83,4 +83,7 @@ docs/plans/crew_mobile_preview.md — mobile plan, awaiting revision.
 GIT STATE
 Branch feat/mobile-crew-scheduler-preview, worktree
 Documents/Codex/2026-09-30/task-3/crew-mobile-preview. Merge 7608b0e plus
-this report commit. Ahead of origin; not pushed. Working tree clean.
+the report commits after it. T3 did not push. Another session published
+merge 7608b0e to origin while the report was being written; the report
+commits were not pushed by T3. A branch push can start an automatic Vercel
+preview build; whether one exists was not checked. Working tree clean.
