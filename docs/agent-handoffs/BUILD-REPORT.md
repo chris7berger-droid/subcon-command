@@ -1,6 +1,79 @@
-## Report layout after the Sunday → mobile integration merge
+## Integration — Sunday parity merged into the mobile crew scheduler branch (2026-10-01)
 
-This file holds two prior build reports, each carried **verbatim** (byte-identical to the commit named). Neither was edited, re-tiered or re-worded by the merge. Their headings repeat (`## Status`, `## Summary`, `## Brand check`); read each inside its own marked block.
+**Dependency integration only. The stable Sunday checkpoint is merged into `feat/mobile-crew-scheduler-preview` with both lineages kept. No new mobile UI code. The mobile crew scheduler build (F66) has not started and still waits for the revised plan and its T2 audit. Not pushed, not merged to main, not in production.**
+
+    Role:        T3 Build · mode: build (dependency integration) · agent/session t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9
+    Plan:        docs/plans/sunday-scheduling.md §3 "Integration with the mobile slice" · body @ bbe71e4 (identical to 0a78d32 outside `## Audit manifest`) · T2 CONVERGED recorded in docs/AUDIT_LOG.md
+    Branch:      feat/mobile-crew-scheduler-preview · merge commit 7608b0e8504416678c43d31f3fedacbf015e7d1e
+    Parents:     3059639108aad22c3076cf692aeea5731657b7a9 (mobile lineage) · 0a78d32072135e9daa81d85dcb34abc8e1c83dd1 (Sunday checkpoint, = origin/feat/sunday-saturday-parity when fetched)
+    Gates:       T2 CONVERGED @ bbe71e4 is recorded. Chris's personal T1 lock of the Sunday plan is NOT recorded (Report A, Gates) — carried open, not resolved here.
+    Authority:   coordinator routing `/tmp/mobile-integrate-sunday-20261001.md`, which relays Chris's authorization of one workstream (Sunday first, then mobile). T3 did not verify that authorization at its source.
+    Completion:  code built: integration only · data applied: n.a. · access verified: no · Chris accepted: not T3's to claim
+    Push:        not pushed
+
+### Conflicts and how each was resolved
+
+Three files conflicted, all documents. No application file conflicted.
+
+| File | Resolution |
+|---|---|
+| `docs/AUDIT_LOG.md` | Both sides kept verbatim. Audit table: the two mobile rows, then the three Sunday rows. Gate records: one `## Gate records` heading with the main-lineage intro line, the mobile 2026-09-30 records, then the B124 and F60 2026-10-01 records. Every line of both parents is present; no line was added that is in neither. |
+| `docs/agent-handoffs/BUILD-REPORT.md` | Both prior reports carried verbatim below, in marked blocks (Report A, Report B). |
+| `docs/handoffs/SC_Handoff_v298.txt` (added on both sides) | The path keeps the main-lineage B124 password-recovery handoff (from `3145a7a`, PR #73). The mobile lineage's "Call Log brand preview" v298 is kept byte-identical as `docs/handoffs/SC_Handoff_v298-calllog-brand-preview.txt` (same blob as `3059639:docs/handoffs/SC_Handoff_v298.txt`). |
+
+Merged without conflict but changed on both sides: `docs/BACKLOG.md`, `src/App.jsx`, `src/pages/Login.jsx`.
+
+### What the merged tree holds
+
+- Everything the Sunday checkpoint changed since the shared base `90f890d` (73 files). That range includes the password-recovery fix already on main (`3145a7a`, PR #73), because the Sunday branch is built on it.
+- Files that match neither parent exactly: the three conflict files above, the added `SC_Handoff_v298-calllog-brand-preview.txt`, `docs/BACKLOG.md`, `src/App.jsx`, `src/pages/Login.jsx`. Every other file is byte-identical to one parent.
+
+### Verification
+
+Checked on the merge commit, by blob comparison:
+
+- **Ancestry:** `0a78d32`, `28c8468` (mobile web shell), `3059639` and `3145a7a` are all ancestors of `7608b0e`.
+- **Mobile shell kept:** `src/styles/mobile-shell.css` is the same blob as at `28c8468`. `src/styles/**`, `src/components/**`, `src/lib/tokens.js`, `src/pages/CallLog.jsx`, `vite.config.js` and the mobile check scripts are identical to `3059639`.
+- **Sunday source kept:** every application and script file the Sunday branch changed is identical to `0a78d32`, except `src/App.jsx` and `src/pages/Login.jsx`. For those two, the merged file differs from the mobile parent by exactly Sunday's own change set, and from the Sunday parent by exactly the mobile lineage's own change set. `src/schedule/**` is identical to `0a78d32`.
+- **Not changed by this integration:** `package.json`, `package-lock.json`, `vercel.json`, `vite.config.js`, `supabase/**`, `sql/**`, `db/**`, `src/field/**` are identical in both parents and in the merge. `docs/plans/crew_mobile_preview.md` (body and audit manifest) and `docs/plans/mobile_web_preview.md` are identical to `3059639`. `docs/plans/sunday-scheduling.md` is identical to `0a78d32`. `feat/calllog-brand-preview` stays at `701a209` and `feat/sunday-saturday-parity` at `0a78d32`.
+
+Run on the merged tree, synthetic fixtures only, no sign-in, no real record, no hosted request:
+
+| Check | Result |
+|---|---|
+| `npm run build` | pass |
+| `scripts/check-mobile-preview.mjs` — widths 360, 390, 430, 640, 768, against a local compiled build of the merged tree | 167 checks: 166 pass, 0 fail, 1 skipped (B1). 0 page errors, 0 attempted writes, 0 refused requests |
+| `scripts/check-preview-autoarchive.mjs` (automatic-archive guard) | pass |
+| `scripts/check-sunday-parity-model.mjs` | pass, M1–M6 |
+| `scripts/check-sunday-parity.mjs` (browser, 1440 and 1280) | pass, 30 groups |
+| `scripts/check-crew-midweek-text-model.mjs`, `scripts/check-crew-week-text-model.mjs` | pass |
+| `src/schedule/lib/crewStatus.test.mjs`, `src/lib/passwordRecovery.test.mjs` | pass |
+
+**Preservation checks the coordinator asked for:** the automatic-archive guard is in the merged tree unchanged (`CallLog.jsx`, `vite.config.js` identical to the mobile parent; its check passes). The check harnesses' backend-write protections are unchanged (fixtures and scripts identical to their parents) and recorded zero attempted writes.
+
+### Limits
+
+- **B1 (desktop pixels against base) was not run.** No base captures were made for this merge, so the mobile check's one desktop comparison is skipped, not passed.
+- The full existing check suite was not rerun. Report A records 15 checks that already fail on base; that baseline was not re-established here. `scripts/check-password-recovery.mjs` is one of them and was not run.
+- ESLint was not run.
+- Nothing was checked on a hosted preview, on a phone, with a real sign-in or with real records. No preview was published.
+- Sunday's Schedule surfaces were checked at desktop widths only. How the Schedule views behave at phone widths is the pending mobile slice, not this integration.
+- The mobile check ran against a local build made with a synthetic backend name (`calllog-fixture`), which is what the fixture's session key expects.
+- Dependencies were not installed from the network: this worktree had none, so the sibling `mobile-preview` worktree's `node_modules` (identical `package-lock.json`) was copied in. It is git-ignored.
+- `scripts/check-sunday-parity.mjs` rewrites screenshots under `docs/agent-handoffs/evidence/sunday-parity/after/`. Two were re-rendered by this run and were restored, so the evidence directory is identical to `0a78d32`.
+
+### Remaining
+
+- Independent baseline check of this combined tree before any further app edit (plan §3 item 4). Routed by the coordinator.
+- T1 revision of `docs/plans/crew_mobile_preview.md` and its T2 audit. No mobile UI build until that converges.
+- Chris's acceptance of the Sunday preview and of the mobile web preview are both still open; this merge implies neither.
+- Publishing this branch is the coordinator's step.
+
+---
+
+## Prior reports carried by the merge
+
+The two prior build reports follow, each carried **verbatim** (byte-identical to the commit named). Neither was edited, re-tiered or re-worded. Their headings repeat (`## Status`, `## Summary`, `## Brand check`); read each inside its own marked block.
 
 - **Report A — F60 Sunday = Saturday parity**, from `0a78d32072135e9daa81d85dcb34abc8e1c83dd1:docs/agent-handoffs/BUILD-REPORT.md`.
 - **Report B — F65 Mobile web preview (phone shell)**, from `3059639108aad22c3076cf692aeea5731657b7a9:docs/agent-handoffs/BUILD-REPORT.md` (the mobile lineage; shell evidence commit `28c84681038d27e7cf481d77dd8d2787547ce250`).
