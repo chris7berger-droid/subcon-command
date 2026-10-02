@@ -1,3 +1,110 @@
+## F66 — Mobile crew scheduler: Crew Schedule at phone width (2026-10-01)
+
+**Built and locally checked. At ≤768px `/schedule/schedule` has Week, Day, Person and Board views and a person → days → review → save flow that saves through the existing assignment path. Desktop is unchanged. Stopped at the T3 build gate for independent review. Not pushed by T3, no preview walked, not merged, not in production.**
+
+    Role:        T3 Build · mode: build (initial) · agent/session t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9
+    Plan:        docs/plans/crew_mobile_preview.md @ 39cd8713f8d1097f58b70e4bcc22b84499fa1606 · body identical at build start (only `## Audit manifest` differs)
+    Gates:       T2 CONVERGED @ 39cd871, recorded in docs/AUDIT_LOG.md at eeb4190. Chris's personal T1 lock is NOT recorded (plan §A); the coordinator routed the build as implementation authorization, not as a lock, acceptance or release.
+    Base:        7608b0e8504416678c43d31f3fedacbf015e7d1e · `src/` and `scripts/` at build start were identical to it
+    Source:      1e6bde178b2ffcf5816ba10573d38a127f8347fd (app source + check script + fixture). Every result below was run on this source.
+    Outcome:     bar met within planned scope, with one literal miss recorded under Deviations (P12 at 768)
+    Completion:  code built: yes · data applied: none · authenticated access: not exercised · Chris accepted: not T3's to claim
+
+### What changed
+
+| File | Change |
+|---|---|
+| `src/schedule/views/Schedule.jsx` | Phone view state (which view, which day), the flow's draft, and breakpoint handling. Renders the switch, the three phone panes and the flow at ≤768px; the desktop picker and crew week popup are not rendered there. Adds "Assign crew" to an expanded Board row. 117 lines changed; the only removed lines are the wrapper tags and two render conditions it had to extend. |
+| `src/schedule/components/SchedulePhone.jsx` (new) | The switch, Week, Day, Person and the assign flow. Presentation only. |
+| `src/schedule/components/SchedulePhone.css` (new) | Phone layout. Two media queries, both `screen` (≤768px, ≤600px). Every rule is scoped to this route. |
+| `src/schedule/lib/schedulePhone.js` (new) | Small helpers that read the board's own rows, staffing and summary. |
+| `scripts/check-crew-mobile.mjs`, `scripts/crew-mobile-fixture.mjs` (new) | The plan's acceptance checks and its synthetic fixture. |
+
+No other existing file changed. No dependency, route, backend call, schema, auth or config change.
+
+### How it works, briefly
+
+- **Week** lists the seven days with the capacity strip's numbers and three counts (short, unknown need, double-booked). The strip's badges and "requirements unclear" link stay above it. Tapping a day opens Day.
+- **Day** shows one card per board row that has a non-empty cell that day, in board order, then that day's Free and Out lists.
+- **Person** reuses the crew pool as the list. A person opens to a status per day, one line per trip, Scheduled Off ranges and the status actions.
+- **Board** is the existing board, scrolling sideways in its own frame with the Job column and date header fixed.
+- **The flow** covers the screen and makes the page behind it inert. Save re-finds the row by its key and calls the existing `changeRowAssignments(row, name, days)`, whose body is unchanged. Review is recomputed from the current row, so after a partial failure it shows what is on the trip now and what is still to do.
+- **Crossing 768px** closes the flow, the desktop picker, the crew week popup and Person's open person with no write. A save already in flight finishes first.
+
+### Baseline recorded before the first app edit (plan §5 U)
+
+- **U1 — rendered "before" at 360, 390, 430, 768** (`evidence/crew-mobile/base/`). The capacity strip takes 373px of height at the three phone widths and 353px at 768. The pool keeps its 280px, leaving the board 48, 78, 118 and 456px. No day column is fully visible at the phone widths; four are at 768. The week buttons are in view. The status buttons are not shown without a hover.
+  - **One difference from plan §0.1:** the board's row area does scroll sideways inside its 48–118px box (its vertical scroll setting makes it scrollable both ways); the date header does not move with it. The plan said the day columns cannot be scrolled to. This does not change the design.
+- **U2 — ESLint on base:** 176 errors, 43 warnings. **Dialogs at 360:** crew week popup 360px wide (fills the screen exactly), status picker 348px (inside), Scheduled Off 380px (10px off each side).
+- **U3 — drag by touch on a real phone:** not assessed. No agent can.
+- **U4 — D2 pass-set on the base** (`evidence/crew-mobile/base/checks-base.txt`): 24 of 40 existing checks and tests exit zero, the four named in D2 among them. `check-mobile-preview` was run separately on a base build: 166 pass, 0 fail, B1 skipped, 0 writes. The 16 that already exit non-zero are the 15 the Sunday build recorded plus `check-sunday-parity-preview.mjs`, which needs a hosted URL.
+
+### Verification — all on source `1e6bde1`, synthetic fixture only
+
+No sign-in, no real record, no real backend request. Chrome with touch emulation; clock fixed at 2026-10-07 12:00 PDT.
+
+| Check | Result |
+|---|---|
+| `scripts/check-crew-mobile.mjs` — P1–P17 at 360, 390, 430, 768; D1 and D4 at 1440 | **86 of 86 pass.** 0 page errors, 0 refused requests, 0 writes other than the two allowed fake assignment writes (`evidence/crew-mobile/after/results.json`) |
+| D2 — every check that exits zero on the base still does (`after/checks-after.txt`) | same 24 pass, same 16 non-zero |
+| D2 — `check-sunday-parity-model` | pass, M1–M6 |
+| D2 — `check-sunday-parity` (desktop drag → picker → save, seven days) | pass, 30 groups |
+| D2 — `check-mobile-preview` (phone shell) | 166 pass, 0 fail, B1 skipped; 0 writes, 0 refused |
+| D2 — `check-preview-autoarchive` (preview archive guard, with eligible "Lost" candidates) | pass |
+| D3 — 1440 board screenshot against base | base vs base again: 5,959 pixels differ (max 3 levels). base vs this build: 2,844 pixels (max 1 level). Within the base's own difference — pass |
+| E1 — zero-diff list | Among existing files only `src/schedule/views/Schedule.jsx` changed since `7608b0e`. `28c8468`, `3059639`, `0a78d32` are ancestors |
+| E2 items T3 can check | `changeRowAssignments` body byte-identical to base; no added `supabase` call; both media queries include `screen` |
+| E3 — `npm run build` | pass |
+| E3 — ESLint | 176 errors, 43 warnings — equal to base. No new finding in a touched file; the new files report none |
+| E3 — `assignmentIdentity`, `crewStatus`, `scheduleCrew` tests | pass |
+
+The same script's save-free subset (§5 G) was also run against the local build to prove it works: 25 pass, 21 local-only skipped, 0 writes. That is not a hosted run.
+
+### Deviations from the plan
+
+1. **P12 at 768 — literal miss.** P12 says the Board scrolls sideways at every phone and tablet width. At 768 the Job column and all seven days fit the frame, so there is nothing to scroll. The check records this as a note instead of failing. At 360, 390 and 430 it scrolls as written. T4 should judge whether fitting the whole week at 768 meets the intent.
+2. **Review shows one extra line**, "On this trip now", so a partial failure can be read. Add and Remove are as planned.
+3. **Other-job warnings read "Also on 9103, 9104"** in the flow. Desktop's picker shows the bare job numbers under a "Conflict:" tooltip. Same rule, same jobs.
+4. **P13** was checked with a link into the fixture's own week (all fixture trips are in that week). The week-snapping itself is existing code and is not re-proved here.
+
+Nothing else differs from the plan that T3 knows of.
+
+### Brand check
+
+- **Documents opened by this T3 session** (registry `/Users/chrisberger/aios/assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md`, sha256 `253e3637…`):
+  - `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md`, read in full — §1 (do not redesign), §4 color, §7 typography, §8 geometry, §10 components, §14 accessibility, §18 acceptance checklist, and the locked identity-mark section.
+  - `visual/crew-schedule-canonical.png`, opened.
+  - `source-docs/Subcon_Command_Visual_Brand_Guide.readable.txt` searched for phone, tablet, touch and breakpoint rules: none beyond "check mobile/tablet behavior". The DOCX itself was not re-read; the plan records T1's full read.
+- **Changed surfaces:** the phone switch, Week list, Day cards, Person detail, the assign flow, and phone sizing of the existing board, week header, capacity strip head and dialogs. All at ≤768px on this route only.
+- **Tokens:** every new surface uses the Schedule route's existing tokens (`--bg-card`, `--header-dark`, `--command-green`, `--danger`, `--teal`, the Barlow fonts, 8px radius). That palette is the route's own, not the standard's cyan set. **This is pre-existing and is reported as such, not as "no deviations".** No new color, font, radius or mark asset was added. The mark is untouched.
+- **Phone-width brand comparison: not performed.** No governing document defines a phone layout or reference, so there is nothing to compare against.
+- **1440:** unchanged within the base's own pixel noise (D3), so no new claim is made against the canonical image.
+
+### What this does not show
+
+- **Real devices.** Emulated Chrome is not iPhone Safari: no real toolbars, keyboard, safe areas or touch.
+- **Signed-in use with real records.** Not exercised by anyone.
+- **A hosted preview.** None was walked. A preview shares the production database: only the Call Log's automatic archive is skipped there. A signed-in person who taps Save, a Board day toggle, ✕ or a status action changes the real schedule.
+- **A trip set to need no crew** is not in the plan's fixture, so "no card for it" is built but not exercised.
+- **Keyboard reach behind the flow:** the schedule page is inert while the flow is open, but the shell's own menu button above it is outside this slice and can still take keyboard focus. It is covered by the flow for taps.
+- **Widths** other than 360, 390, 430, 768 and 1440.
+
+### Notes for reviewers
+
+- The first D2 rerun showed two extra failures (`check-crew-schedule-sticky-dates`, `check-crew-week-text`). Cause: T3's own local preview servers were holding ports 5196 and 5198, which those checks bind. With the ports free both pass, and the recorded rerun matches the base set.
+- `check-sunday-parity.mjs` rewrites screenshots under `evidence/sunday-parity/after/`. Each run's rewrites were restored; that folder is unchanged.
+- Dependencies: this worktree's `node_modules` is a copy of the sibling `mobile-preview` worktree's (identical lockfile). Nothing was installed.
+
+### Remaining
+
+- T4, T5 and T6 on source `1e6bde1`. Then Smoke and the hosted preview, routed by the coordinator.
+- Chris's look on a real phone, and his acceptance. Neither has happened.
+- Backlog O14 holds the four pre-existing behaviors T2 listed as adjacent.
+
+Earlier reports follow unchanged.
+
+---
+
 ## Integration — Sunday parity merged into the mobile crew scheduler branch (2026-10-01)
 
 **Dependency integration only. The stable Sunday checkpoint is merged into `feat/mobile-crew-scheduler-preview` with both lineages kept. No new mobile UI code. The mobile crew scheduler build (F66) has not started and still waits for the revised plan and its T2 audit. Not merged to main, not in production. T3 did not push; see Push below.**

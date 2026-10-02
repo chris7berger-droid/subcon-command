@@ -1,0 +1,12 @@
+{
+  "check": "D3desktopboardvsbase",
+  "base_vs_base_repeat": {
+    "changed_pixels": 5959,
+    "max_channel_diff": 3
+  },
+  "base_vs_after": {
+    "changed_pixels": 2844,
+    "max_channel_diff": 1
+  },
+  "pass": true
+}
