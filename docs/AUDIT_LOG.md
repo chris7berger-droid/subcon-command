@@ -26,6 +26,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -1221,6 +1222,99 @@ I read this as an ordinary verdict: no scope change, no locked decision changed,
 `| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |`
 
 Transcribe it only if the repo's audit table takes T4 rows; I did not confirm that it does.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T5 Code Review
+
+Transcribed verbatim from the reviewer's complete report (T5, session `c6c044ee-5371-4f6b-9f91-32d9ec3cdc03`, emitted to `/tmp/mobile-t5-verdict-20261001.md`, sha256 `9b847664cf8a22a26d1dcc90b23ecfc294ed0ae8907fec31a0affe1a91378557`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T5 Code Review · c6c044ee-5371-4f6b-9f91-32d9ec3cdc03 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING, filed as one backlog item · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T5 Code Review — F66 mobile crew scheduler: 0 BLOCKS-SHIP
+
+**Zero blockers in `7608b0e..1e6bde1`; the review ends here.** I found one SHOULD-FIX and three HARDENING items, all for a single backlog row. Target status is PRODUCT for the three source files and SAFETY-NET for the check script and fixture, which got one pass.
+
+    Role:        T5 Code Review · agent/session c6c044ee-5371-4f6b-9f91-32d9ec3cdc03
+                 (https://claude.ai/code/session_01Hv3r1TGu3YZioh21zvHnDV; UUID read from the session scratchpad path, agent name unread — Bash denied)
+    Artifact:    diff 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report checkpoint e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Verdict:     0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder (`6bdefad7-…`), the T4 reviewer (`c1dd064c-…`), or the plan or audit sessions. I wrote, ran and recorded nothing.
+
+## Findings
+
+| # | Finding | Severity | Materiality | Action |
+|---|---|---|---|---|
+| 1 | A fast double tap on Review lands on Save and writes without the review being read. Both are the last, right-aligned button in the same bottom action row (`SchedulePhone.jsx:239`, `:263`; `SchedulePhone.css:193`). `flow-days-390.png` and `flow-review-390.png` show them in the same spot. The write is exactly what the user picked, which is what desktop does with no review at all. | Medium | SHOULD-FIX | Backlog |
+| 2 | If a save fails and the reload after it also fails, Review keeps the stale row while saying "This shows what is on the trip now" (`SchedulePhone.jsx:258`). A retry then recomputes from that stale row and can re-insert a day already saved. The cause is in the unchanged shared path (`Schedule.jsx:275–279`, `:537–540`), and the desktop picker has the same exposure. | Low | HARDENING | Backlog |
+| 3 | The flow has no focus trap, and Escape only works while focus is inside it (`SchedulePhone.jsx:268–269`). Keyboard focus can reach the shell's controls; the build report discloses this. Leaving the route that way unmounts the flow with no write. | Low | HARDENING | Backlog |
+| 4 | The D4 "Save in flight" check waits for the flow to leave the DOM (`check-crew-mobile.mjs:639`). It leaves as soon as the viewport widens, because `flowOpen = phone && !!flow` (`Schedule.jsx:1364`). So the check proves one write and a completed save, not that the draft is cleared after the save settles. By source reading it is cleared (`Schedule.jsx:590–594`). This is an incomplete assertion, not a fail-open. | Low | HARDENING | Backlog |
+
+`0 ship-blockers; 4 filed as one backlog item. Done.`
+
+## Coverage (my own source reading)
+
+- **Row ownership and week bounds:** clean.
+  - The draft holds only the row key (`Schedule.jsx:562`). Review and Save both re-find the row in the loaded week (`:574`, `:1363`), and a missing row offers only Close (`SchedulePhone.jsx:189–193`).
+  - Week navigation, the switch and the strip are inert while the flow is open (`Schedule.jsx:1369`, `:1378`), so the week cannot change under a draft.
+  - Existing days come from that row's own assignments (`:329–331`), so a sibling trip is never touched.
+- **Assignment state and partial-failure retry:** clean apart from finding 2.
+  - Review's add and remove (`schedulePhone.js:61–68`) match what the save computes (`Schedule.jsx:507–513`).
+  - After a delete-only failure the row reloads, so a retry adds nothing and removes only what is left.
+  - A second save is refused by the busy ref (`:503`) and the disabled buttons.
+- **Resize during save:** clean. Crossing while busy defers the close until the save settles (`:582–594`), and the crossing itself starts no write. On a failed save after crossing, the draft still closes.
+- **Focus and close:** clean apart from finding 3. Focus moves into the dialog on each step (`SchedulePhone.jsx:181`) and returns to the opener if it is still on the page (`Schedule.jsx:566–571`). Every close path is blocked while busy.
+- **Counts and warnings:** clean.
+  - Short and unknown-need come from `crewWeekSummary` over the board's rows, and double-booked from the board's own map (`schedulePhone.js:38–45`).
+  - Day cards follow the board cell rule (`:20–23`; `Schedule.jsx:960–979`).
+  - Day warnings mirror the desktop picker (`schedulePhone.js:49–58`; `Schedule.jsx:1532–1541`).
+- **Legacy, unavailable and archived:** clean.
+  - `canTakeCrew` equals the desktop drop guard (`schedulePhone.js:9–11`; `Schedule.jsx:463`).
+  - Legacy and unavailable rows are read-only in Day, Person and Board (`SchedulePhone.jsx:94–99`, `:148–150`; `Schedule.jsx:1236`).
+  - Archived people are still stopped by the unchanged save guard (`:510–512`).
+- **Desktop:** clean.
+  - The diff adds only `&& !phone` to the two dialogs, attributes that are undefined at desktop, and a pass-through wrapper on the trip link.
+  - There is no hunk inside `changeRowAssignments` and no new backend call.
+  - Both media queries are `screen` and ≤768 / ≤600 (`SchedulePhone.css:10`, `:213`).
+- **Checks, one pass:** no silent fail-open found.
+  - Failed checks, refused requests and shell writes all exit non-zero (`check-crew-mobile.mjs:665`).
+  - The hosted mode allows no writes (`:151`; `crew-mobile-fixture.mjs:135`, `:150`).
+  - The P12 skip at 768 is written as a note, already carried by T4.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** HEAD, clean status, the name-status diff, the empty source-to-head diff, the `Schedule.jsx` diff, the three ancestry results, and the 86/86 summary.
+- **Builder-recorded:** I read the committed `results.json` and it matches that summary. Nobody independent has re-run it.
+- **Images I opened:** `flow-days-390`, `flow-review-390`, `day-360`, and `after/board-1440`.
+- **Not done:**
+  - I ran nothing. The one Bash call I made, to read my session name, was denied, and I did not retry.
+  - `mobile-preview-fixtures.mjs` is outside the diff. I only confirmed by search that it has a catch-all route that blocks and logs, so the hosted default-deny rests on that unchanged file.
+  - The tap-through in finding 1 is established from source and screenshots, not on a device.
+  - No brand sources were loaded.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T5 Code Review · c6c044ee-5371-4f6b-9f91-32d9ec3cdc03 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING, filed as one backlog item · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |`
 
 Stopping here.
 ````
