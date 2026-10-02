@@ -25,6 +25,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -1105,6 +1106,121 @@ Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads th
 - **Not yet observed:** no rendered baseline at phone width exists for the scheduler or for Sunday, and the D2 pass-set on the base is unrecorded. Both are T3's pre-edit steps (U1–U4).
 - **Not claimed:** no personal plan lock, preview acceptance or release.
 - **Carried backlog item:** `check-password-recovery.mjs` exits non-zero in the Sunday evidence file while its unit test passes; pre-existing and auth-related.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T4 Build vs Plan
+
+Transcribed verbatim from the reviewer's complete report (T4, session `c1dd064c-7fa0-490f-bd75-a45544793a1c`, emitted to `/tmp/mobile-t4-verdict-20261001.md`, sha256 `493a3c1d6882e9bc3cf45ce1af63b58880bb9376dc1c247fdf0aa7f2030cebb9`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T4 Build vs Plan · c1dd064c-7fa0-490f-bd75-a45544793a1c · docs/plans/crew_mobile_preview.md @ 39cd871 · build 7608b0e..1e6bde1 (report e6b52e2) · GO — Tier 1: 0 · Tier 2: 0 · disclosed deviations: 4 · P12 @ 768 literal miss carried unwaived · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T4 Build vs Plan — F66 mobile crew scheduler: GO
+
+**GO to T5.** The build matches the plan: 0 runtime blockers, 0 real bugs, 4 disclosed deviations, none unreported. P12 at 768 is a literal miss that meets the plan's intent; I am not waiving it and no acceptance by Chris is claimed.
+
+    Role:        T4 Build vs Plan · agent/session c1dd064c-7fa0-490f-bd75-a45544793a1c
+                 (https://claude.ai/code/session_013uYMKrGAi4pMTMF7SDwLtR; session name unread — Bash denied)
+    Artifact:    docs/plans/crew_mobile_preview.md @ 39cd8713f8d1097f58b70e4bcc22b84499fa1606
+                 · build 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report at e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Checks:      passed E1, E2, plan-vs-code for all four views and the flow, desktop preservation
+                 · failed 0 · deferred 0 · literal miss 1 (P12 @ 768, intent met, not waived)
+                 · unverified by T4: builder-run results (below)
+    Brand check: block present; UI standard and canonical image verified by me; gaps: DOCX not read by T3 or T4; one wording slip
+    Verdict:     GO — to T5; P12 @ 768 carried unwaived
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder session (`6bdefad7-…`), and I wrote, ran and recorded nothing.
+
+## Where the evidence comes from
+
+- **Coordinator-supplied (I did not run these):** HEAD `e6b52e2`, clean status, the name-status diff, the empty source→head diff over `src`/`scripts`/config, the `Schedule.jsx` diff, and the three ancestry results.
+- **My own inspection:** the plan, the build report's F66 section, the three new source files, `Schedule.jsx`, the check script and fixture, the committed result files, 15 screenshots, the brand registry, the UI standard in full, and the canonical image.
+- **Builder-recorded, not re-run by anyone independent:**
+  - the 86/86 browser run (`results.json`);
+  - the 24-pass / 16-non-zero set — `checks-base.txt` and `checks-after.txt` are line-for-line identical;
+  - the desktop pixel comparison (`d3-desktop-board.json`).
+- **Builder statement only, no committed log:** `check-mobile-preview` on the source (166 pass, 0 writes), and the ESLint totals. The build itself is implied by the 86-check run, which compiles the checkout.
+
+I scoped GO to what T4 owns: build-vs-plan, E2 ("read from the diff by T4") and the Brand check. Plan §5 G makes P–F the Smoke Test, run after T4–T6, so the two statement-only items are for Smoke to close with saved logs. If you read the T4 card as needing them now, those two logs are the only evidence to supply.
+
+## P12 at 768
+
+- **What the build does:** on the phone layout the Job column is fixed at 132px and each day is at least 68px (`SchedulePhone.css:146-152`), so the whole grid needs 608px. The 768 frame is about 750px, so Job plus all seven days fit and nothing scrolls sideways.
+- **What I saw:** `board-768.png` shows Job plus MON 10/05 through SUN 10/11 fully inside the frame, legible. `board-360.png` shows Job plus three days with the fourth cut off, so it scrolls there.
+- **Containment and sticky parts:** the board frame scrolls both ways, the date header sticks to the top, and the Job header and labels stick left with opaque backgrounds (`SchedulePhone.css:139-149`, `App.css:1125`).
+- **How the check handles it:** it asserts scrolling only where the grid overflows and otherwise writes a note (`check-crew-mobile.mjs:521-525`). The last-column, Job-column and header assertions still run at 768.
+- **Is the report accurate:** yes. Deviation 1 and the `results.json` note describe exactly this. The "86 of 86 pass" row counts 768 P12 as a pass under a title that says "sideways scroll"; the Outcome line and Deviations correct that, so I do not treat it as hidden.
+- **Judgment:** the plan's intent for Board is that every column stays reachable with Job labels fixed. At 768 every column is visible without scrolling, so the intent is met and the literal sentence is not. The Smoke record should carry it as a note, not a clean pass.
+
+## Punch-list
+
+**Tier 1 — runtime blockers: 0.** No schema, migration or new backend call exists, so there is no live-schema probe to run.
+
+**Tier 2 — real bugs: 0.**
+
+**Deviations, all disclosed in the report:**
+1. P12 at 768, above.
+2. Review shows an extra "On this trip now" line (`SchedulePhone.jsx:252`).
+3. Other-job warnings read "Also on 9103, 9104" (`schedulePhone.js:57`); desktop shows the bare numbers (`Schedule.jsx:1541`). Same rule, same jobs.
+4. P13 uses a link into the fixture's own week, so week-snapping is not re-proved. The phone-specific part, opening on Board when `?job=` is present, is in the `Schedule.jsx` diff.
+
+**Notes for Smoke, not blockers:**
+- The "date header stays while rows scroll" assertion does not confirm rows actually scrolled (`check-crew-mobile.mjs:515-517`). The 360 and 768 screenshots show rows running past the frame, so it was not vacuous here.
+- A trip set to need no crew is built (`schedulePhone.js:20-23`) but not in the fixture, as the report says.
+- No 430 screenshots are committed, and I did not open the 390 week, day and board images.
+
+## Built to spec (my reading, file:line)
+
+- **Save path (E2):** phone Save re-finds the row by key and calls `changeRowAssignments(row, name, days)` (`Schedule.jsx:572-578`), the same shape as desktop (`:547-552`). The diff has no hunk inside that function (`:502-545`).
+- **No new backend call:** no `supabase`, `fetch` or `.from(` in `SchedulePhone.jsx` or `schedulePhone.js`; the `Schedule.jsx` diff adds none.
+- **Zero-diff list (E1):** the only existing source file changed is `Schedule.jsx`; `App.css`, every existing `lib/` file, the shell and config are untouched, per the supplied diff.
+- **Days:** every view maps over `dates` with the existing `DAYS` / `DAYS_LONG` (`Schedule.jsx:1358`); no day list or track count in new code or CSS.
+- **Same guards as a desktop drop:** `canTakeCrew` (`schedulePhone.js:9-11`) mirrors `handleAssignCrew` (`Schedule.jsx:463`); Select all reuses `assignableDays` (`:1655`).
+- **Legacy and unavailable rows:** read-only in Day and Person (`SchedulePhone.jsx:94-99`, `:148-150`); no Assign crew on Board (`Schedule.jsx:1236`).
+- **Modal flow:** page and capacity strip are inert while it is open (`Schedule.jsx:1369`, `:1378`); crossing 768 closes drafts with no write and lets an in-flight save finish (`:582-594`).
+- **Status actions:** same arguments and same out-all-week rule as the desktop chip (`SchedulePhone.jsx:166-171` vs `Schedule.jsx:1343-1350`).
+- **Desktop:** both media queries are `screen` and ≤768/≤600 (`SchedulePhone.css:10`, `:213`). The picker and crew popup only gain `&& !phone` (`Schedule.jsx:1503`, `:1567`). `base/board-1440.png` and `after/board-1440.png` look identical to me.
+- **Strip scoping:** every strip rule hangs off `[data-phone-view]`, set only when `phone` is true on the one mounted route (`ScheduleLayout.jsx:409`).
+- **Check coverage:** the script exercises every P, D1 and D4 item as the plan words it. Only the two assignment writes are allowed, and any other write fails the check (`crew-mobile-fixture.mjs:135`, `:150`).
+
+## Brand check
+
+- **Sources I opened:** the registry; `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` in full; `visual/crew-schedule-canonical.png`; and the Visual Brand Guide reading copy, searched for phone rules.
+- **Report claims that hold:**
+  - New surfaces use the route's own tokens (`src/schedule/index.css:5-42`).
+  - Every literal colour and shadow in the new CSS already exists in `App.css` (`:879`, `:1024`, `:1181`, `:1802`, `:1815`).
+  - The reading copy has no phone rule beyond "check mobile/tablet behavior" (line 222).
+  - No phone reference exists, so no phone comparison was possible; the report says so.
+- **Against the standard:** the new surfaces use green and teal where the standard says cyan (selected tab, primary button, focus ring) and Barlow body text where it says Inter. Both are inherited from the route and are the plan's delegated Beat 8. The report states this as pre-existing, not as "no deviations". The 1440 screenshot differs from the canonical image the same way in base and build.
+- **Gaps:**
+  - The governing `.docx` was not re-read by T3 (disclosed), and I cannot read it with these tools. Only the reading copy was checked.
+  - The report lists "8px radius", but the staffing tag uses 6px (`SchedulePhone.css:105`). That value already exists in `App.css`, so it is a wording slip, not a new radius.
+- **Unreported deviations found:** none.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T4 Build vs Plan · c1dd064c-7fa0-490f-bd75-a45544793a1c · docs/plans/crew_mobile_preview.md @ 39cd871 · build 7608b0e..1e6bde1 (report e6b52e2) · GO — Tier 1: 0 · Tier 2: 0 · disclosed deviations: 4 · P12 @ 768 literal miss carried unwaived · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+I read this as an ordinary verdict: no scope change, no locked decision changed, no human gate. If you read the P12 judgment as touching Beat 2, it needs Chris personally.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |`
+
+Transcribe it only if the repo's audit table takes T4 rows; I did not confirm that it does.
 
 Stopping here.
 ````
