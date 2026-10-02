@@ -4,7 +4,7 @@
 // days: Activity (calls logged) + Impact ($ of stalled bids re-engaged). Both
 // tap-through to their detail so a rep can go work them more. Passes the "pair,
 // don't pad" rule: it serves the list it sits next to.
-import { C, F, SP, R, FS } from "../../lib/tokens";
+import { CALLLOG_C as C, F, SP, R, FS } from "../../lib/tokens";
 import { fmt$ } from "../../lib/utils";
 
 function Stat({ value, label, sub, count, onClick }) {
@@ -29,7 +29,7 @@ function Stat({ value, label, sub, count, onClick }) {
 export default function HuntResultsPanel({ callsThisWeek = 0, reengaged = 0, onDrill }) {
   const worked = callsThisWeek > 0;
   return (
-    <div style={{ background: C.dark, borderRadius: R.hero, padding: SP.xl, display: "flex", flexDirection: "column", gap: SP.lg, alignSelf: "start" }}>
+    <div className="cl-hunt-results" style={{ background: C.dark, borderRadius: R.hero, padding: SP.xl, display: "flex", flexDirection: "column", gap: SP.lg, alignSelf: "start" }}>
       <div style={{ fontSize: FS.label, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: C.teal, fontFamily: F.ui }}>Waking Up the Sleepers</div>
       {/* two stats side-by-side so the card stays short, not a tall stack */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SP.lg }}>

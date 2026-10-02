@@ -200,7 +200,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: C.linen, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div className="sc-m-p1" style={{ minHeight: "100vh", background: C.linen, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`
         .sc-login-input:-webkit-autofill,
         .sc-login-input:-webkit-autofill:hover,

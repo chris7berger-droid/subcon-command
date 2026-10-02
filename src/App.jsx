@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import PublicSigningPage from "./pages/PublicSigningPage";
-import { C, F, GLOBAL_CSS } from "./lib/tokens";
+import { C, F, GLOBAL_CSS, CALLLOG_THEME, CALLLOG_C } from "./lib/tokens";
 import { supabase } from "./lib/supabase";
 import { getSession, onAuthStateChange, getCurrentTeamMember } from "./lib/auth";
 import { authEventAction, forgetSessionOnOpen, isRecoveryHoldActive, isUnfinishedRecovery, onPasswordLogin, RECOVERY_USER_KEY } from "./lib/passwordRecovery";
@@ -11,6 +11,8 @@ import FeatureDetailPage from "./pages/FeatureDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import Home from "./pages/Home";
 import CallLog from "./pages/CallLog";
+import "./styles/calllog-brand.css";
+import "./styles/mobile-shell.css";
 import Leads from "./pages/Leads";
 import WTCCalculator from "./pages/WTCCalculator";
 import Proposals from "./pages/Proposals";
@@ -408,6 +410,16 @@ function SalesCommandApp() {
   );
 }
 
+// Phone/tablet-portrait breakpoint (plan Beat 3). One matchMedia listener; the
+// same query gates every rule in styles/mobile-shell.css.
+const PHONE_QUERY = "(max-width: 768px)";
+const subscribePhone = (onChange) => {
+  const mq = window.matchMedia(PHONE_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
+const isPhone = () => window.matchMedia(PHONE_QUERY).matches;
+
 function AppShell({ open, setOpen, displayName, displayRole, displayInitials, teamMember, onOpenDirectory, showTOC, setShowTOC, subPage, setSubPage, children }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -415,35 +427,101 @@ function AppShell({ open, setOpen, displayName, displayRole, displayInitials, te
   const active = sectionFromPath(location.pathname);
   const group = groupFromPath(location.pathname);
   const onSubconHome = location.pathname === SUBCON_HOME.path;
+  const callLogBrand = location.pathname.replace(/\/$/, "") === "/sales/calllog";
   const activeLabel = resolveNavTarget(active)?.label;
+
+  // Phone drawer. Independent of the desktop sidebar state (`open`): drawer
+  // actions never touch it, so 1440 → 390 → 1440 returns the sidebar as it was.
+  // The drawer starts closed and re-closes whenever the viewport crosses the
+  // breakpoint or the route changes.
+  const phone = useSyncExternalStore(subscribePhone, isPhone);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerScope = `${phone}|${location.pathname}`;
+  const [prevDrawerScope, setPrevDrawerScope] = useState(drawerScope);
+  if (prevDrawerScope !== drawerScope) {
+    setPrevDrawerScope(drawerScope);
+    setDrawerOpen(false);
+  }
+  const drawerShown = phone && drawerOpen;
+  const closeDrawer = () => setDrawerOpen(false);
+  const menuBtnRef = useRef(null);
+  const drawerRef = useRef(null);
+  const drawerWasShown = useRef(false);
+
+  // Focus moves into the drawer on open and back to the menu button on close.
+  useEffect(() => {
+    if (drawerShown) {
+      drawerWasShown.current = true;
+      drawerRef.current?.querySelector("[data-drawer-close]")?.focus();
+    } else if (drawerWasShown.current) {
+      drawerWasShown.current = false;
+      menuBtnRef.current?.focus();
+    }
+  }, [drawerShown]);
+
+  // While open: Escape closes, Tab stays inside the drawer.
+  useEffect(() => {
+    if (!drawerShown) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") { setDrawerOpen(false); return; }
+      if (e.key !== "Tab") return;
+      const items = drawerRef.current?.querySelectorAll("button:not([disabled])");
+      if (!items?.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [drawerShown]);
+
   return (
     <>
       <style>{GLOBAL_CSS}</style>
-      <div data-app-shell style={{ display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
+      <div data-app-shell className={callLogBrand ? "sc-calllog" : undefined} style={{ ...(callLogBrand ? CALLLOG_THEME : {}), display: "flex", height: "100vh", background: C.linen, overflow: "hidden" }}>
 
         <AppSidebar
-          open={open} setOpen={setOpen}
+          open={phone ? true : open} setOpen={setOpen}
           displayName={displayName} displayRole={displayRole}
           displayInitials={displayInitials}
           teamMember={teamMember} cfg={cfg}
           onOpenDirectory={onOpenDirectory}
+          drawer={phone ? (drawerShown ? "open" : "closed") : undefined}
+          onDrawerClose={closeDrawer}
+          drawerRef={drawerRef}
         />
+        {drawerShown && <div data-app-scrim aria-hidden="true" onClick={closeDrawer} />}
 
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div data-app-main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div data-app-header style={{ height: 50, background: C.linenCard, borderBottom: `1px solid ${C.borderStrong}`, display: "flex", alignItems: "center", padding: "0 28px", justifyContent: "space-between", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="sc-crumbs" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {phone && (
+                <button
+                  ref={menuBtnRef}
+                  type="button"
+                  className="sc-menu-btn"
+                  aria-label="Open navigation"
+                  aria-expanded={drawerShown}
+                  aria-controls="app-sidebar"
+                  onClick={() => setDrawerOpen(true)}
+                  style={{ width: 44, height: 44, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: `1.5px solid ${CALLLOG_C.borderStrong}`, borderRadius: 7, color: CALLLOG_C.textHead, fontSize: 18, cursor: "pointer" }}
+                >
+                  ☰
+                </button>
+              )}
               {onSubconHome ? (
-                <span style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>Subcon Command Home</span>
+                <span className="sc-crumb-page" style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>Subcon Command Home</span>
               ) : group ? (
                 <>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: C.textFaint, fontFamily: F.display }}>{group.label}</span>
+                  <span className="sc-crumb-group" style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: C.textFaint, fontFamily: F.display }}>{group.label}</span>
                   <span style={{ color: C.border, fontSize: 14 }}>›</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>{activeLabel}</span>
+                  <span className="sc-crumb-page" style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>{activeLabel}</span>
                 </>
               ) : (
                 // Top-level global routes (/settings, /import) aren't under an app
                 // group — a single clean crumb, not the borrowed umbrella label.
-                <span style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>{activeLabel}</span>
+                <span className="sc-crumb-page" style={{ fontSize: 13, fontWeight: 800, color: C.textHead, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: F.display }}>{activeLabel}</span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

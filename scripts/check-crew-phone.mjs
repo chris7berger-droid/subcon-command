@@ -127,10 +127,11 @@ try {
   assert.match(midweekText, /^UPDATED CREW SCHEDULE — ABBREVIATED\nJoseJR\nCurrent schedule from today forward/)
   assert.match(midweekText, /THU 9\/10 — \(OFF — MAY CHANGE\)/)
   assert.match(midweekText, /FRI 9\/11 — JOB #6618 — with Kurtis Zomparelli/)
-  assert.doesNotMatch(midweekText, /SUNDAY, SEP 13|SUN 9\/13|SAT 9\/12|Week of|TUE 9\/8|WED 9\/9/)
+  assert.match(midweekText, /SUN 9\/13 — JOB #6618$/)
+  assert.doesNotMatch(midweekText, /SUNDAY, SEP 13|SAT 9\/12|Week of|TUE 9\/8|WED 9\/9/)
   assert.doesNotMatch(midweekText, /FRI 9\/11 — \(OFF/)
   assert.doesNotMatch(midweekText, /Wrong Coworker|PRIVATE OFFICE|No work assigned/)
-  assert.match(await page.locator('.cp-midweek-range').innerText(), /SAT 9\/12 · today through Saturday/)
+  assert.match(await page.locator('.cp-midweek-range').innerText(), /SUN 9\/13 · today through Sunday/)
   assert.doesNotMatch(await root.innerText(), /through Friday|remaining weekdays/)
   // A new Saturday assignment must appear after Refresh, then reach Copy/Share
   // unchanged. Only the intercepted fixture changes; no app-data writes occur.
@@ -146,7 +147,7 @@ try {
   midweekText = await preview.inputValue()
   assert.match(midweekText, /SAT 9\/12 — JOB #6618 — with Kurtis Zomparelli/)
   assert.match(await page.locator('.cp-midweek-days').innerText(), /SAT 9\/12 — JOB #6618 — with Kurtis Zomparelli/)
-  assert.doesNotMatch(midweekText, /SUN 9\/13/)
+  assert.match(midweekText, /SUN 9\/13 — JOB #6618$/)
   await page.getByRole('button', { name: 'Copy update', exact: true }).click()
   assert.equal(await page.evaluate(() => window.copiedText), midweekText, 'Copy receives compact midweek text')
   await page.getByRole('button', { name: 'Share update', exact: true }).click()

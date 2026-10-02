@@ -1,0 +1,13 @@
+{
+  "url": "https://sales-command-6pd0whlah-chris7berger-droids-projects.vercel.app/sales/calllog",
+  "expect": "skip",
+  "tenantArchiveStages": [
+    "Lost"
+  ],
+  "eligibleRowsOffered": 2,
+  "candidateQueries": 0,
+  "callLogWrites": [],
+  "shellWritesRefused": [],
+  "shellRefused": [],
+  "pageErrors": []
+}

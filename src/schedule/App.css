@@ -956,7 +956,8 @@
 .schedule-root .sch-sbtn:hover { background: var(--danger); color: #fff; }
 .schedule-root .sch-sbtn-wide { width: auto; padding: 0 3px; font-size: 7px; letter-spacing: 0.02em; }
 
-.schedule-root .sch-crew-days-wrap { padding: 0; width: 125px; flex: 0 0 125px; margin-left: auto; }
+/* 62px label + seven 8px day dots with 3px gaps. */
+.schedule-root .sch-crew-days-wrap { padding: 0; width: 136px; flex: 0 0 136px; margin-left: auto; }
 .schedule-root .sch-chip { flex-wrap: nowrap; }
 
 .schedule-root .sch-crew-days-heading,
@@ -1100,7 +1101,7 @@
 .schedule-root .sch-brd-hdr-row,
 .schedule-root .sch-brd-body {
   display: grid;
-  grid-template-columns: 260px repeat(6, 1fr);
+  grid-template-columns: 260px repeat(7, 1fr);
 }
 
 .schedule-root .sch-brd-hdr-row {
@@ -6765,7 +6766,7 @@
   .schedule-root .sch-week-changed { animation: none; }
 }
 
-.schedule-root .hcs-days { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; flex: 1; min-width: 0; }
+.schedule-root .hcs-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex: 1; min-width: 0; }
 .schedule-root .hcs-day { position: relative; min-width: 0; padding: 26px 4px 18px; text-align: center; }
 .schedule-root .hcs-day-click { cursor: pointer; border-radius: 8px; transition: background 0.12s; }
 .schedule-root .hcs-day-click:hover { background: rgba(255,255,255,0.06); }

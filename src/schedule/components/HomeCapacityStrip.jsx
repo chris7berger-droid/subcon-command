@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useToolbarActions } from '../lib/toolbar'
 import { crewStatusUiLabel } from '../lib/crewStatus'
 
-const DAYS_LONG = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+const DAYS_LONG = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
 function flipName(n) {
   if (!n) return ''
@@ -12,7 +12,7 @@ function flipName(n) {
 }
 
 // Weekly Crew Capacity — the full-width charcoal strip (§8 composition #2). Left:
-// three circular summary badges. Right: six per-day capacity indicators (assigned
+// three circular summary badges. Right: seven per-day capacity indicators (assigned
 // / available + bar + %) with a TODAY marker. All numbers come from
 // computeHomeDashboard (§11); this component is presentation only.
 function pctColor(pct) {

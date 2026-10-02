@@ -1,0 +1,169 @@
+CURRENT ADDENDUM — preview archive guard
+Guard commit `44a94bd554ffd3bdafd519961a4c5812355ca6f0` is pushed on `feat/mobile-web-preview`. Vercel reports **Ready**, target **preview**, deployment `dpl_H1VZUTxhLc3LcPvELvjeF4riWgJ6`: https://sales-command-nc4um1vj7-chris7berger-droids-projects.vercel.app . This supersedes the unguarded deployment URLs below; do not reuse those older immutable URLs for a signed-in look. The final documentation commit will have its own deployment, verified separately by the coordinator.
+
+`vite.config.js` exposes only the existing `VERCEL_ENV` environment name. `CallLog.jsx` skips its automatic archive candidate query, update and banner when that value is `preview`. Production, development and missing values retain the original behavior. Existing Vercel project facts were read through the management API: framework `vite`, `autoExposeSystemEnvs=true`; no settings were changed.
+
+**Verification:** `node scripts/check-preview-autoarchive.mjs` and focused ESLint pass. Compiled preview and production-condition builds pass. Local browser runs use only synthetic credentials/records with network interception: preview made no archive query/write; production-condition made the original archive query and one PATCH, fulfilled locally; both list loads and mobile drawers worked with zero unexpected writes, blocked requests or page errors. Evidence: task-3 `qa/autoarchive-browser-results.json`, `qa/autoarchive-preview.png`, `qa/autoarchive-production.png`. This is fixture evidence, not a live production or hosted flow test. Independent T5/T6 delta reviews found zero blockers; their exact records and limits are in `docs/AUDIT_LOG.md`.
+
+**Hosted limitation:** exact SHA and Ready state are verified, but the deployed JavaScript has not been inspected. Vercel SSO blocks unauthenticated hosted access; the management file-tree endpoint returned 404. No cookie or protection bypass was used. T5/T6's deployed-guard verification item remains open before signed-in use; local compiled evidence is not substituted for that check.
+
+**This preview still shares production Supabase and is not read-only.** Interactive saves remain live. Source-only inspection also found unchanged automatic writes: On `/settings`, an Admin must expand Company → Billing: its accordion defaults closed and does not mount children while closed (`Settings.jsx:25–33,785–787`). Merely opening Settings does not trigger this path. Expanding Billing mounts `BillingSection`, which invokes `create-billing-session` status (`Settings.jsx:474–488`); with a Stripe subscription and changed status the handler updates `tenant_config.subscription_status` (`supabase/functions/create-billing-session/index.ts:172–195`). Ordinary `/sales/invoices` list viewing does not trigger schedule creation. The user must choose + New Invoice and select a proposal (`Invoices.jsx:3474,491`), or click + Create Invoice on a Sold proposal detail (`src/components/ProposalDetail.jsx:1085–1086`), which passes route state to auto-open/preselect (`Invoices.jsx:3283–3299,126–130`). If the proposal has no existing schedule, a linked customer requiring pay apps, and WTC rows, selection inserts `billing_schedule` and `billing_schedule_lines` before Save (`Invoices.jsx:135–167`). Those flows were not executed against live data. Avoid expanding Billing and starting New Invoice/pay-app creation during a visual preview. This was a bounded inspection of covered navigation, not an exhaustive whole-app mutation audit.
+
+Guard authorization: the later explicit parent delegation authorized this preview-only archive exception to the original no-touch scope. Formal mobile smoke remains **166/167**, with B1 failed: **9 Call Log pixels, maximum channel difference 1**. No test threshold was changed; the coordinator treated that measured visual difference as immaterial, not a passing test or user acceptance.
+
+No production deployment, main merge, backend/schema/RLS/auth/data or project-setting change. Sibling CallLog branch/worktree untouched. The archive guard is available to that sibling as the pure commit above (includes the local regression script), or the two-file patch `/tmp/mobile-preview-archive-guard.patch`.
+
+
+HISTORICAL MOBILE BUILD RECORD
+
+SC Handoff v299 — Mobile web preview (F65), T3 build — 2026-09-30
+
+SESSION SUMMARY
+Chris asked for a practical mobile-browser preview of Subcon Command. This is
+the T3 build of docs/plans/mobile_web_preview.md @ 87e820f (T2 CONVERGED,
+recorded in docs/AUDIT_LOG.md "Gate records" @ a4b831b). Built on
+feat/mobile-web-preview from the Call Log brand commit 34af375. Published as
+a Vercel preview after independent reviews and compiled synthetic Smoke;
+see PREVIEW below for verified deployment evidence and the SSO limitation.
+Chris's acceptance remains pending. Do not merge.
+
+CHANGES BUILT
+Phone shell at <=768px: the sidebar becomes a drawer opened from a header menu
+button. It closes on a destination, the Directory, the scrim, Escape or its
+close control; it is inert while closed; focus moves in and back out. The
+desktop sidebar state is separate and survives a resize.
+Layers: page, badge + jump, scrim, drawer, modals. While the drawer is open the
+content column sits under the scrim, so AR's sticky top bar no longer covers
+the drawer. An open aria-modal dialog stays above the drawer.
+Sales phone flow: both homes, Call Log list and detail, New Inquiry (Back/Next/
+Save pinned, Close always visible on tall steps, 16px text entry including the
+customer picker search box), Login 16px inputs.
+Sales read lists: Proposals tabs wrap; Customer detail tables scroll inside
+their frames; Leads, Invoices and Customers lists pass on the shell alone.
+All new CSS is in src/styles/mobile-shell.css inside screen media queries at
+<=768px or <=600px. Desktop markup changes are attributes and class names.
+
+DECISIONS
+Drawer and scrim keep z 70 / 60. Raising them above AR's z 100 header would
+have put the drawer over sixteen z-100 modals, several in no-touch files, so
+the content column is demoted while the drawer is open instead.
+Log Outcome, job-list and Hunt results modals got role="dialog" aria-modal and
+a name so that rule's modal exception covers them. Attributes only.
+No P2 screen was deferred.
+
+NEW/CLOSED BACKLOG ITEMS
+New: F65 Mobile web preview, T2, In Progress (built, reviews pending).
+New: O12 Mobile preview follow-ups from the T4 review (four non-blocking
+items: wizard title stripe, aria-modal without focus containment, import-order
+CSS wins, fixture logging of unknown reads).
+Closed: none.
+
+REVISION AFTER T4 ROUND 1 (same day)
+T4 Build vs Plan returned NO-GO; its proposed record is transcribed in
+docs/AUDIT_LOG.md "Gate records" (commit 8cd3f62). Two blockers:
+1. B1 (desktop pixels vs base) fails as written.
+2. The check script did not implement A3, A6, A8 /crew, A9 from the drawer,
+   A10, B1, C1, C3, C5 and D2-D5.
+Blocker 2 is answered: scripts/check-mobile-preview.mjs now carries those
+checks, fails the run on any refused request, and compares desktop capture
+directories made by the new scripts/capture-mobile-preview-desktop.mjs.
+App source is unchanged since cc4d733.
+Run qa/mobile-acceptance (360/390/430/640/768): 167 checks, 166 passed,
+0 page errors, 0 writes, 0 refused requests. The one failure is B1.
+B1 stays failed and is not relabelled. Latest capture: Time Clock 1 pixel
+(max channel 10), Call Log 16 pixels (max 1), 11 of 13 screens exact. Four
+captures of the same source gave four different results, so the capture is
+not repeatable; no layout or content change was seen in any. T4 judged the
+first capture immaterial but cannot waive it. The coordinator accepts it as
+a raster-only technical deviation. Chris has not accepted anything.
+
+VERIFICATION
+Coordinator's synthetic self-check, local dev server, fixture data, backend
+default-deny, no real sign-in:
+  qa/mobile-final      126 checks passed, 0 page errors, 0 attempted writes
+                       (360/390/430/640/768; includes 28 smoke-only routes at
+                       390 and 768, load + drawer exit only)
+  qa/mobile-tall-step   20 checks passed, 0 errors, 0 writes
+  qa/wizard-matrix      66 checks passed, 0 errors, 0 writes (earlier run)
+npm run build passes. ESLint 176 errors / 43 warnings, same as baseline.
+git diff --check clean. Zero diff in the plan's no-touch list.
+Desktop 1440: 10 of 13 screens pixel-exact. Call Log 9 px and Calendar 127 px
+differ by one channel level; New Inquiry 28 px, within its own base jitter
+(30 px). The plan's zero-pixel bar B1 is therefore not met literally; no
+layout or content change was observed.
+These runs are a build self-check. They are not the Smoke gate, not a review
+and not a hosted walk. Authenticated access to real records was not exercised.
+Screenshots and result files are in the task's local qa directory, not
+committed.
+
+REVIEWS AND FORMAL SMOKE (same day)
+All recorded in docs/AUDIT_LOG.md "Gate records":
+  T4 Build vs Plan  round 2 GO, B1 carried as an unwaived failure (82b61fa)
+  T5 Code Review    0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING       (3704b9c)
+  T6 Security       0 exploitable-today, 1 HARDENING                (307feb8)
+Non-blockers: backlog O12 (T4) and O13 (T5, T6). None was fixed.
+Formal Smoke, run by T3 on T7's routing against the coordinator's compiled
+build of the reviewed source (local port 5195; src and scripts byte-identical
+to db14d25). qa/mobile-smoke: 167 checks, 166 passed, 0 page errors,
+0 writes, 0 refused requests. The one failure is B1: Call Log differs from
+base by 9 pixels, max channel 1; 12 of 13 screens exact. B1 fails as written,
+so the Smoke gate is not met literally. It is not waived and Chris has not
+accepted it.
+Login buttons were measured by hand at 360, signed out (the script measures
+Login inputs only): 36, 41 and 36px, Sign In in view and tappable.
+Evidence qa/mobile-smoke/login-buttons.json.
+Correction: the fixtures script was first committed in cc4d733 and has not
+changed since; only check-mobile-preview.mjs was extended in db14d25.
+
+PREVIEW (plan G1-G4)
+Pushed by the coordinator after the reviews and Smoke. Draft PR #72:
+https://github.com/chris7berger-droid/subcon-command/pull/72
+Vercel preview Ready at commit 2092cea8ec9991bc4251a9bcdd4194ee37d17f6f
+(deployment dpl_8wNFvnp3Jsas1YZgHTY1ZYfys5Xc), observed by the coordinator:
+https://sales-command-k1m6b6wos-chris7berger-droids-projects.vercel.app
+2092cea is docs-only on top of the reviewed build db14d25 (app source
+cc4d733). The commit carrying this text is docs-only too and will deploy
+again when pushed; the coordinator verifies that one separately.
+Hosted checks (G3): NOT PERFORMED. The preview redirects to Vercel sign-in;
+no cookie, session or bypass was acquired or used. No hosted behaviour is
+claimed; the evidence is the local synthetic Smoke run.
+The preview uses the production Supabase project. It is not a test sandbox.
+The Call Log's existing archive update on load is unchanged and runs there.
+
+NOT TOUCHED
+main, production, the Vercel project, database/schema/RLS/auth, edge
+functions, package.json and build config, src/schedule, src/field, src/ar,
+Invoices.jsx and the other money-path files, tokens.js, the logo, native Field
+Command, AIOS.
+
+NEXT SESSION POINTERS
+Reviews, Smoke and the preview are done. What is left is Chris's look at the
+preview and his acceptance. No merge or production release without it.
+A source or script commit after the reviews re-opens them (plan G4).
+Not phone-ready, by scope: Schedule, Field web, AR, Proposal and Invoice
+detail, WTC, Settings, Team, History Locker, Import.
+Non-blocking follow-ups: backlog O12 and O13.
+The preview shares the production database: a phone look should be read-only.
+Chris's look on a real phone is his step; emulated Chrome cannot show Safari's
+toolbar, keyboard, safe areas or focus zoom.
+Brand check and its two deviations (focus ring not cyan outside the Call Log
+route; legacy palette carried elsewhere) are in BUILD-REPORT.md.
+
+FILES TO KNOW
+src/styles/mobile-shell.css
+src/App.jsx (matchMedia, drawer state, menu button, data-app-main)
+src/components/AppSidebar.jsx (drawer semantics)
+src/components/NewInquiryWizard.jsx, SearchSelect.jsx, TableOfContents.jsx
+src/components/followup/{LogOutcome,JobList,HuntResults}Modal.jsx
+scripts/check-mobile-preview.mjs, scripts/mobile-preview-fixtures.mjs,
+scripts/capture-mobile-preview-desktop.mjs
+docs/plans/mobile_web_preview.md
+docs/agent-handoffs/BUILD-REPORT.md
+
+GIT STATE
+Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-3/mobile-preview
+Branch feat/mobile-web-preview. Slice base 34af375. App source cc4d733,
+Brand check correction 32fe67a, T4 gate record 8cd3f62, then the scripts and
+docs revision that carries this text.
+Pushed by the coordinator through 2092cea (draft PR #72). This commit is
+not pushed by T3.

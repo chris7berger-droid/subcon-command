@@ -1,8 +1,8 @@
-import { C, F } from "../lib/tokens";
+import { CALLLOG_C as C, F } from "../lib/tokens";
 
 export default function SectionHeader({ title, action }) {
   return (
-    <div style={{
+    <div className="cl-section-header" style={{
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",

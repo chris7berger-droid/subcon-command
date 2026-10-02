@@ -1,0 +1,85 @@
+SC Handoff v298 — Call Log brand preview — 2026-10-01
+
+SESSION SUMMARY
+Chris requested the existing desktop Call Log HOME screen themed using the
+uploaded standards, on a separate branch with a Vercel preview. Preview-only;
+no main merge, production deploy, data changes or mass redesign authorized.
+
+CHANGES PREPARED FOR PREVIEW
+Route /sales/calllog keeps Pipeline, Where to Dig, Where to Hunt and All Jobs.
+Warm woven shell, espresso framing, cyan controls, readable Light Glass data
+surfaces, condensed command headings, Inter data, compact radii, clear focus.
+The theme is gated in AppShell to the exact Call Log list route (with optional
+trailing slash). Shared components use CALLLOG_C CSS variables with the exact
+old C literals as fallbacks. C itself, the logo, PDF/export logic and other
+screens retain their existing values. Job details remain outside this theme.
+No fetch, selector, monetary calculation, mutation or navigation handler changed.
+
+DECISIONS / BRAND EVIDENCE
+Read assets/brand/subcon-command/SUBCON_COMMAND_CURRENT.md at AIOS snapshot
+565a1bac6efe01d29700162f2474283b827e8c3f in the isolated brand worktree.
+Read governing source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md, especially
+sections 4–11, 14, acceptance checklist 18 and Locked identity mark section.
+Extracted governing Subcon_Command_Visual_Brand_Guide.docx text and inspected
+visual/crew-schedule-canonical.png plus registered logo/poster reference PNGs.
+Applied high-opacity Light Glass to dense areas; photography is not required
+for this scoped pass. No invented production logo or new image asset.
+Darker cyan/semantic text inks support contrast on light surfaces; command
+instrumentation uses the specified bright cyan/semantic accents.
+
+NEW/CLOSED BACKLOG ITEMS
+Call Log brand preview: In Progress, awaiting Chris's visual acceptance.
+Separate responsive child will build from this branch's completed commit;
+no shared navigation refactor in this task. Existing expanded sidebar is not
+phone-friendly; phone checks here use its existing Collapse control.
+
+VERIFICATION
+Local npm run build passed (existing dynamic/static import warning).
+Full ESLint: baseline and candidate both 176 errors, 43 warnings; same rule
+findings. Focused touched files: 8 pre-existing errors, 3 warnings.
+git diff --check passed.
+Public grants check cannot run on this unlinked checkout; public pages and
+public queries are unchanged. The installed pre-push guard only requires the
+check when those files change. No hook bypass or DB linking is needed.
+Local headless Chrome, synthetic API records and fake test auth only. API
+writes blocked at interception; no real customer actions, calls, emails or
+records. Browser plugin's required execution tool was unavailable after both
+specified discovery searches, so standalone local browser fallback was used.
+Verified pipeline drilldown, search and zero results, stage/old jobs, Rep/date
+filters, combined Clear, repeated sorting, manager scope, priority expand/
+collapse, Hunt refresh/back/pin/return, Log Outcome validation/cancel, repeated
+New Inquiry advance/close, cyan keyboard focus, detail navigation and Back,
+sidebar navigation away/back and route theme removal. Inspected 1440, 1024,
+768 and 390 pixels (existing sidebar collapsed at 390). No content overflow.
+Screenshots and test receipts are in the parent task's local qa directory,
+not committed to this public repository. They contain synthetic names only.
+Vercel deployment readiness, exact source SHA and deployed browser result are
+reported in the task completion after this commit triggers the Git integration.
+Fixture UI checks do not prove live authenticated records/RLS access.
+
+NOT TOUCHED
+Production/main, AIOS, database/schema/records, logo assets/geometry,
+field-command mobile app, unrelated deductive-change-order work, other pending
+feature branches, authentication, app permissions, Vercel settings/security.
+
+NEXT SESSION POINTERS
+Review the Vercel preview with Chris. Do not merge/release without approval.
+The responsive child may use this branch commit as its base and coordinate
+App.jsx/AppSidebar/tokens/CSS changes. Avoid applying this theme globally by
+accident. All Call Log rules live under .sc-calllog in calllog-brand.css.
+
+FILES TO KNOW
+src/pages/CallLog.jsx
+src/styles/calllog-brand.css
+src/lib/tokens.js (additive CALLLOG_C and CALLLOG_THEME)
+src/App.jsx (exact route gate)
+Shared components changed only for scoped tokens/CSS hooks/pressed semantics.
+docs/BACKLOG.md
+
+GIT STATE
+Worktree /Users/chrisberger/Documents/Codex/2026-09-30/task-2/calllog-preview
+Branch feat/calllog-brand-preview
+Base 90f890dcd5be5a8134af545d5a23f9b0654d9150 verified against GitHub main
+and Vercel production dpl_5fkyShmqucV9wYRDzEWpSut2i3HH.
+Original /Users/chrisberger/sales-command remains on feat/deductive-change-orders
+with its unrelated untracked AGENTS.md/.agents preserved.

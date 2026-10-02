@@ -1,0 +1,114 @@
+{
+  "B13 board Mon–Sat cells": [
+    {
+      "row": "A1 8101 - Job A",
+      "cells": [
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-bar sch-brd-bar-db=|sch-brd-cnt=2|sch-brd-sub=need 1"
+      ]
+    },
+    {
+      "row": "A2 8101 - Job A",
+      "cells": [
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-bar sch-brd-bar-db=|sch-brd-cnt=1|sch-brd-sub=need 1"
+      ]
+    },
+    {
+      "row": "B1 8102 - Job B",
+      "cells": [
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-empty=—",
+        "sch-brd-bar sch-brd-bar-db=|sch-brd-cnt=1|sch-brd-sub=need 1"
+      ]
+    },
+    {
+      "row": "N1 8104 - Job N",
+      "cells": [
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew=",
+        "sch-brd-needs-crew="
+      ]
+    }
+  ],
+  "B13 capacity Mon–Sat cards": [
+    "8 2 MON 28 0 / 8 0%",
+    "8 2 TUE 29 0 / 8 0%",
+    "8 2 WED 30 0 / 8 0%",
+    "8 2 THU 1 0 / 8 0% TODAY",
+    "8 2 FRI 2 0 / 8 0%",
+    "5 3 SAT 3 2 / 7 29%"
+  ],
+  "B6 P5 Saturday chip": "sch-chip sch-chip-db",
+  "B6 P5 Saturday picker conflict": "SAT 03 8101",
+  "B15 P8 chip on base": {
+    "cls": "sch-chip sch-chip-out",
+    "draggable": "false"
+  },
+  "K3 October 2026 month view": {
+    "label": "OCTOBER 2026",
+    "bars": [
+      "2 / 8 | 8101 · Job A — Hazel, Xan",
+      "2 / 7 | 8101 · Job A · A1 main — 3 crew — Hazel, Xan",
+      "7 / 8 | 8102 · Job B — 1 crew — Hazel, Xan",
+      "2 / 7 | 8104 · Job N — Hazel, Xan",
+      "2 / 7 | 8104 · Job N · N1 two weeks — 1 crew — Hazel, Xan",
+      "1 / 7 | 8101 · Job A — Hazel, Xan",
+      "2 / 7 | 8101 · Job A · A1 main — 3 crew — Hazel, Xan",
+      "1 / 2 | 8103 · Job C — 2 crew — Hazel, Xan",
+      "2 / 7 | 8104 · Job N — Hazel, Xan",
+      "2 / 7 | 8104 · Job N · N1 two weeks — 1 crew — Hazel, Xan"
+    ]
+  },
+  "K2 job N, week of 2026-09-28": [
+    "Mon 28 – Fri 2 | 8104 · Job N — Hazel, Xan",
+    "Mon 28 – Fri 2 | 8104 · Job N · N1 two weeks — 1 crew — Hazel, Xan"
+  ],
+  "K2 job N, week of 2026-10-05": [
+    "Mon 5 – Fri 9 | 8104 · Job N — Hazel, Xan",
+    "Mon 5 – Fri 9 | 8104 · Job N · N1 two weeks — 1 crew — Hazel, Xan"
+  ],
+  "T1 weekly text, desktop": "Xan Hazel\nWeek of 2026-09-28 through 2026-10-04\n\nSATURDAY, OCT 3\nMultiple assignments — confirm order/start times with office.\n8101 — Job A\nTrip: A1 main\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: Tess Elm\n\n8101 — Job A\nTrip: A2 weekend\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: No other crew assigned\n\nSUNDAY, OCT 4\nMultiple assignments — confirm order/start times with office.\n8101 — Job A\nTrip: A1 main\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: Uma Fir\n\n8101 — Job A\nTrip: A2 weekend\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: No other crew assigned\n\nUpdated 10/1/2026, 12:00:00 PM",
+  "T1 weekly text, phone": "Xan Hazel\nWeek of 2026-09-28 through 2026-10-04\n\nSATURDAY, OCT 3\nMultiple assignments — confirm order/start times with office.\n8101 — Job A\nTrip: A1 main\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: Tess Elm\n\n8101 — Job A\nTrip: A2 weekend\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: No other crew assigned\n\nSUNDAY, OCT 4\nMultiple assignments — confirm order/start times with office.\n8101 — Job A\nTrip: A1 main\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: Uma Fir\n\n8101 — Job A\nTrip: A2 weekend\nAddress: Confirm street address with office\nStart: Meet at the shop at 6:30 AM\nLead: Xan Hazel\nWith: No other crew assigned\n\nUpdated 10/1/2026, 12:00:00 PM",
+  "L1 worklist rows and amounts": "<week label>\n$6,000\n1 still owed · 1 on the billing list\n↩\n0\nGO BACKS\nVIEW →\nSTATUS\nAll\nReady to Bill\nPartially Billed\nBilled Complete\nPay Apps\nSALES REP\nAll\nFROM\nTO\nWORK TYPE\nAll\nCUSTOMER\nJOB #\nPARTIALLY BILLED\nONGOING\nPARTIALLY BILLED\n8106 — Job R\nSALES →\nJOB\n8106 — JOB R\nCUSTOMER\nFIXTURE CUSTOMER\nCONTRACT\n$10,000\nBILLED\n$4,000\nREMAINING\n$6,000\nBILLING",
+  "L1 forecast bucket amounts": [
+    [
+      "$4,000",
+      "1 invoice"
+    ]
+  ],
+  "W Monday link 2026-10-05": {
+    "monday": "MON 10/05",
+    "gte": "2026-10-05"
+  },
+  "W Monday link 2026-10-26, standard-time clock": {
+    "monday": "MON 10/26",
+    "gte": "2026-10-26"
+  },
+  "W Monday link 2027-03-15, standard-time clock": {
+    "monday": "MON 03/15",
+    "gte": "2027-03-15"
+  },
+  "W Monday link 2026-11-30, standard-time clock": {
+    "monday": "MON 11/30",
+    "gte": "2026-11-30"
+  },
+  "W Monday link 2027-03-08, standard-time clock": {
+    "monday": "MON 03/08",
+    "gte": "2027-03-08"
+  }
+}

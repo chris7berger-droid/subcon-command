@@ -1,0 +1,17 @@
+{
+  "url": "http://127.0.0.1:5243/sales/calllog",
+  "expect": "archive",
+  "tenantArchiveStages": [
+    "Lost"
+  ],
+  "eligibleRowsOffered": 2,
+  "candidateQueries": 1,
+  "callLogWrites": [
+    "PATCH ?id=in.(901,902)"
+  ],
+  "shellWritesRefused": [
+    "(boot) :: PATCH /rest/v1/call_log"
+  ],
+  "shellRefused": [],
+  "pageErrors": []
+}

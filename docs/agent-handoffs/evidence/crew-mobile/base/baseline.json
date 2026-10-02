@@ -1,0 +1,204 @@
+{
+  "url": "http://127.0.0.1:5196/schedule/schedule",
+  "widths": {
+    "360": {
+      "viewport": [
+        360,
+        740
+      ],
+      "documentScrollWidth": 360,
+      "capacityStrip": {
+        "x": 0,
+        "y": 50,
+        "w": 360,
+        "h": 373
+      },
+      "pool": {
+        "x": 0,
+        "y": 423,
+        "w": 280,
+        "h": 317
+      },
+      "main": {
+        "x": 280,
+        "y": 423,
+        "w": 80,
+        "h": 317
+      },
+      "board": {
+        "x": 296,
+        "y": 597,
+        "w": 48,
+        "h": 127
+      },
+      "jobColumn": {
+        "x": 297,
+        "y": 598,
+        "w": 260,
+        "h": 48
+      },
+      "dayHeaders": 7,
+      "dayHeadersFullyInViewport": 0,
+      "boardScrollsSideways": false,
+      "boardBodyScrollsSideways": true,
+      "weekNavInViewport": true,
+      "statusButtonsShown": 0,
+      "writes": 0
+    },
+    "390": {
+      "viewport": [
+        390,
+        844
+      ],
+      "documentScrollWidth": 390,
+      "capacityStrip": {
+        "x": 0,
+        "y": 50,
+        "w": 390,
+        "h": 373
+      },
+      "pool": {
+        "x": 0,
+        "y": 423,
+        "w": 280,
+        "h": 421
+      },
+      "main": {
+        "x": 280,
+        "y": 423,
+        "w": 110,
+        "h": 421
+      },
+      "board": {
+        "x": 296,
+        "y": 585,
+        "w": 78,
+        "h": 243
+      },
+      "jobColumn": {
+        "x": 297,
+        "y": 586,
+        "w": 260,
+        "h": 48
+      },
+      "dayHeaders": 7,
+      "dayHeadersFullyInViewport": 0,
+      "boardScrollsSideways": false,
+      "boardBodyScrollsSideways": true,
+      "weekNavInViewport": true,
+      "statusButtonsShown": 0,
+      "writes": 0
+    },
+    "430": {
+      "viewport": [
+        430,
+        932
+      ],
+      "documentScrollWidth": 430,
+      "capacityStrip": {
+        "x": 0,
+        "y": 50,
+        "w": 430,
+        "h": 373
+      },
+      "pool": {
+        "x": 0,
+        "y": 423,
+        "w": 280,
+        "h": 509
+      },
+      "main": {
+        "x": 280,
+        "y": 423,
+        "w": 150,
+        "h": 509
+      },
+      "board": {
+        "x": 296,
+        "y": 585,
+        "w": 118,
+        "h": 331
+      },
+      "jobColumn": {
+        "x": 297,
+        "y": 586,
+        "w": 260,
+        "h": 48
+      },
+      "dayHeaders": 7,
+      "dayHeadersFullyInViewport": 0,
+      "boardScrollsSideways": false,
+      "boardBodyScrollsSideways": true,
+      "weekNavInViewport": true,
+      "statusButtonsShown": 0,
+      "writes": 0
+    },
+    "768": {
+      "viewport": [
+        768,
+        1024
+      ],
+      "documentScrollWidth": 768,
+      "capacityStrip": {
+        "x": 0,
+        "y": 50,
+        "w": 768,
+        "h": 353
+      },
+      "pool": {
+        "x": 0,
+        "y": 403,
+        "w": 280,
+        "h": 621
+      },
+      "main": {
+        "x": 280,
+        "y": 403,
+        "w": 488,
+        "h": 621
+      },
+      "board": {
+        "x": 296,
+        "y": 502,
+        "w": 456,
+        "h": 506
+      },
+      "jobColumn": {
+        "x": 297,
+        "y": 503,
+        "w": 260,
+        "h": 48
+      },
+      "dayHeaders": 7,
+      "dayHeadersFullyInViewport": 4,
+      "boardScrollsSideways": false,
+      "boardBodyScrollsSideways": true,
+      "weekNavInViewport": true,
+      "statusButtonsShown": 0,
+      "writes": 0
+    }
+  },
+  "dialogsAt360": {
+    "crewWeekPopup": {
+      "w": 360,
+      "left": 0,
+      "right": 360,
+      "viewport": 360,
+      "insideViewport": true
+    },
+    "statusPicker": {
+      "w": 348,
+      "left": 6,
+      "right": 354,
+      "viewport": 360,
+      "insideViewport": true
+    },
+    "scheduledOff": {
+      "w": 380,
+      "left": -10,
+      "right": 370,
+      "viewport": 360,
+      "insideViewport": false
+    }
+  }
+}

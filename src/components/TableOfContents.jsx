@@ -391,6 +391,7 @@ export function PageBadge({ pageNumber, onClick }) {
     <button
       onClick={onClick}
       title="The Directory"
+      className="sc-page-badge"
       style={{
         position: "fixed",
         bottom: 18,
@@ -430,6 +431,10 @@ export function TOCOverlay({ onClose, currentPageId, onNavigate }) {
       onClick={onClose}
     >
       <div
+        className="sc-toc-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="The Directory"
         onClick={e => e.stopPropagation()}
         style={{
           background: C.dark,
@@ -451,7 +456,7 @@ export function TOCOverlay({ onClose, currentPageId, onNavigate }) {
               You're on page {currentPageId}. Tap any page to go there, or expand it to see every feature.
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: "rgba(255,255,255,0.3)", cursor: "pointer" }}>✕</button>
+          <button className="sc-toc-close" aria-label="Close directory" onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: "rgba(255,255,255,0.3)", cursor: "pointer" }}>✕</button>
         </div>
 
         {/* Chapters */}

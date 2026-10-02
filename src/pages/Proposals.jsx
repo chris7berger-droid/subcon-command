@@ -315,7 +315,7 @@ export default function Proposals({ teamMember, setSubPage }) {
             <button onClick={() => setPropFilter(null)} style={{ background: "none", border: `1.5px solid ${C.tealBorder}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: C.tealDeep, cursor: "pointer", fontFamily: "inherit" }}>✕ Show All</button>
           </div>
         )}
-        <div style={{ display: "flex", gap: 6 }}>
+        <div className="sc-tabs-row" style={{ display: "flex", gap: 6 }}>
           {STATUS_TABS.map(tab => {
             const active = statusFilter === tab && !propFilter;
             const count = tab === "All" ? proposals.length : proposals.filter(p => p.status === tab).length;

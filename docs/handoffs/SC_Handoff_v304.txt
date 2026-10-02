@@ -1,0 +1,75 @@
+SC Handoff v304 — Mobile crew scheduler (F66), T3 build — 2026-10-01
+
+SESSION SUMMARY
+T3 (t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9) built
+docs/plans/crew_mobile_preview.md @ 39cd871 (T2 CONVERGED, recorded in
+docs/AUDIT_LOG.md at eeb4190) on base 7608b0e. Source commit 1e6bde1.
+Stopped at the T3 build gate. NOT pushed by T3, NOT reviewed, NO preview
+walked, NOT merged, NOT in production. Everything was checked with a
+synthetic fixture. Chris has NOT personally locked this plan (plan §A); the
+build was routed as implementation authorization only.
+
+CHANGES SHIPPED (to the branch only)
+At 768px and below, Crew Schedule (/schedule/schedule) has four views behind
+a switch: Week (each day's numbers and gaps), Day (job/trip cards, Free and
+Out), Person (the crew list, then one person's week by trip, time off and
+status actions) and Board (the full seven-day board, scrolling sideways with
+the Job column and date header fixed). Assign → person → days → review →
+save runs through the existing assignment save. Desktop is unchanged.
+Changed: src/schedule/views/Schedule.jsx. New: components/SchedulePhone.jsx
+and .css, lib/schedulePhone.js, scripts/check-crew-mobile.mjs,
+scripts/crew-mobile-fixture.mjs.
+
+DECISIONS
+None by T3. One literal miss is left for T4: at 768 the whole week fits the
+frame, so the Board has no sideways scroll there (plan P12 says it scrolls
+at every phone and tablet width).
+
+BACKLOG
+F66 → In Progress (built, in review). New O14: four pre-existing behaviors
+T2 listed as adjacent, one row.
+
+VERIFICATION (source 1e6bde1; synthetic only; no sign-in, no real record)
+Baseline first, before any app edit: phone-width "before" screenshots,
+ESLint 176 errors / 43 warnings, and the base pass-set (24 of 40 exit zero).
+check-crew-mobile: 86 of 86 pass at 360, 390, 430, 768 and 1440; 0 page
+errors, 0 refused requests, only the two allowed fake assignment writes.
+Existing suite: same 24 pass, same 16 non-zero as base.
+check-sunday-parity-model M1-M6 and check-sunday-parity 30 groups: pass.
+check-mobile-preview: 166 pass, B1 skipped, 0 writes.
+check-preview-autoarchive (archive guard): pass.
+1440 board vs base: 2,844 pixels differ; base differs from itself by 5,959.
+npm run build passes. ESLint equal to base. changeRowAssignments unchanged.
+Details, limits and the Brand check: docs/agent-handoffs/BUILD-REPORT.md.
+Evidence: docs/agent-handoffs/evidence/crew-mobile/.
+
+NOT DONE / LIMITS
+No real phone, no signed-in use, no hosted preview, no acceptance.
+Touch drag-and-drop not assessed. A zero-need trip is not in the fixture.
+A phone-width brand comparison was not performed: no reference exists.
+A preview is not a sandbox: it shares the production database and only the
+Call Log automatic archive is skipped there.
+
+NOT TOUCHED
+~/sales-command and every other worktree. feat/sunday-saturday-parity
+(0a78d32), feat/calllog-brand-preview (701a209), native Field. src/schedule/lib
+existing files, src/App.jsx, src/styles, src/pages, package files, vite and
+vercel config, supabase/, sql/, db/. The plan body and audit manifest.
+
+NEXT SESSION POINTERS
+1. T4 Build vs Plan on source 1e6bde1, then T5, then T6 (coordinator).
+2. Then Smoke and the hosted preview (coordinator pushes).
+3. Chris's look on a real phone; his acceptance of this, of Sunday parity
+   and of the mobile web preview are all still open.
+
+FILES TO KNOW
+docs/agent-handoffs/BUILD-REPORT.md — this build's report is the top section.
+scripts/check-crew-mobile.mjs — header lists its modes (base, capture, diff,
+  hosted). It builds and serves this checkout itself when QA_URL is not set.
+  Free ports 5196 and 5198 before running the older checks.
+docs/plans/crew_mobile_preview.md — the plan.
+
+GIT STATE
+Branch feat/mobile-crew-scheduler-preview. Source commit 1e6bde1, then the
+evidence and records commit that holds this file. Not pushed by T3. Working
+tree clean.

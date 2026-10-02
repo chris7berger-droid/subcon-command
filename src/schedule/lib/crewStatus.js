@@ -62,14 +62,14 @@ export function mondayOfIso(dayStr) {
   return ymd(d);
 }
 
-export function thisWeekMonSat(today) {
+export function thisWeekMonSun(today) {
   const from = mondayOfIso(today);
-  return { from, to: addDaysIso(from, 5) };
+  return { from, to: addDaysIso(from, 6) };
 }
 
-export function nextWeekMonSat(today) {
+export function nextWeekMonSun(today) {
   const from = addDaysIso(mondayOfIso(today), 7);
-  return { from, to: addDaysIso(from, 5) };
+  return { from, to: addDaysIso(from, 6) };
 }
 
 export function eachInclusiveDay(from, to) {

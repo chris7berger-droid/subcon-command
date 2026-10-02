@@ -449,7 +449,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+    <div className="sc-m-p1 sc-cld" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
       {showArchiveModal && (
         <ArchiveProposalModal
@@ -495,7 +495,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       )}
 
       {/* Back + cross-nav */}
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
+      <div className="sc-cld-nav" style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
         <button onClick={onBack} style={{ background: C.dark, border: "none", cursor: "pointer", color: C.teal, fontWeight: 800, fontSize: 12, fontFamily: F.display, letterSpacing: "0.06em", textTransform: "uppercase", padding: "6px 14px", borderRadius: 6 }}>
           ← Call Log
         </button>
@@ -517,7 +517,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
       </div>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
+      <div className="sc-cld-head" style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
         <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.textHead, fontFamily: F.display, letterSpacing: "0.04em" }}>
           {job.display_job_number || job.job_name}
         </h2>
@@ -530,7 +530,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
         {job.archive_record_id && (
           <span title="Imported from archive — link a QB customer to enable invoice sync." style={{ fontSize: 10.5, fontWeight: 700, background: "rgba(142,68,173,0.12)", color: "#5b2d7a", padding: "3px 10px", borderRadius: 10, fontFamily: F.ui, border: "1px solid rgba(142,68,173,0.25)", cursor: "help" }}>ARCHIVE</span>
         )}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="sc-cld-actions" style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
           {!editing && <Btn sz="sm" v="ghost" onClick={() => setEditing(true)}>Edit</Btn>}
           {editing && (
             <button
@@ -586,7 +586,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
 
       {/* Job Info */}
       <Section title="Job Info" defaultOpen={true}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
+        <div className="sc-cld-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
           <Field label="Stage">
             <select value={form.stage} onChange={e => set("stage", e.target.value)} style={iStyle}>
               <option value="">— Select —</option>
@@ -718,7 +718,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
 
       {/* Contact & Billing */}
       <Section title="Contact & Billing">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
+        <div className="sc-cld-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px" }}>
           <Field label="Customer Name" wide>
             <input type="text" value={form.customer_name} onChange={e => set("customer_name", e.target.value)} placeholder="Customer name" style={iStyle} disabled />
           </Field>
@@ -755,7 +755,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
             <span style={{ fontSize: 13.5, color: C.textBody, fontFamily: F.ui }}>Is there a separate billing contact?</span>
           </button>
           {!form.billing_same && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px", marginTop: 10, padding: "12px 14px", background: C.linen, borderRadius: 8, border: `1px solid ${C.border}` }}>
+            <div className="sc-cld-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 24px", marginTop: 10, padding: "12px 14px", background: C.linen, borderRadius: 8, border: `1px solid ${C.border}` }}>
               <Field label="Billing Contact Name" wide>
                 <input type="text" value={form.billing_name} onChange={e => set("billing_name", e.target.value)} placeholder="Billing contact name" style={iStyle} />
               </Field>
@@ -999,7 +999,7 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
             </div>
 
             {/* Stat strip: billed / remaining / % invoiced */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: C.dark }}>
+            <div className="sc-cld-stats" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: C.dark }}>
               <div style={{ padding: "14px 22px" }}>
                 <div title="Historical billed (pre-SC) + invoices issued via Sales Command, excludes deleted. Includes T&M." style={statLabel}>Billed</div>
                 <div style={statValue}>{fmt$(billed)}</div>
@@ -1045,12 +1045,12 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                   };
                   const sc = statusColors[p.status] || { bg: "rgba(28,24,20,0.06)", color: C.textFaint };
                   return (
-                    <button key={`p-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)} title={label}
+                    <button key={`p-${p.id}`} className="sc-cld-linkrow" onClick={() => onNavigateProposal && onNavigateProposal(p.id)} title={label}
                       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateProposal ? "pointer" : "default", textAlign: "left" }}
                       onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}
                       onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.linenLight : C.linen}
                     >
-                      <span style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", width: 340, flexShrink: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+                      <span className="sc-cld-linklabel" style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", width: 340, flexShrink: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
                       <span style={{ width: 64, flexShrink: 0, display: "flex" }}>
                         <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: sc.bg, color: sc.color, fontFamily: F.ui, textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.status}</span>
                       </span>
@@ -1073,12 +1073,12 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                   {archiveBilled.map((p, i) => {
                     const label = `${p.call_log?.display_job_number || job.display_job_number || "P"} P${p.proposal_number || 1}`;
                     return (
-                      <button key={`ab-${p.id}`} onClick={() => onNavigateProposal && onNavigateProposal(p.id)}
+                      <button key={`ab-${p.id}`} className="sc-cld-linkrow" onClick={() => onNavigateProposal && onNavigateProposal(p.id)}
                         style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateProposal ? "pointer" : "default", textAlign: "left" }}
                         onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}
                         onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.linenLight : C.linen}
                       >
-                        <span style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", minWidth: 140 }}>{label}</span>
+                        <span className="sc-cld-linklabel" style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", minWidth: 140 }}>{label}</span>
                         <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: "rgba(142,68,173,0.12)", color: "#5b2d7a", fontFamily: F.ui, textTransform: "uppercase", letterSpacing: "0.04em" }}>Archive</span>
                         <span style={{ fontSize: 13, fontWeight: 700, color: C.textHead, fontFamily: F.display, fontVariantNumeric: "tabular-nums", marginLeft: "auto" }}>{fmt$(parseFloat(p.historical_billed_amount) || 0)}</span>
                       </button>
@@ -1106,13 +1106,13 @@ export default function CallLogDetail({ job, teamMembers, workTypes, onBack, onS
                     ? { bg: "rgba(229,57,53,0.18)", color: "#8b1a18" }
                     : (invColors[inv.status] || { bg: "rgba(28,24,20,0.06)", color: C.textFaint });
                   return (
-                    <button key={`i-${inv.id}`} onClick={() => onNavigateInvoice && onNavigateInvoice(inv.id)}
+                    <button key={`i-${inv.id}`} className="sc-cld-linkrow" onClick={() => onNavigateInvoice && onNavigateInvoice(inv.id)}
                       title={isVoided ? `Voided${inv.void_reason ? `: ${inv.void_reason}` : ""}` : undefined}
                       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 14px", background: i % 2 === 0 ? C.linenLight : C.linen, border: "none", borderBottom: `1px solid ${C.border}`, cursor: onNavigateInvoice ? "pointer" : "default", textAlign: "left", opacity: isVoided ? 0.6 : 1 }}
                       onMouseEnter={e => e.currentTarget.style.background = C.tealGlow}
                       onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.linenLight : C.linen}
                     >
-                      <span style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", minWidth: 140, textDecoration: isVoided ? "line-through" : "none" }}>Invoice #{inv.id}</span>
+                      <span className="sc-cld-linklabel" style={{ fontSize: 13, fontWeight: 800, color: C.tealDark, fontFamily: F.display, letterSpacing: "0.03em", minWidth: 140, textDecoration: isVoided ? "line-through" : "none" }}>Invoice #{inv.id}</span>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: ic.bg, color: ic.color, fontFamily: F.ui, textTransform: "uppercase", letterSpacing: "0.04em" }}>{isVoided ? "VOIDED" : inv.status}</span>
                       {inv.retention_release_of && (
                         <span title={`Releases retention withheld on Invoice #${inv.retention_release_of} — already counted in Billed, so it does not add to the contract total.`}

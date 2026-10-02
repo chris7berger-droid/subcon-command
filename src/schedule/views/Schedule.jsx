@@ -7,16 +7,21 @@ import { useUser } from '../lib/user'
 import { useToast } from '../lib/toast'
 import { jobRanges, inRange, staffingSummary } from '../lib/allocations'
 import { tripRange } from '../lib/trips'
-import { crewWeekRows, crewCardRows, crewRowInRange, crewRowStaffing, crewRowNames } from '../lib/crewScheduleRows'
+import { crewWeekRows, crewCardRows, crewRowInRange, crewRowStaffing, crewRowNames, crewWeekCapacity } from '../lib/crewScheduleRows'
 import { activeScheduleCrew, canAssignScheduleCrewOnDate, scheduleCrewForWeek, scheduleCrewOnDate } from '../lib/scheduleCrew'
 import { newAssignmentRows } from '../lib/assignmentIdentity'
 import { crewStatusShortLabel, crewStatusUiLabel, isCrewStatusOut, CREW_STATUS_SCHEDULED_OFF, compactStatusDot, crewStatusDateKey, eachInclusiveDay, planScheduledOff, groupContiguousDays, formatScheduledOffRange } from '../lib/crewStatus'
 import ScheduleTripDetails from '../components/ScheduleTripDetails'
 import CrewWeekCapacity from '../components/CrewWeekCapacity'
 import ScheduledOffModal from '../components/ScheduledOffModal'
+import { crewWeekSummary } from '../lib/crewWeekSummary'
+import { canTakeCrew, dayCounts, assignDayNote } from '../lib/schedulePhone'
+import { SchedulePhoneSwitch, SchedulePhoneWeek, SchedulePhoneDay, SchedulePhonePerson, ScheduleAssignFlow } from '../components/SchedulePhone'
 
-const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+const DAYS_LONG = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// Phone layout breakpoint — the one the app shell uses (src/App.jsx).
+const PHONE_QUERY = '(max-width: 768px)'
 const JC = ['#3498db','#e74c3c','#2ecc71','#9b59b6','#e67e22','#1abc9c','#f39c12','#c0392b','#2980b9','#8e44ad','#27ae60','#d35400','#16a085','#7f8c8d','#2c3e50','#d4a017']
 
 function getMonday(d) {
@@ -35,13 +40,13 @@ function fmtD(d) {
 function fmtWk(monday) {
   const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const end = new Date(monday)
-  end.setDate(end.getDate() + 5)
+  end.setDate(end.getDate() + 6)
   return ms[monday.getMonth()] + ' ' + monday.getDate() + ' – ' + ms[end.getMonth()] + ' ' + end.getDate() + ', ' + end.getFullYear()
 }
 
 function wkDates(monday) {
   const r = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const dt = new Date(monday)
     dt.setDate(dt.getDate() + i)
     r.push(fmtD(dt))
@@ -53,6 +58,15 @@ function wkEnd(monday) {
   const d = new Date(monday)
   d.setDate(d.getDate() + 5)
   return fmtD(d)
+}
+
+// Weeks between this week and the Monday–Sunday week that contains `week`
+// (a 'YYYY-MM-DD' from ?week=). Both ends are local-midnight Mondays, so the
+// difference is whole weeks give or take a clock-change hour.
+function weekOffsetFor(week) {
+  const target = week && new Date(week + 'T00:00:00')
+  if (!target || Number.isNaN(target.getTime())) return null
+  return Math.round((getMonday(target) - getMonday(new Date())) / (7 * 24 * 60 * 60 * 1000))
 }
 
 function effStart(j) { return j.scheduled_start || j.start_date || null }
@@ -118,13 +132,7 @@ export default function Schedule({ embedded = false } = {}) {
   const [loadedWeek, setLoadedWeek] = useState(null)
   const [error, setError] = useState(null)
   // Use the destination week on the first render, before effects can run.
-  const [weekOffset, setWeekOffset] = useState(() => {
-    const week = searchParams.get('week')
-    const target = week && new Date(week + 'T00:00:00')
-    if (!target || Number.isNaN(target.getTime())) return 0
-    const diffDays = Math.round((target - getMonday(new Date())) / (1000 * 60 * 60 * 24))
-    return Math.round(diffDays / 7)
-  })
+  const [weekOffset, setWeekOffset] = useState(() => weekOffsetFor(searchParams.get('week')) ?? 0)
   const [weekChanged, setWeekChanged] = useState(false)
   const editingTrips = useRef(new Set())
   const onTripEditStateChange = useCallback((editorKey, editing) => {
@@ -159,6 +167,20 @@ export default function Schedule({ embedded = false } = {}) {
   useEffect(() => {
     if (summaryTarget) summaryRowRefs.current.get(summaryTarget.rowKey)?.scrollIntoView({ block: 'center', behavior: 'instant' })
   }, [summaryTarget])
+  // Phone layout (≤768px): one view at a time. Presentation state only.
+  const [isPhone, setIsPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE_QUERY)
+    const onChange = e => setIsPhone(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  const phone = isPhone && !embedded
+  const [phoneView, setPhoneView] = useState(() => searchParams.get('job') ? 'board' : 'week')
+  const [phoneDay, setPhoneDay] = useState(null)
+  // The assign flow's own draft: { rowKey, name, days, step, fromPerson, failed }.
+  const [flow, setFlow] = useState(null)
+  const flowOpener = useRef(null)
   const [expandedDefer, setExpandedDefer] = useState({})
   const [workTypes, setWorkTypes] = useState([])
   const [wtOpen, setWtOpen] = useState({})
@@ -182,27 +204,24 @@ export default function Schedule({ embedded = false } = {}) {
     return m
   }, [weekOffset])
 
-  // On first render with ?week=, snap weekOffset to the target Monday.
+  // On first render with ?week=, snap weekOffset to the week containing that date.
   useEffect(() => {
     if (!focusWeek || didHandleFocusRef.current) return
-    const target = new Date(focusWeek + 'T00:00:00')
-    if (Number.isNaN(target.getTime())) return
-    const todayMonday = getMonday(new Date())
-    const diffDays = Math.round((target - todayMonday) / (1000 * 60 * 60 * 24))
-    const offset = Math.round(diffDays / 7)
+    const offset = weekOffsetFor(focusWeek)
+    if (offset == null) return
     setWeekOffset(offset)
     didHandleFocusRef.current = true
   }, [focusWeek])
 
   const requestedDates = useMemo(() => wkDates(requestedMonday), [requestedMonday])
   const requestedWeek = requestedDates[0]
-  const requestedEnd = requestedDates[5]
+  const requestedEnd = requestedDates.at(-1)
   // Keep dates and staffing on the last complete snapshot until the next is ready.
   const monday = useMemo(() => loadedWeek
     ? new Date(loadedWeek + 'T00:00:00') : requestedMonday, [loadedWeek, requestedMonday])
   const dates = useMemo(() => wkDates(monday), [monday])
   const wsStr = dates[0]
-  const weStr = dates[5]
+  const weStr = dates.at(-1)
   const todayStr = fmtD(new Date())
 
   const currentWeek = useRef(requestedWeek)
@@ -535,6 +554,45 @@ export default function Schedule({ embedded = false } = {}) {
   // Crew week popup
   const [crewWeekName, setCrewWeekName] = useState(null)
 
+  // --- Phone assign flow (≤768px). Same guards as a desktop drop; same save. ---
+  function startFlow(row, name, opener) {
+    if (!canTakeCrew(row)) return
+    if (!row.trip.id) { toast('Open the job and add a trip for these dates before assigning crew.', 'err'); return }
+    flowOpener.current = opener || null
+    setFlow({ rowKey: row.key, name: name || null, days: name ? crewJobDays(row, name) : [], step: name ? 'days' : 'person', fromPerson: !!name, failed: false })
+  }
+  const closeFlow = () => setFlow(null)
+  // Focus goes back to the control that opened the flow, once the page behind it is usable again.
+  useEffect(() => {
+    if (flow || !flowOpener.current) return
+    const opener = flowOpener.current
+    flowOpener.current = null
+    if (opener.isConnected) opener.focus()
+  }, [flow])
+  async function saveFlow() {
+    if (!flow?.name) return
+    const row = boardRows.find(r => r.key === flow.rowKey)
+    if (!row) { toast('This trip has changed. Close the picker and try again.', 'err'); return }
+    if (await changeRowAssignments(row, flow.name, flow.days)) closeFlow()
+    else setFlow(prev => prev && { ...prev, failed: true })
+  }
+
+  // Crossing 768px closes every draft with no write. A save already in flight
+  // is left to finish; the drafts close once it settles.
+  const wasPhone = useRef(isPhone)
+  const closeDraftsAfterSave = useRef(false)
+  useEffect(() => {
+    if (wasPhone.current === isPhone) return
+    wasPhone.current = isPhone
+    if (assignmentBusy.current) { closeDraftsAfterSave.current = true; return }
+    setFlow(null); setAssignModal(null); setCrewWeekName(null)
+  }, [isPhone])
+  useEffect(() => {
+    if (assignBusy || !closeDraftsAfterSave.current) return
+    closeDraftsAfterSave.current = false
+    setFlow(null); setAssignModal(null); setCrewWeekName(null)
+  }, [assignBusy])
+
   async function handleRemoveCrew(row, name) {
     await changeRowAssignments(row, name, [])
   }
@@ -850,7 +908,7 @@ export default function Schedule({ embedded = false } = {}) {
           else summaryRowRefs.current.delete(row.key)
         }}
       >
-        {/* Job label + 6 day cells */}
+        {/* Job label + one cell per day */}
         <div className="sch-board-row" style={dimmed ? { opacity: 0.45 } : undefined}>
           <div
             className={`sch-brd-job-label${isFocused ? ' sch-label-focused' : ''}`}
@@ -1175,6 +1233,9 @@ export default function Schedule({ embedded = false } = {}) {
                 <div className="sch-dzone-mt">Drop crew here</div>
               )}
             </div>
+            {phone && canTakeCrew(row) && (
+              <button type="button" className="sch-ph-action sch-ph-assign" onClick={e => { e.stopPropagation(); startFlow(row, null, e.currentTarget) }}>Assign crew</button>
+            )}
             {unames.length > 0 && (
               <button className="sch-btn-sm sch-btn-send" onClick={e => { e.stopPropagation(); handleSendJobSchedule(j.job_id) }}>
                 {'\uD83D\uDCE4'} Send This Job's Schedule
@@ -1293,14 +1354,28 @@ export default function Schedule({ embedded = false } = {}) {
     )
   }
 
+  // Phone views read the same capacity, summary and labels desktop shows.
+  const phoneDays = dates.map((date, i) => ({ date, short: DAYS[i], long: DAYS_LONG[i] }))
+  const phoneCapacity = phone ? crewWeekCapacity(boardRows, crew, crewStatus, dates, todayStr).capacityDays : []
+  const phoneSummary = phone ? crewWeekSummary([], {}, [], dates, boardRows) : null
+  const activeDay = dates.includes(phoneDay) ? phoneDay : dates.includes(todayStr) ? todayStr : dates[0]
+  const phonePerson = phone && phoneView === 'person' && crewWeekName ? crew.find(c => c.name === crewWeekName) : null
+  const flowRow = flow ? boardRows.find(r => r.key === flow.rowKey) || null : null
+  const flowOpen = phone && !!flow
+  const outAllWeek = name => dates.every(d => isCrewStatusOut(getCSt(name, d)))
+
   return (
     <>
-      {!embedded && <div className="sch-capacity-wrap" inert={changingWeek ? true : undefined}><CrewWeekCapacity key={wsStr} rows={boardRows} crew={crew}
+      {!embedded && <div className="sch-capacity-wrap" data-phone-view={phone ? phoneView : undefined} inert={changingWeek || flowOpen ? true : undefined}><CrewWeekCapacity key={wsStr} rows={boardRows} crew={crew}
         crewStatus={crewStatus}
         dates={dates} todayStr={todayStr} weekLabel={fmtWk(monday)} loading={loading}
-        error={staticError || (loading ? error : null)} pulse={weekChanged && !changingWeek} onOpenTrip={openSummaryTrip} /></div>}
-    <div className="sch-layout">
-      <div className="sch-wrap">
+        error={staticError || (loading ? error : null)} pulse={weekChanged && !changingWeek} onOpenTrip={(jobId, tripId) => {
+          const opened = openSummaryTrip(jobId, tripId)
+          if (opened && phone) setPhoneView('board')
+          return opened
+        }} /></div>}
+    <div className="sch-layout" data-phone-view={phone ? phoneView : undefined} data-phone-person={phonePerson ? '' : undefined}>
+      <div className="sch-wrap" inert={flowOpen ? true : undefined}>
         {/* Crew pool sidebar */}
         <div className="sch-pool" hidden={loading || !!staticError} inert={changingWeek ? true : undefined}>
           <div className="sch-ptitle">
@@ -1347,6 +1422,22 @@ export default function Schedule({ embedded = false } = {}) {
             Could not load {fmtWk(requestedMonday)}: {staticError || error}{' '}
             <button className="sch-btn" onClick={() => { if (staticError) setStaticRetry(n => n + 1); loadWeekData() }}>Retry</button>
           </div>}
+          {phone && <SchedulePhoneSwitch view={phoneView} onChange={setPhoneView} />}
+          {phone && !loading && phoneView !== 'board' && (phoneView !== 'person' || phonePerson) && (
+            <div className="sch-ph-pane" inert={changingWeek ? true : undefined} aria-busy={changingWeek}>
+              {phoneView === 'week' && <SchedulePhoneWeek days={phoneDays} capacity={phoneCapacity} todayStr={todayStr}
+                counts={dates.map(d => dayCounts(phoneSummary, crewDayJobs, d))} hasTrips={weekJobs.length > 0}
+                onOpenDay={d => { setPhoneDay(d); setPhoneView('day') }} />}
+              {phoneView === 'day' && <SchedulePhoneDay days={phoneDays} date={activeDay} rows={[...scheduled, ...unscheduled]}
+                detail={phoneCapacity[dates.indexOf(activeDay)].detail} todayStr={todayStr} hasTrips={weekJobs.length > 0}
+                isDoubleBooked={(name, d) => getDoubleBookedDays(name).includes(d)} onPickDay={setPhoneDay}
+                onAssign={(row, opener) => startFlow(row, null, opener)} onPerson={startFlow} />}
+              {phonePerson && <SchedulePhonePerson person={phonePerson} days={phoneDays} rows={boardRows} statusOf={getCSt}
+                outAllWeek={outAllWeek(phonePerson.name)} soffRanges={soffRanges} onBack={() => setCrewWeekName(null)}
+                onTrip={startFlow} onStatus={openStatusModal} onEditSoff={openEditScheduledOff}
+                onRemoveSoff={(name, range) => setRemoveSoff({ name, from: range.from, to: range.to, days: range.days, busy: false, error: '' })} />}
+            </div>
+          )}
           {loading ? (!error && !staticError && <div className="loading" role="status">Loading schedule…</div>) : <div className="sch-board-pane" inert={changingWeek ? true : undefined} aria-busy={changingWeek}>
           <div className="sch-job-count">Jobs This Week ({weekJobs.length}) · Trips ({boardRows.filter(row => !row.trip.legacy).length})</div>
 
@@ -1409,7 +1500,7 @@ export default function Schedule({ embedded = false } = {}) {
       )}
 
       {/* Assignment day picker modal */}
-      {assignModal && (
+      {assignModal && !phone && (
         <div className="sch-modal-overlay" onClick={() => { if (!assignBusy) setAssignModal(null) }}>
           <div className="sch-modal" onClick={e => e.stopPropagation()}>
             <div className="sch-modal-title">Assign {flipName(assignModal.name)}</div>
@@ -1473,7 +1564,7 @@ export default function Schedule({ embedded = false } = {}) {
       )}
 
       {/* Crew week popup */}
-      {crewWeekName && (() => {
+      {crewWeekName && !phone && (() => {
         const c = crew.find(cr => cr.name === crewWeekName)
         if (!c) return null
         const crewAsgns = {}
@@ -1494,7 +1585,7 @@ export default function Schedule({ embedded = false } = {}) {
                 {c.phone && <>{' | Phone: '}<a href={'tel:' + c.phone} style={{ color: '#1565c0' }}>{c.phone}</a></>}
               </div>
               <div style={{ fontSize: 11, color: 'var(--sand-dark)', marginBottom: 10 }}>Week: {fmtWk(monday)}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(6, 1fr)', gap: 0 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `auto repeat(${dates.length}, 1fr)`, gap: 0 }}>
                 <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sand-dark)' }} />
                 {DAYS_LONG.map((d, i) => (
                   <div key={d} style={{ fontSize: 9, fontWeight: 700, textAlign: 'center', color: dates[i] === todayStr ? 'var(--danger)' : 'var(--sand-dark)', textTransform: 'uppercase' }}>
@@ -1556,6 +1647,18 @@ export default function Schedule({ embedded = false } = {}) {
           </div>
         )
       })()}
+
+      {flowOpen && (
+        <ScheduleAssignFlow draft={flow} row={flowRow} days={phoneDays} groups={crewByTeam} busy={assignBusy}
+          isOutAllWeek={outAllWeek}
+          dayNote={(row, name, ds) => assignDayNote(row, name, ds, { assignments, jobs, status: getCSt(name, ds) })}
+          assignable={(row, name) => assignableDays({ job: row.job, row, name })}
+          onPerson={name => setFlow(prev => prev && { ...prev, name, days: flowRow ? crewJobDays(flowRow, name) : [], step: 'days' })}
+          onToggleDay={ds => setFlow(prev => prev && { ...prev, days: prev.days.includes(ds) ? prev.days.filter(d => d !== ds) : [...prev.days, ds] })}
+          onToggleAll={all => setFlow(prev => prev && { ...prev, days: all.length > 0 && all.every(d => prev.days.includes(d)) ? [] : all })}
+          onStep={step => setFlow(prev => prev && { ...prev, step })}
+          onSave={saveFlow} onClose={closeFlow} />
+      )}
 
       {scheduledOffModal && (
         <ScheduledOffModal

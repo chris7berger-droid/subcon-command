@@ -17,6 +17,18 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-06-01 | feat/retention-invoice-process @ e831912 · retention_invoice_process.md (Loop #30 per-invoice retention release; 3-round audit, R1 6→R2 plateau→R3 1) | 1 (doc nit; cut verified) | 1 Low | converged — build-ready | converged |
 | 2026-07-02 | feat/invoice-email-attachments @ c0764d2 · invoice_email_attachments.md (Round 1) | 14 (6 top / 4 over-cap / 4 adjacent) | 2H/8M (top-6: 2H 4M) | accepted-pending-changes | copied-mechanism-misfit |
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
+| 2026-09-30 | Mobile web preview — T5 Code Review · build 34af375..db14d25 (app source cc4d733) | 6 | 0 BLOCKS-SHIP, 2 SHOULD-FIX, 4 HARDENING | zero blockers — review ends; non-blockers to backlog | focus-management-gaps |
+| 2026-09-30 | Mobile web preview — T6 Security Review · build 34af375..db14d25 (app source cc4d733) | 1 | 0 BLOCKS-SHIP, 1 HARDENING | zero exploitable-today — review ends; non-blocker to backlog | clean |
+| 2026-10-01 | feat/sunday-saturday-parity @ 745a291 · sunday-scheduling.md (Round 1) | 6 (6 top / 0 over-cap) + 3 adjacent | 0H/4M/2L | accepted-pending-changes | acceptance-bar-gaps |
+| 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 39a9900 · diff b1227ff..39a9900 · T6 security review, delta | 3 (0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING) | 3 Low | clean — non-blockers to O15 | preview-token-host-scope |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -149,9 +161,146 @@ Migration `20260513000000_multi_gc_allocation` applied to prod (`pbgvgjjuhnpsumn
 
 Scratch project (`ibalavttrqjyijrnkwmd`, sc-scratch-multi-gc-1a) deleted post-validation per H5/S1 cleanup pattern.
 
+
 ## Gate records
 
 One row per gate: Date · Role · Agent/session · Artifact · Verdict · Acceptance. Reviewer records are transcribed verbatim by T3; the reviewer's words are not edited.
+
+### Mobile web preview — independent plan reviews
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 7efcebb · round 1 · manifest b268478
+    Verdict:     NOT CONVERGED  (proposed)
+    Findings:    top-7 0C/4H/3M/0L · regressions 0 · over-cap 10 · adjacent 6
+      A1 · High · CAUSED-BY · §5 / §1 / H3 · preview backend is production, plan says unknown · real writes on sign-in and Save · state it, default-deny, do-not-Save guidance
+      A2 · High · CAUSED-BY · H4 vs A8/C2/H5 · write rule fails required routes · gate unexecutable · method + allowlist
+      A3 · High · CAUSED-BY · G / H6 / §6 / Phase · protected preview, unnamed push, G before reviews · gate unexecutable or stale · name access, push, actor, re-run
+      B1 · High · CAUSED-BY · Beat 8 [LOCKED · user] / A1 / B2 / B3 · one boolean, no permitted viewport detection · builder must break a lock · state model + authorise detection
+      B2 · Med  · CAUSED-BY · E2 vs P0.2/P0.5/A4/C4 · preservation rule forbids required handlers; Back not on every step · checks cannot pass · widen E2, reword C4
+      C1 · Med  · CAUSED-BY · §2 P2 vs D/G/A8/H5 · escape clause contradicts bar; D misfits two screens; no Manager fixture · pass/fail undecidable · per-screen D, fixture
+      C2 · Med  · CAUSED-BY · P0.3/P0.9/A3/A4/C4 · Directory overlay and layer order unspecified · unusable overlay, occluded Save passes · scope it, state layers
+    Human gate:  [LOCKED] change + §11 production data — B1 changes a decision locked in Chris's name (Beat 8); A1 means the preview walk signs into production data. Both need Chris personally. No plan lock by Chris is recorded; this audit ran on the delegated plan-then-build authorization and claims no acceptance.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 7efcebb · Verdict NOT CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+Acceptance: Historical proposed result; not accepted as a personal gate. The user directly instructed this task to correct the false user-lock attribution and concrete issues in one revision on 2026-10-01. No production-data authorization is claimed.
+```
+
+```text
+    Role:        T2 Plan Audit · agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0
+    Audited:     subcon-command (worktree task-3/mobile-preview) · plan docs/plans/mobile_web_preview.md @ 87e820f · round 2 (delta) · manifest e3e1aa7
+    Verdict:     CONVERGED  (proposed)
+    Findings:    none in cap · regressions 0 · over-cap 8 carried from round 1 · adjacent 6
+    Human gate:  none for this verdict. No plan lock by Chris is recorded; the audit ran on the delegated plan-then-build authorization. Chris Acceptance after the preview is unchanged.
+    Proposed gate record: Role T2 · Agent/session t2-mobile-audit / 305301ea-87e7-48e4-bee4-659a345aebf0 · Artifact docs/plans/mobile_web_preview.md @ 87e820f · Verdict CONVERGED · Date 2026-09-30
+    Next:        _protocol.md §9 acceptance (standing) → T3 transcription → T7 re-reads the gate → T3 Build
+Acceptance: standing (§9). Ordinary converged verdict; no scope change or production-data gate.
+```
+
+Transcribed verbatim by Codex coordinator in task-3, which did not author either review. T1 plan-lock pause is waived by the explicit plan-then-build task instruction; no personal plan lock or final user acceptance is claimed. Plan at87e820f; subsequent e3e1aa7 changes only the T2 audit manifest.
+
+### Mobile web preview — T4 Build vs Plan, round 1
+
+```text
+    Role:        T4 Build vs Plan · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..32fe67a (source cc4d733)
+    Checks:      as tabled above
+    Brand check: sources verified as listed; DOCX not opened; finding 3 open
+    Verdict:     NO-GO — B1 failed as written (needs recorded acceptance); acceptance checks in finding 2 not implemented
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary NO-GO verdict; routed back to T3. No scope change is accepted by this record, and B1 is not waived by it.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. Reviewer's full findings (1–7), check table and disclosures: `t4-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo). Blocking: finding 1 (B1 fails as written) and finding 2 (acceptance checks missing from `scripts/check-mobile-preview.mjs`).
+
+### Mobile web preview — T4 Build vs Plan, round 2 (delta recheck)
+
+```text
+    Role:        T4 Build vs Plan (round 2, delta recheck) · session_01JLu9eazGcdvWoFnfw92m3X (did not build this slice)
+    Artifact:    docs/plans/mobile_web_preview.md @ 87e820f · build 34af375..db14d25 (app source cc4d733)
+    Checks:      finding 2 closed · finding 7 closed · B1 failed as written, judged immaterial, coordinator disposition on record · gaps as listed
+    Brand check: unchanged from round 1; not rechecked
+    Verdict:     GO — with B1 carried as an unwaived test failure
+    Date:        2026-09-30
+    Next:        T7 → T5, T6 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary GO verdict. B1 is not waived by this record: the reviewer carries it as an unwaived test failure, and no acceptance by Chris is claimed.
+```
+
+Reviewer's B1 exception, verbatim:
+
+```text
+- **Literal result:** failed, and not waived by the script. Eleven of 13 screens are exact. Call Log differs by 16 px (max channel 1) and Time Clock by 1 px (max channel 10), against a base repeat of 0 on both.
+- **My judgment: immaterial.** Two same-source captures of this build differ from each other by 64,766 px and 40,991 px on the home screens, per the same results file. The capture's noise is therefore far larger than the build-versus-base difference. Time Clock sits under `src/field`, which has zero diff, and `metadata.txt` lists scripts and docs only in this commit.
+- **Desktop behaviour is preserved in source:** no rule applies at ≥769px, and the markup changes are attributes and class names.
+- **Disposition on record:** the coordinator accepted it as a raster-only technical deviation; the failure stays in `results.json`. No acceptance by Chris is claimed.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. App source unchanged at `cc4d733`; reviewed build `db14d25`. Reviewer's full recheck, including its evidence gaps: `t4-verdict-round2.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T5 Code Review
+
+```text
+    Role:        T5 Code Review · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not plan, build or run T4 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    drawer lifecycle/focus/layering · scoped CSS · route/job/draft and desktop preservation · business/data/auth unchanged · QA harness one bounded pass for silent fail-open
+    Limits:      limiter and audit command files unreadable (tags per _protocol.md §9) · no git verification of range, HEAD or 82b61fa · nothing executed · repo CLAUDE.md / CLAUDE_RLS.md not opened
+    Verdict:     0 BLOCKS-SHIP · 2 SHOULD-FIX · 4 HARDENING
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded. B1 stays as T4 carried it; this review does not waive it.
+Acceptance: standing (§9). Ordinary verdict, zero BLOCKS-SHIP. No scope change; B1 is not waived by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its six non-blocking findings are backlog row O13. Full review: `t5-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+### Mobile web preview — T6 Security Review
+
+```text
+    Role:        T6 Security Review · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not plan, build, or run T4/T5 for this slice)
+    Artifact:    build 34af375..db14d25 (app source cc4d733) · frozen diff node_modules/.cache/mobile-review/source.diff, coordinator-provided
+    Coverage:    changed surface (no query/RPC/auth/session/storage/schema/config/dependency line) · route guards and sidebar gating unchanged · sign-out reachable · no new injection sink or external CSS load · QA harness isolation (Supabase answered locally, writes refused, other origins aborted, sockets and service workers off, no hook in app source)
+    Limits:      ~/.claude-commands audit.md and security-review-limiter.md unreadable (tags per task definition and repo SKILL.md rubric) · no git verification of range, HEAD or 3704b9c · nothing executed · repo CLAUDE.md read in part · most changed files read from the frozen diff only · preview deployment not reviewed (pending)
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 HARDENING (backlog)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+Acceptance: standing (§9). Ordinary verdict, zero exploitable-today and zero BLOCKS-SHIP. No security or tenant-isolation decision is made by this record.
+```
+
+Transcribed verbatim by T3 session t3-mobile-finish / 59b45299-39fb-407c-b796-c5c77532256b, which did not author the review. The reviewer's audit-log row is transcribed verbatim into the table at the top of this file. Its one HARDENING finding (machine-specific paths in the two scripts) is already item 4 of backlog row O13; no new row. Full review: `t6-verdict.txt` in the coordinator's review packet for this slice (kept outside the repo).
+
+
+### Mobile web preview — T5 archive guard delta
+
+```text
+    Role:        T5 Code Review (delta recheck, archive guard) · session_01VmAH3cSYuMzwVnNr6QiMBe / de5f25a0-d2ed-469a-a773-c7720b56b2e6 (did not author this change)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    guard correctness · production preservation · security-relevant implication. No baseline, brand or UI review.
+    Limits:      no git verification of HEAD, diffstat or secrets claim · nothing executed · Vercel setting and compiled builds not checked by this reviewer
+    Verdict:     0 BLOCKS-SHIP · 1 SHOULD-FIX · 1 HARDENING
+    Date:        2026-09-30
+    Next:        T7 → T6 delta · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T5 delta recheck · preview auto-archive guard (working tree on 099f279) | 2 | 0 BLOCKS-SHIP, 1 SHOULD-FIX, 1 HARDENING | zero blockers — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
+
+
+### Mobile web preview — T6 archive guard delta
+
+```text
+    Role:        T6 Security Review (delta recheck, archive guard) · session_01GK7CL2rygihNqcVzF2Qv1b / d8074435-f3f5-4774-b5d7-e638b97131df (did not author this change; did not run T4/T5)
+    Artifact:    working-tree guard diff on HEAD 099f279 · src/pages/CallLog.jsx, vite.config.js, scripts/check-preview-autoarchive.mjs · frozen diff node_modules/.cache/mobile-review/archive-guard.diff, coordinator-provided
+    Coverage:    bundle exposure (environment name only) · no auth/session/policy/guard/setting change · guard placement over query, update and banner · production/development/empty preserve the original condition · test script local and stub-only
+    Limits:      no git verification of HEAD or scope · nothing executed · compiled-build results and Vercel setting taken from the packet · no live requests
+    Verdict:     0 exploitable-today · 0 BLOCKS-SHIP · 1 SHOULD-FIX (verify deployed preview bundle carries "preview" before first sign-in)
+    Date:        2026-09-30
+    Next:        T7 · proposed record only, not recorded
+```
+
+| 2026-09-30 | Mobile web preview — T6 delta recheck · preview auto-archive guard (working tree on 099f279) | 1 | 0 BLOCKS-SHIP, 1 SHOULD-FIX | zero exploitable-today — review ends; confirm preview bundle before sign-in | fail-open-default |
+
+Transcribed verbatim by the Codex builder/coordinator (task-3), which did not author the review. Acceptance: standing, zero blockers. Reviewed diff committed unchanged as `44a94bd`. Deployed-bundle verification remains pending before sign-in: Ready/SHA metadata and existing Vercel environment exposure are verified, but hosted JavaScript is SSO-protected and the management file tree is unavailable. Synthetic preview/production behavior passed. T5 baseline-test hardening remains nonblocking under F65.
 
 ### 2026-10-01 — B124 password recovery — T5 Code Review
 
@@ -276,3 +425,1063 @@ Nothing was executed: this is a source-only review of the patch plus the current
 - Acceptance, Chris: “The reset fix is approved. I want to know how, why, and when it happened because I've had this issue in the past and we fixed it.”
 - Scope: one-time substitution of the completed independent AIOS T5/T6 reviews for disabled Bugbot on PR #73 only; no permanent waiver or settings change. No account/password/mail/backend changes. Historical investigation is separate from this release.
 - Provenance: T3 could not authenticate a forwarded export within its permission review and made no acceptance changes. The coordinator independently read the original conversation through the supported thread tool and records this entry. Public PR record: https://github.com/chris7berger-droid/subcon-command/pull/73#issuecomment-5935784359 .
+
+### 2026-10-01 — F60 Sunday parity — T2 Plan Audit, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record and gate block (`t2-sunday-parity`, emitted to `/tmp/sunday-t2-r1-verdict-20261001.md`). Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · Verdict NOT CONVERGED — 6 caused-by (4 Med, 2 Low), 0 regressions, no scope-cut · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's gate block (verbatim):
+
+```
+Role:        T2 Plan Audit · agent/session t2-sunday-parity · 471c2a52-fb03-4034-ac24-0dcf72bf2f23
+Audited:     subcon-command · plan docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · round 1 · manifest 54f4849
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-6 0C/0H/4M/2L · regressions 0 · over-cap 0 · adjacent 3
+Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no scope-cut). Open provenance: no personal plan lock by Chris is recorded (§A).
+Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ 745a291c08c353c1918708646f3f154c821c3804 · Verdict NOT CONVERGED — 6 caused-by (4 Med, 2 Low), 0 regressions, no scope-cut · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+```
+
+### 2026-10-01 — F60 Sunday parity — T2 Plan Audit, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record, gate block, two non-blocking notes and stated limits (`t2-sunday-parity`, emitted to `/tmp/sunday-t2-r2-verdict-20261001.md`). Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's gate block (verbatim):
+
+```
+Role:        T2 Plan Audit · agent/session t2-sunday-parity · 471c2a52-fb03-4034-ac24-0dcf72bf2f23
+Audited:     subcon-command · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · round 2 (delta since 745a291) · manifest d431a3497ae7a15b365a7729840c44accfd84b5f
+Verdict:     CONVERGED  (proposed)
+Findings:    none in cap · regressions 0 · over-cap 0 · adjacent 0 new · 2 non-blocking notes (B13 carve-out, W2 wording)
+Human gate:  none — ordinary verdict (no scope change, no [LOCKED] change, no scope-cut). Open provenance: no personal plan lock by Chris is recorded (§A).
+Proposed gate record: Role T2 Plan Audit · Agent/session t2-sunday-parity / 471c2a52-fb03-4034-ac24-0dcf72bf2f23 (independent of author t1-sunday-parity / 1470cf53-cb8c-459b-a4a2-787383448af0) · Artifact docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520 · Verdict CONVERGED — round-1 findings A1, A2, B1, C1, D1, D2 resolved; 0 regressions; 0 new in-cap findings; 2 non-blocking notes · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+Reviewer's two non-blocking notes (verbatim):
+
+The reviewer tagged both Low / caused-by. Under the T2 card any counted caused-by finding blocks convergence, so this is a judgment call that acceptance can overrule.
+
+1. **B13's carve-out names only P8's pool chip.**
+   - What also changes: a person whose only crew days that week are on Sunday (P7) becomes a Booked chip, and the pool's "N free this week" count drops by one (`Schedule.jsx:429–436`, `:1307`).
+   - Why it doesn't block: this is exactly how a Saturday-only person behaves today, and B14 already says those Sunday rows show in the pool dots. Only the count is unstated.
+   - For T3: read B13 as the Monday–Saturday day columns.
+2. **W2's "so both read sites agree" is looser than it sounds.**
+   - What slips through: a build that fixes only the mount effect still settles on the right week and passes W2, after one wasted fetch of the wrong week.
+   - Why it doesn't block: S10 and §3 both instruct the fix at both sites, the diff reviews read both, and the stale-response guard (`:260`, `:278–283`) keeps the wrong week from being shown.
+   - For T3: a tighter W2 would assert that no read for another week is sent.
+
+A third round for these would change check wording only, not what gets built.
+
+Reviewer's limits (verbatim):
+
+- Nothing was built or run beyond reading and throwaway date arithmetic. Production was not probed (U4 stays open).
+- The plan still states that Chris has not personally locked this artifact, and that the D1 pool-chip change is expected but not accepted by him. This verdict does not change either.
+- This was a delta review only; unchanged sections were not re-audited.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r1-verdict-20261001.md`), followed by its limits, punch list, source-read passes and brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: NO-GO.** One layout check fails, and several required checks could not be verified because this session could not run commands.
+
+```
+Role:        T4 Build vs Plan · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a..adf27b4 (source 3f6b3cf8ac3df2ceef39654e10a429ca14f1a086)
+Checks:      passed by source read: S1–S10 logic, C4, C5, E3
+             failed: F1/B11 crew-pool day dots (P1 below)
+             unverified: reviewed revision, E1, E2 (diff), E4, E5, live run of M/B/H/K/D/X/T/L/W
+             deferred: P (preview), N (native device), U4 (production Sunday rows)
+Brand check: sources and 1280 screenshots verified; one unreported deviation (P1);
+             picker, popup, toggle and print evidence missing
+Verdict:     NO-GO — P1 fails; the unverified checks above must be closed in a session that can run git and the checks
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+No personal plan lock is claimed; the plan's §A provenance stands as written.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### Limits of this review
+
+- **No shell:** Bash was denied, so there was no `git diff`, no `npm run build`, no ESLint and no check run.
+- **Procedure not read:** `/Users/chrisberger/.claude/commands/buildvsplan.md` was denied, so I followed the T4 card and protocol §9 and §14 only.
+- **Revision not confirmed:** I could not read the worktree HEAD, so I reviewed the working tree as found; it matches the build report's description.
+- **Repo invariants not read:** I did not open the repo `CLAUDE.md` or `docs/DEVELOPMENT_PROTOCOL.md`.
+
+#### Punch list
+
+**P1 — fails F1/B11; caused by this build.** The seventh day dot overflows the crew-pool chip.
+- `src/schedule/App.css:959` fixes the dots block at 125px, which is exactly a 62px label plus six 8px dots with 3px gaps.
+- Seven dots need 136px, so the row spills 11px, about 3px past the chip's right edge.
+- It shows in `after/board-1280.png` and `after/board-1440.png`: the last dot and the last "S" sit on or over the chip border.
+- The plan's edit list named only `App.css:1103` and `:6768`, and the new check's clipping test does not cover the pool dots (`scripts/check-sunday-parity.mjs:170`).
+- The build report's "no clipped" and "deviations: none" claims are wrong on this point.
+
+**P2 — brand evidence gap.** The screenshots cover the board, strip, Daily and Calendar week only. Nothing shows the seven-chip assign and Sick pickers, the crew week popup, the expanded-row day toggles or the prints.
+
+**P3 — E5 holds only in the weakened form the report states.** `check-crew-week-summary.mjs` and `check-overlapping-crew-trips.mjs` fail on base and on the build, so they give no trip-ownership coverage. These are original failures, not regressions.
+
+#### Passed by source read
+
+- **Sunday row ownership (C4):** assign and remove still go through `changeRowAssignments` with the trip id as `mobilization_id` and deletes by row id (`Schedule.jsx:483–526`).
+- **One week list (E3):** columns, pickers, dots, popup, both reads and the strip all follow `dates`, with ends at `.at(-1)` (`Schedule.jsx:197–205`, `:250–251`).
+- **Capacity:** the strip is seven cards, and the screenshot's SUN 4 (3 / 8, 38%, 5 free, 2 out) matches the fixture by Saturday's formula.
+- **Read ranges:** the board, Daily (`Daily.jsx:100`, `:180`) and both prints (`exports.js:72`, `:153`) run Monday through Sunday.
+- **Calendar boundary (K4):** the week fetch is Monday–Sunday unioned with the month grid, so the week of 11-02 reads through 11-08 (`Calendar.jsx:218–229`). Sunday is the last column, with none before Monday (`:366`).
+- **Week links and DST (S10, W2, W3):** both read sites use `weekOffsetFor`, which rounds the difference between two local Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). The check asserts no other week's read is sent (`check-sunday-parity.mjs:643–652`).
+- **Select all and time off (C5, B15):** Select all still skips out days (`Schedule.jsx:461–465`). The chip greys only when out on all seven days (`:1191–1193`), and the screenshot shows the Monday–Saturday person as a normal chip.
+- **Other surfaces:**
+  - Multi-week alert counts seven days (`queries.js:974`).
+  - Midweek text runs through Sunday (`crewWeekText.js:110–114`).
+  - The five phone strings say Sunday (`CrewPhone.jsx:151–210`).
+  - Presets fill Monday to Sunday (`crewStatus.js:65–73`).
+  - `fmtWk` ends on Monday+6 (`weeks.js:32–39`).
+- **Seventh-column fit at 1280:** the board, strip, Daily and Calendar week each show seven columns with no visible clipping of headers, counts, `need N`, percent or the TODAY tag.
+- **Dead six-day code left alone, as planned:** `wkEnd`, `StatsBar.jsx`, `App.css:391` and `:757`.
+
+#### Brand check
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and the report correctly claims no column-count match.
+- **Sunday treatment:** in the four screenshots Sunday's column and card carry Saturday's treatment, with no new colour, type or radius visible.
+- **Gaps:** P1 is an unreported deviation, and P2 is missing evidence.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r2-verdict-20261001.md`), followed by how each check was established, its limits and its brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: GO.** P1 is fixed and P2's evidence is present. The shell-dependent checks are now covered by the coordinator's runs, except the full existing check suite, which rests on the builder's log from before the fix.
+
+```
+Role:        T4 Build vs Plan (delta) · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a49984015cbfa30013f502d24c45c9358a..0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+             (source 3f6b3cf + fix 019997ba8d5b62ea72c1b824f9ef46e127849cb9)
+Checks:      passed: P1, P2, E1, E2, E3, E4, M1–M6, B1–B15, H1–H2, K1–K4, D1–D2, X1–X2,
+             T1–T2, L1, W1–W3, F1–F2
+             passed on builder record only: E5 (full existing suite, run at 3f6b3cf, not rerun)
+             failed: none
+             deferred: P (preview), N (native device), U4 (production Sunday rows), mobile slice
+Brand check: sources and screenshots verified; the one deviation (P1) is fixed and now reported
+Verdict:     GO
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+```
+BUILD vs PLAN · docs/plans/sunday-scheduling.md · 1 reviewer
+🔴 Tier 1 blockers: 0   🟠 Tier 2 bugs: 0   🟢 deferred: 4
+SMOKE TEST: GO
+Top blocker: none
+```
+
+This is an ordinary verdict: it changes no scope and no locked decision. No personal plan lock or acceptance by Chris is claimed; the plan's §A provenance stands.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### How each check was established
+
+I ran no shell commands. I was one read-only reviewer with no delegation tool, so I applied the procedure's layer checks directly, not through parallel reviewers.
+
+**My own source and image inspection**
+- **P1 fixed:** `src/schedule/App.css:960` is now 136px, which is the 62px label plus seven 8px dots with 3px gaps. In `after/pool-1280.png`, `after/pool-1440.png` and the re-rendered `after/board-1280.png`, all seven dots and day letters sit inside the chip.
+- **P1 now guarded:** the check asserts no dot or letter passes the chip's content box, at both widths (`scripts/check-sunday-parity.mjs:175–188`).
+- **P2 evidence present:** I opened these, and each shows seven days with Sunday in Saturday's treatment and no clipping.
+  - At 1280: assign picker, Sunday-conflict picker, Sick picker, crew week popup, expanded-row toggles and deferred-start chips.
+  - At one size: both prints.
+- **Build report:** it now states that P1 was a real deviation, and it lists the surfaces it did not look at.
+
+**Coordinator-executed, assessed by me**
+- **Reviewed revision:** HEAD is `0197e0f`.
+- **Plan unchanged:** the plan diff since `bbe71e4` touches only the audit manifest.
+- **E1:** the diff over the protected and expected-zero-diff paths is empty.
+- **E2 and scope:** I read the full `src` diff. It contains only the seven-day changes, `weekOffsetFor` and the one pool rule. There is no new Supabase call and no change to the save, status or Scheduled Off write paths.
+- **E5 "unedited":** the changed-file list shows only the four named existing checks were modified.
+- **No schema objects:** nothing under `supabase/` changed, so the procedure's live-schema probe does not apply.
+- **Model and browser checks:** M1–M6 pass with the required timezone set, and all 30 browser groups pass, including the new pool-dot assertion. These match what the code does on my read.
+- **E4:** `npm run build` exits 0. ESLint totals are 176 errors and 43 warnings, equal to base.
+
+#### Limits and named gaps
+
+- **E5 not rerun after the fix.** The full suite result (23 pass, same 15 failing as base) is the builder's log at `3f6b3cf`. The later change is one CSS rule, the new check and docs, so I accept it; smoke should rerun the suite. The 15 failures are original, not regressions. Trip ownership is covered by B4, B7 and the model checks.
+- **ESLint per file.** Only totals were supplied, so "no new finding in a touched file" rests on equal totals plus the builder's statement.
+- **Final working-tree status missing.** The coordinator's last `git status` output was cut off in the packet. Two screenshots were regenerated and reportedly restored (`daily-1440.png`, `sick-picker-1440.png`); I did not open either.
+- **1440 variants not opened.** For the new pickers, popup and toggles I looked at 1280 only.
+- **Long crew names untried.** The pool chip's name area is 11px narrower, and only fixture names were rendered. Worth a glance at the preview.
+- **Repo rules read by search.** For the repo `CLAUDE.md` and `docs/DEVELOPMENT_PROTOCOL.md`, I read the matching sections (UI rules, Workflow Rule 8, the Build vs Plan gate), not the whole files. Nothing there conflicts with this verdict.
+
+#### Brand check (corrected)
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and no column-count match is claimed.
+- **Changed UI:** across the board, strip, pool, Daily, Calendar week, pickers, popup, toggles and prints, Sunday carries Saturday's treatment. The diff adds no colour, font, radius, shadow or token. The only sizing change is the pool dots block.
+- **Deviations:** one, P1, now fixed and reported.
+- **Not introduced by this build:** the report notes the app's teal accent differs from the standard's cyan on both base and build.
+- **Not looked at by anyone:** Home, Jobs, Billing, the weekly-texts page, `/crew`, the Scheduled Off modal and Calendar month, as the report states. Those are label and text changes, asserted by the checks.
+
+### 2026-10-01 — F60 Sunday parity — T5 Code Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T5, emitted to `/tmp/sunday-t5-verdict-20261001.md`), followed by its findings, source coverage and limits, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer proposed no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **T5 Code Review: 0 BLOCKS-SHIP findings on the Sunday-parity product diff.** This is a source read only: my runtime could not execute anything, so every "passes" below about builds, checks or git state rests on the coordinator's supplied evidence, not on my own run.
+
+```
+Role:        T5 Code Review
+Agent/session: 89ac91c6-50b9-4818-aaf9-d14f70875541 · https://claude.ai/code/session_01CCHNrCEyrAYz9L7FCNXFKT
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0
+              and T4 reviewer 243c99d8-6bea-415b-af05-c302ca3e194b)
+Artifact:    product diff 3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+             · read at HEAD 0197e0fc535543dd7a4c1985ce2af29fc86f91ae (coordinator-reported)
+             · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+Verdict:     0 BLOCKS-SHIP · 0 SHOULD-FIX · 4 HARDENING (one backlog item) — review ends, round 1
+Coverage:    source read only; no commands run; execution evidence is the coordinator's
+Date:        2026-10-01
+Next:        T7 · proposed record only
+```
+
+The session id is taken from this session's scratchpad path and attribution link; I could not run the environment check to confirm it. This is an ordinary verdict: no scope change, no locked decision changed.
+
+No audit-table row is proposed: that table holds plan-audit rounds, and T4 emitted none for the same reason. Chris's preview acceptance and release remain pending.
+
+- **Acceptance:** standing (§9)
+
+Notes that are not the reviewer's words:
+
+- Coordinator's factual note, as given in the T7 routing for this transcription: the reviewer consumed earlier metadata showing two regenerated screenshots as dirty (`daily-1440.png`, `sick-picker-1440.png`). The coordinator had already restored them before the review. The reviewer's "4 filed as one backlog item" is a proposal only: the reviewer edited no file. The grouped follow-up is routed to T3's smoke/report pass.
+- Transcriber's own observation at recording time: `git status` was clean at `31f1b13`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+#### Findings
+
+Target status: the 13 app files are PRODUCT; the new and restated check scripts are SAFETY-NET (one pass, net rule applied).
+
+| # | Finding | Severity | Materiality | Action |
+|---|---|---|---|---|
+| 1 | Two read-bound assertions use `.every()` with no length guard, so they pass on zero reads (`scripts/check-sunday-parity.mjs:517`, `:570`). Not a silent lie: the same scenarios assert rendered dates and counts that need the read (`:514`, `:569`). | Low | HARDENING | Backlog |
+| 2 | The Monday–Saturday "matches base" comparison filters build rows down to rows base already has (`check-sunday-parity.mjs:265`). An unexpected extra row on the build would not fail it; only the Sunday-only trip is checked explicitly (`:272–273`). | Low | HARDENING | Backlog |
+| 3 | Capacity card labels are picked by position, not by the date's weekday (`HomeCapacityStrip.jsx:85`, `:101`). Correct today because all three callers pass a Monday-first seven-day list. | Low | HARDENING | Backlog |
+| 4 | Stale "Mon–Sat" comments in untouched files (`Jobs.jsx:140`, `calendarBars.js:6`) and the dead `wkEnd` helper (`Schedule.jsx:52–56`). The plan leaves these alone. | Trivial | HARDENING | Backlog |
+
+`0 ship-blockers; 4 filed as one backlog item. Done.`
+
+#### What I checked in the source
+
+- **Week links and clock changes:** both `?week=` sites use one helper that rounds the gap between two local-midnight Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). A Friday, Saturday or Sunday date now opens its own week.
+- **Query ranges:** every week read ends on the list's last date.
+  - Board: `Schedule.jsx:199`, `:250–251`
+  - Daily: `Daily.jsx:100–105`, `:180`
+  - Prints: `exports.js:72–77`, `:153–158`
+  - Home, Jobs, band, Subcon summary: `Home.jsx:46–56`, `Jobs.jsx:143`, `WeeklyCapacityBand.jsx:20–28`, `subconSummary.js:92–100`
+  - Calendar: the week range is Monday–Sunday unioned with the month grid (`Calendar.jsx:218–229`).
+- **Leftover six-day assumptions:** a repo-wide search of `src/` found none in live code. The only hits are the unmounted `StatsBar.jsx`, the dead `wkEnd`, and two unused CSS rules.
+- **Trip identity and data preservation:**
+  - The save path is unchanged; deletes are by row id on that trip's rows only (`Schedule.jsx:494`, `:510–512`).
+  - Sunday rows now load into `row.assignments`, and every entry point seeds its selection from that same list: the picker (`:446`), the day toggle (`:543–544`), and the remove button (`:539`). Showing Sunday therefore cannot drop a saved crew day.
+  - Inserts still carry the trip id (`:501–507`).
+- **Seven-date consumers:**
+  - Board rows, capacity and summary follow the passed `dates` (`crewScheduleRows.js:83–102`, `crewWeekSummary.js:14–27`, `CrewWeekCapacity.jsx:12–16`).
+  - `computeHomeDashboard` uses `dates[0]` and `dates[length-1]` (`queries.js:1821–1822`, `:1845`, `:1917`).
+  - The multi-week alert counts seven days (`queries.js:974`) and Jobs passes it the full assignments list (`Jobs.jsx:300`).
+  - Calendar bars handle arbitrary columns (`calendarBars.js:109–139`).
+- **Calculations:** the Home capacity mean divides by the number of days (`Home.jsx:142–146`). Completion % and the lower Sunday-inclusive percentages are the plan's stated consequence, not a defect.
+- **Presets, text, labels:**
+  - The Scheduled Off presets run Monday+6, with all importers renamed (`crewStatus.js:65–73`).
+  - The midweek text on a Sunday returns that one day (`crewWeekText.js:110–114`).
+  - `fmtWk` has no consumer outside Billing and the forecast (`weeks.js:32–39`).
+- **UI bindings:** every label array is seven long and indexed against `dates` (`Schedule.jsx:18–19`, `:1143`, `:1356`, `:1394`, `:1438`, `:1497–1503`; `Daily.jsx:13`; `exports.js:71`, `:151`). The board's full-width rows use `1 / -1`, so the eighth grid column needs no other CSS change (`App.css:1362`, `:1385`, `:1393`).
+- **Safety net:** the "matches base" snapshots cannot be regenerated from the build unnoticed. The checks assert two values only base code produces (`check-sunday-parity.mjs:535–536`, `check-sunday-parity-model.mjs:92`), and a missing snapshot key fails rather than passes.
+- **Recorded T4 result:** read before reviewing; round 2 is GO (`docs/AUDIT_LOG.md:425–500`).
+
+#### Limits
+
+- **Coordinator evidence, not mine:** HEAD `0197e0f`, the changed-file list, the empty diff over protected paths, the build and ESLint totals, and all check runs. The supplied `src` diff matches the files I read.
+- **Full existing suite not rerun after the fix commit:** the "same 15 failures as base" result is the builder's log at `3f6b3cf`. Smoke should rerun it.
+- **Not opened:**
+  - `scripts/sunday-parity-fixture.mjs` and the three restated existing scripts (`check-crew-phone.mjs`, `check-crew-week-summary.mjs`, `crewStatus.test.mjs`) — only the diff of the last one was read.
+  - The zero-diff libs `allocations.js`, `trips.js`, `scheduleCrew.js`, `assignmentIdentity.js`.
+  - `CLAUDE_RLS.md` (no SQL in the diff).
+  - The `/code-review` command file, which is unreadable from this runtime; I followed protocol §9 and the pasted limiter.
+- **Working tree:** two evidence screenshots show as modified and uncommitted (`daily-1440.png`, `sick-picker-1440.png`). Not product; T7 may want them restored before anything is recorded.
+- **Not verified by anyone here:** signed-in real data, the preview, production Sunday rows, and long crew names in the 11px-narrower pool chip.
+
+### 2026-10-01 — F60 Sunday parity — T6 Security Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T6, emitted to `/tmp/sunday-t6-verdict-20261001.md`), followed by its reviewed range, coverage, unverified limitations and findings, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer's proposed audit-log row is transcribed verbatim into the audit table above, with its pattern tag as emitted.
+
+Reviewer's title (verbatim): T6 Security Review — Sunday parity (PR #74): 0 exploitable-today, safe to ship
+
+```
+Role:          T6 Security Review
+Agent/session: f01835a3-31f2-43a3-84ef-27f2ed30888d
+               (independent of builder 2c23e844-d27d-4995-bdcc-7b0ef7430cb0,
+                T4 243c99d8-6bea-415b-af05-c302ca3e194b,
+                T5 89ac91c6-50b9-4818-aaf9-d14f70875541)
+Artifact:      subcon-command · feat/sunday-saturday-parity · PR #74 (draft)
+               3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+               · evidence @ 0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+Verdict:       0 exploitable-today · safe to ship · 0 BLOCKS-SHIP,
+               1 SHOULD-FIX (pre-existing), 2 HARDENING · source read only;
+               git state and live access not verified by reviewer
+Date:          2026-10-01
+```
+
+The session identity is taken from this session's scratchpad path, because I could not query it directly. T7 should confirm it against the session registry before transcription.
+
+- **Acceptance:** standing (§9)
+
+Reviewer's proposed audit-log row and closing notes (verbatim):
+
+```
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
+```
+
+The pattern tag is new: I read only the Sunday rows of the log, not its full tag vocabulary. T3 should swap in an existing tag if one fits.
+
+This is a T6 verdict only. It is not Chris's acceptance, and it is not a release or merge claim.
+
+Notes that are not the reviewer's words:
+
+- Coordinator's note, as given in the T7 routing for this transcription: the reviewer's identity `f01835a3-31f2-43a3-84ef-27f2ed30888d` was confirmed by the coordinator against the session registry. The transcriber did not check the registry itself.
+- The pattern tag was not swapped: transcription is verbatim, so the row carries the tag the reviewer emitted.
+- Transcriber's own observation at recording time: `git status` was clean at `9633576`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+**No BLOCKS-SHIP findings.** The product diff only widens existing signed-in schedule reads and screens from six days to seven. I found no new path for an unauthorized party to read, write or escalate.
+
+This was a source read only. My runtime could not run git or any check, so the hashes, the changed-file list and the "protected paths have no diff" result are the coordinator's evidence, not mine.
+
+#### Reviewed range
+
+- **Range:** `3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9` (source), with build report and evidence at `0197e0fc535543dd7a4c1985ce2af29fc86f91ae`.
+- **Mode:** per-branch diff under `.claude/commands/audit.md`, gated by `/security-review-limiter`. Round 1.
+- **What I read myself:**
+  - the supplied `src` diff, plus the working-tree files behind it where I needed context (`exports.js` in full, `Schedule.jsx:20–69` and its `?week=` and read sites, `Calendar.jsx:185–259`);
+  - the three new scripts in full (`sunday-parity-fixture.mjs`, `check-sunday-parity.mjs`, `check-sunday-parity-model.mjs`);
+  - `check-crew-phone.mjs` in full;
+  - repo `CLAUDE.md`, `CLAUDE_RLS.md`, `.claude/commands/audit.md` and the Sunday rows of `docs/AUDIT_LOG.md`.
+
+#### Coverage
+
+- **No access-control surface in the diff.** Every changed `src` file is under `src/schedule/` (views, components, lib, CSS). The file list shows nothing under `supabase/`, no `package.json` or lockfile, no public or anon page, no auth or session code. `CLAUDE_RLS.md` is therefore not triggered: no policy, grant or token-gated read is written or changed.
+- **Reads:** same tables, same columns, same signed-in client. Only the upper date bound moves from Monday+5 to Monday+6.
+  - Board: `Schedule.jsx:250–251`.
+  - Prints: `exports.js:77`, `:157–158`.
+  - Calendar: `Calendar.jsx:245–249`. Its range now starts Monday instead of the prior Sunday.
+- **Writes:** no write path is added or changed in the diff. Sunday rows go through the existing assign, remove and status saves.
+- **Date input (`?week=`):** the raw value never reaches a query. It is parsed to a date, an invalid value falls back to the current week, and the read bounds are re-formatted from that date (`Schedule.jsx:61–65`, `:130`, `:197–199`). No injection path and no unbounded read.
+- **Exports and texts:** the diff adds no new output sink.
+  - The prints gain a Sunday column (`exports.js:71–73`, `:151–153`, `:170–174`).
+  - The midweek text gains Sunday (`crewWeekText.js:110–114`).
+  - The phone copy changes are fixed strings (`CrewPhone.jsx`).
+- **Money:** no calculation file is in the diff; the Billing change is the week label only (`weeks.js:32–38`).
+- **Fixture harness, network:** it cannot reach a real database.
+  - The server binds to `127.0.0.1` only (`check-sunday-parity.mjs:28–29`).
+  - Every request to any host other than the fake fixture host is aborted (`:72–73`), and the fixture host is answered in memory.
+  - Any write other than the three expected ones is refused and recorded as an error (`:105–106`).
+  - The Supabase URL and key are placeholders (`:16–17`).
+- **Fixture harness, shipped data:** synthetic.
+  - Names, tenant (`fixture-tenant`), customer and IDs in `sunday-parity-fixture.mjs:11–23`, `:71–78` are invented.
+  - A pattern search of the new scripts, the evidence folder, the build report, handoff v302 and the plan found no keys, tokens, real project hosts, emails or phone numbers.
+  - The two snapshot files carry only the fixture names.
+  - I opened 2 of the 37 screenshots (`after/board-1440.png`, `after/print-daily-crew-status.png`); both show fixture data only.
+
+#### Unverified limitations
+
+- **Git state:** not verified by me. If the working tree I read differs from `019997b` in source, my context reads are of the later tree; the lines I read matched the supplied diff.
+- **Script and doc diffs:** not supplied.
+  - For the three pre-existing scripts I cannot say which lines changed.
+  - `check-crew-midweek-text-model.mjs` and `check-crew-week-summary.mjs` were pattern-searched only, not read.
+  - `crewStatus.test.mjs` was read from the supplied diff only.
+  - The changed docs were pattern-searched for secrets, not read for content.
+- **Screenshots:** 35 of 37 not opened.
+- **Live system:** nothing was checked. I did not verify the tenant policies on `assignments`, `crew_status`, `crew` or `jobs`, the preview, or production Sunday rows. The verdict rests on the diff not changing who can reach those tables.
+
+#### Findings
+
+| # | Finding | Exploitable today? (how) | Materiality | Action |
+|---|---|---|---|---|
+| 1 | **Pre-existing, not from this diff.** The print pages build HTML from stored job names, job numbers, work types, crew names and material notes without escaping (`exports.js:108`, `:120`, `:142`, `:173`). The popup runs in the app's own origin (`:57–58`). | Only by someone who can already save those fields in the same tenant; no anonymous or cross-tenant path is shown. The diff adds a Sunday column, not a new sink. | SHOULD-FIX | Backlog, own track |
+| 2 | **Pre-existing, not from this diff.** `check-crew-phone.mjs` can be pointed at a deployed preview and loads browser cookies from a temp file (`:5`, `:30–37`). Its fixture uses real-looking names and a jobsite name (`:11–19`). | No. All database calls are answered by the fixture and writes are refused (`:61–69`). Whether the names are real people I could not determine. | HARDENING | Backlog; confirm names are synthetic |
+| 3 | The model check loads the app's database client in Node with no network block (`check-sunday-parity-model.mjs:13–14`, `:27–35`). | No. It calls pure functions only and the URL is a placeholder. | HARDENING | Backlog |
+
+**0 exploitable-today; safe to ship.** Zero blockers ends this review; no further round is needed.
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 1
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r1-verdict-20261001.md`, sha256 `a7b78d9dafb9a458264b00772f06810c10f39695ffe292bd2cb918b2ce7ae6d3`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2e01618 · Verdict NOT CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9) — for recording this NOT CONVERGED review and its findings only, as T7 routed it. Not approval of any plan change. Not Chris's personal acceptance: the reviewer's own "Human gate: [LOCKED] change" line below stands, and no acceptance of a changed locked decision is recorded here.
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+All four audit agents have returned, so the round-1 audit is complete and a verdict is now supported: **NOT CONVERGED (proposed)**. I am stopping here for parent handoff: nothing recorded, nothing pushed, no new spawns, no app edits.
+
+**Bottom line:** The plan is not safe to build as written. The biggest risk is that on a phone someone could change week mid-assignment and the save would then write days into the wrong week and delete that person's days in the other week, on the real schedule. The second is that the Sunday branch does not contain the mobile shell this plan is built on, so "Sunday first, then mobile" needs a base that carries both. The decision for the parent: the stable base must be `28c8468` plus the Sunday commits, and the plan goes back to T1 for one revision before any build.
+
+**Headline:** 12 in-cap caused-by (2H/10M) · theme: the phone flow reuses desktop state and rules the plan never pins down · 13 over cap · 4 adjacent · no regressions (round 1).
+
+## Top 12 findings (grouped by root cause)
+
+| # | Sev | Source | Plan location | Issue | T1 must resolve |
+|---|---|---|---|---|---|
+| A1 | High | state trace | §2 Frame vs The flow; P3 | Prev / Next stay tappable while the flow is open. The save re-finds the row by key in the current week (`Schedule.jsx:528–533`); on a multi-week trip it then inserts the old week's days again and deletes the person's days in the new week (`:488–494`). | Flow blocks week navigation or closes on week change, with a check. |
+| A2 | High | scope/Sunday | §3 Base and hold | `feat/sunday-saturday-parity` and `main` do not contain `28c8468`; that lineage lacks the mobile shell, breakpoint, check scripts and harness plan. The rule re-checks §0.2 only and the builder judges its own base. | Base = `28c8468` plus Sunday commits or return to T1; delta covers §0.1, §0.2 and every cite; judged by someone other than T3. |
+| A3 | Med | scope/Sunday | Beat 10; Expectation check; E2 | "Six days" and "will not see Sunday" become false on a Sunday base; a phone grid restating `repeat(6…)` would silently drop Sunday at ≤768 only. | Make both base-conditional: phone shows exactly desktop's days; E2 covers CSS track counts. |
+| B1 | Med | state trace | §2 steps 3–4; P8 | Review's source is undefined. After insert-lands-delete-fails (`:501–514`), a snapshot Review still says "added" and Cancel leaves it saved, contradicting "changes nothing". | Review derives from the re-found row; correct P8 wording; add a mixed add-and-remove failure check. |
+| B2 | Med | state trace | Beat 5; §2 Day, Person | Person taps on legacy and unavailable rows are unspecified; existing code does nothing silently (`:444`) or returns false with no message (`:484`). | Exclude those taps, or define removal-only with a message. |
+| B3 | Med | state trace, scope, parity | E2; Beat 6; D4; §2 Person | Picker state needs a person at creation and always renders the desktop modal (`:1412`); the Scheduled Off ranges load only via state that opens the desktop popup (`:602–622`, `:1476`). Crossing 768px with either open is unspecified. | Name who owns flow state, what is suppressed at ≤768, and that crossing the breakpoint closes without writing; add to D4. |
+| C1 | Med | parity, harness | §2 Week; P4; P5 | The three Week counts have no single rule: "unknown need" has two definitions (`crewScheduleRows.js:31` vs `crewWeekSummary.js:17`), counts are trips beside a per-job badge, and per-day `2X` has no desktop rendering to match (`:913`). | State each rule and unit; replace "equals 1440" with literal fixture counts or a named source. |
+| C2 | Med | parity | §2 Day; P5 | A zero-crew trip with a known need has no staffing text on desktop, only a tooltip (`:917–918`); the fixture has no such trip. | Define the card text; add the trip to the fixture. |
+| C3 | Med | parity | §2 Week; P4 | Badge-list trip links close the list and scroll a board row that is not on screen (`:147–161`). | Define the link's phone behaviour. |
+| C4 | Med | parity, harness | P15; P3 | "No numbers from another week" contradicts the existing held snapshot (`:200–211`, `:1341–1350`); the fixture has no way to hold a load. | Restate against existing behaviour or declare new phone-only behaviour; give the fixture a hold. |
+| D1 | Med | scope, state trace, parity | §1; §4; Beat 11; P11; P14 | §1 promises review before any save, but Board toggles, ✕, status DONE and Scheduled Off Remove write on one tap at phone width. Four status actions for a person out all week lets Sick overwrite Scheduled Off; status saves ignore errors (`:771–780`). | Narrow §1; list the one-tap writes in the Expectation check; keep desktop's hide rule. |
+| D2 | Med | harness | §5 G | The hosted check set is inherited from another plan's A/C/D, which this plan does not have, on a deployment wired to production. | Name the hosted subset; exclude save-activating checks. |
+
+**The big design call:** make the flow modal. It blocks week navigation the way trip editing already does (`Schedule.jsx:137–140`) and closes without writing when the viewport crosses 768px, as the shell drawer does (`App.jsx:414–420`). That closes A1 and most of B3 with existing patterns.
+
+**Scope-cut:** not triggered — round 1, and no single section holds 40% of findings.
+
+## Additional findings (over cap)
+
+| Sev | Issue |
+|---|---|
+| Med | P10 "sends no request" is false: the existing catch reloads the week. Should read "no write". |
+| Low | "Saving sends nothing" on no change still reloads. |
+| Low | Review says "removing from this trip" when only the visible week is removed. |
+| Low | Select all silently drops existing out or out-of-trip days. |
+| Low | Day labels come from private six-entry arrays, not `dates`. |
+| Low | Day's default day is undefined when today is not in the week. |
+| Low | A requirement-0 trip with no crew has no Day card; Board is the only route and the plan does not say so. |
+| Low | The capacity strip is shared with five other screens; new ≤768 rules need scoping to this route. |
+| Low | Whether the strip stays above all four views is unstated. |
+| Low | Fixed clock has no instant or timezone. |
+| Low | Fixture reset per width and a held response are unstated. |
+| Low | If D2 is not performed, nothing exercises a desktop save. |
+| Low | Three stated behaviours have no check; the fixture omits the job link shape `loadJobs` needs. |
+
+## Adjacent findings (backlog)
+
+| Sev | Backlog one-liner |
+|---|---|
+| Med | + Job and Actions dialogs have 380–500px minimum widths and overflow a 360px screen with no scroll. |
+| Low | A name missing from the crew list gets the "archived" message on any add. |
+| Low | Deep-link scroll targets are `display: contents`; the board may not scroll, and re-scrolls after each save while `?job=` is in the URL. |
+| Low | An out person still counts as crew, so a trip staffed by a Sick person shows no gap. |
+
+## T1 revision prompt (held — parent has paused routing)
+
+```
+Revise docs/plans/crew_mobile_preview.md for round-1 findings A1–A3, B1–B3, C1–C4, D1–D2 only.
+- A1/B3: the flow is modal; week navigation is blocked while it is open; crossing 768px closes it without writing. Add checks to P and D4.
+- A2/A3: §3 base rule = 28c8468 plus the Sunday commits, or back to T1; delta covers §0.1, §0.2 and all cites, judged by someone other than T3. Beat 10 and the Expectation check become base-conditional; E2 covers CSS track counts.
+- B1: Review derives from the re-found row; fix P8 wording; add a mixed failure check.
+- B2: define or exclude person taps on legacy and unavailable rows.
+- C1–C4: state each Week count's rule and unit; define the zero-crew card text and add that trip to the fixture; define badge-link behaviour; restate P15.
+- D1/D2: narrow §1; list one-tap writes; keep desktop's status hide rule; name the hosted check subset.
+Add no new mechanism beyond these. Commit as "Plan revision pass 1 — round-1 audit response (0C/2H/10M/0L) · pattern: reused-state-contract-gaps". Then a fresh T2 on the new revision.
+```
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 2e01618 · round 1 · manifest 3059639
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-12 0C/2H/10M/0L · regressions 0 · over-cap 13 · adjacent 4
+Human gate:  [LOCKED] change — resolving A3 rewrites Beat 10 and the Expectation check, both locked from the user's direction; base choice (A2) is the parent's
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2e01618 · Verdict NOT CONVERGED · Date 2026-10-01
+Next:        held for parent — _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+```
+
+## Limitations and disclosures
+
+- **Source base:** everything was read at `28c8468` only. Nothing was run — no app, tests, builds or scripts.
+- **What I verified myself:** A1, A2 (by git), B1, B2, C3, C4, the `2X` part of C1, and the status hide rule in D1. The rest rest on the agents' file and line citations, which I did not re-open.
+- **No personal plan lock** by Chris was observed; the plan says so in §A.
+- **Agent launch** went ahead on the task packet's instruction, without the personal confirmation `/runaudit` asks for, and before the consolidation hold arrived.
+- **Commits:** manifest `3059639` is local on `feat/mobile-crew-scheduler-preview`, plan file only, not pushed. I wrote nothing else.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 2 (delta)
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r2-verdict-20261001.md`, sha256 `ea99aa5e893f97761f5f83a0ca62160ae3b84d8f86d541e8321843fee6422085`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2d9a223 · Verdict NOT CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+Both delta agents have returned, so round 2 is complete. **Proposed verdict: NOT CONVERGED** — narrowly. All twelve round-1 findings are resolved and the combined base is sound, but five small new plan-text gaps remain (1 Med, 4 Low), and the T2 rule is that any in-cap finding blocks convergence.
+
+**Bottom line:** The revised plan fixed everything from round 1, and the combined starting point really does carry both the seven-day Sunday work and the phone shell with its preview safety guard. What is left is about five sentences of plan text, the main one being that the list of "checks that must still pass" was recorded before the merge, so nobody has confirmed those checks pass on the actual starting point. No new mechanism is needed and nothing for Chris to decide; it is one short T1 wording pass and a one-agent re-check.
+
+**Headline:** 0 regressions · 5 caused-by (0C/0H/1M/4L) · theme: acceptance-bar wording left behind by the revision · 1 adjacent · trend 12 → 5.
+
+## Round-1 findings: all resolved
+
+| ID | Status | Evidence |
+|---|---|---|
+| A1 | Resolved | Flow is modal (Beat 13, P16); week only moves through `changeWeek` (`Schedule.jsx:137–146`) and a one-shot `?week=` effect (`:189–195`). |
+| A2 | Resolved | `7608b0e` is the merge of `3059639` and `0a78d32`; `src/` and `scripts/` are unchanged from there to HEAD; §3 stops the build on any other base. Verified by git, by me and the agent. |
+| A3 | Resolved | Seven-day labels, `wkDates` loop to 7, both grids `repeat(7, 1fr)`; Beat 10 and E2 forbid a day or track count in new code. |
+| B1 | Resolved | Review computed from the re-found row; P8(b)'s expected state follows from `:497–520`. |
+| B2 | Resolved | Legacy and unavailable rows start no flow; consistent with `:444`, `:484`, `:495`, `:857`. |
+| B3 | Resolved | Own draft; desktop picker and popup not rendered at ≤768px; open person held in the existing state so the range load (`:602–622`) runs unchanged. |
+| C1 | Resolved, one residual (finding 4) | Short and Unknown are `crewWeekSummary.js:20–26`; Double-booked is `:342–352`. Fixture counts 4 / 1 / 2 follow from the code. |
+| C2 | Resolved | "need N" defined for a zero-crew trip; Job E added. |
+| C3 | Resolved | Link opens Board with the row expanded (`:150–161`, `CrewWeekCapacity.jsx:20–22`). |
+| C4 | Resolved | P15 restated against the held snapshot (`:200–211`, `:1341–1349`). |
+| D1 | Resolved | §1 narrowed; one-tap saves listed; desktop's status hide rule kept (`:1191–1193`, `:1282–1289`). |
+| D2 | Resolved, one gap (finding 1) | Hosted subset named and save-free. |
+
+## Combined base — verified
+
+- **Lineage:** `28c8468`, `3059639` and `0a78d32` are ancestors of `7608b0e` and of HEAD.
+- **Sunday side:** `src/schedule/**` and the Sunday checks are identical to `0a78d32`. Dates and ranges are intact: week end uses the last of seven dates (`:199`, `:205`), and no Sunday-specific rule exists in the picker or save.
+- **Mobile side:** `mobile-shell.css`, `CallLog.jsx`, `vite.config.js` and the three mobile scripts are identical to `28c8468`. The breakpoint and drawer are at the `src/App.jsx` lines the plan cites.
+- **Archive guard:** `CallLog.jsx:81` and `vite.config.js:10` are in place. `scripts/check-preview-autoarchive.mjs` runs with `archive_stages ['Lost']` and two eligible candidates, and asserts preview makes no query, write or banner while production is unchanged. The plan holds it at zero diff and makes it a gate, so no new test is needed.
+- **Citations:** every `file:line` in the changed sections points at the stated code.
+- **Harness:** write-blocking is preserved; only the two `assignments` writes are answered in the browser, locally. The hosted walk needs no write.
+
+## New findings (all in cap)
+
+| # | Sev | Plan location | Issue | T1 must resolve |
+|---|---|---|---|---|
+| 1 | Med | §5 D2; §5 U | "Every check that exits zero on the base" points at `checks-after.txt`, recorded on the Sunday build (`3f6b3cf`) before the merge. About 15 of its 23 passing checks have no recorded result on `7608b0e`. One of them, `check-crew-week-text.mjs`, drives this route at 390px and needs the "Weekly crew texts" button and `.sch-wklbl` (`:78`, `:123–131`). A failure after the build could not be attributed. | Add a U item: T3 records the D2 pass-set on `7608b0e` before the first app edit. State that the phone header keeps the hooks that check reads. |
+| 2 | Low | Beat 13; §2 The flow; D4 | "Closes with no write on crossing 768px" is undefined while a save is in flight. The desktop picker refuses to close while busy (`:1413`, `:1468`). | State the busy case: defer the close until the save settles, or accept and say so. |
+| 3 | Low | §2 Day staffing line | The text drops the board's in-range gate (`:909–910`). A saved trip with a crew day outside its dates would get a "need" line desktop does not show and Week does not count. | Add "in range that day". |
+| 4 | Low | P5 | "Same `2X` as 1440" has no comparand: the board suppresses `2X` on short or unknown cells (`:913`), so on Thursday only D's cell shows it. This is the part of C1 that P4 fixed and P5 did not. | Replace with the literals: `2X` on X and T. |
+| 5 | Low | §5 Harness, change (3) | "Every request to a host other than the app's … fails the run" contradicts the inherited rule allowing Google Fonts GETs, which the unedited fixture passes through (`mobile-preview-fixtures.mjs:87`), and the four POST reads. | Say "beyond what H3 and H4 allow". |
+
+**Adjacent (backlog):** `check-password-recovery.mjs` exits non-zero in `checks-after.txt` while its unit test passes. It is one of the 15 excluded checks and is auth-related; not caused by this plan.
+
+**Scope-cut:** considered because three of five findings sit in §5. Not recommended: the acceptance bar is the gate itself, and each fix is one sentence, not a mechanism.
+
+## T1 revision prompt
+
+```
+Revise docs/plans/crew_mobile_preview.md for round-2 findings 1–5 only. Wording only; add no mechanism.
+1. §5 U: T3 records the D2 pass-set on 7608b0e before the first app edit; D2 gates on that recorded set. State the phone header keeps the "Weekly crew texts" button and the .sch-wklbl week label.
+2. Beat 13 / D4: state what happens when 768px is crossed while Save is in flight.
+3. §2 Day: staffing line shows only when the trip is in range that day.
+4. P5: replace "same 2X as 1440" with "2X on X and T".
+5. §5 Harness (3): "beyond what H3 and H4 allow".
+Commit as "Plan revision pass 2 — round-2 audit response (0C/0H/1M/4L) · pattern: acceptance-wording-residue". Then a one-agent T2 delta.
+```
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 2d9a22350521ab246ccc2ac66ee92c46799a0312 · round 2 (delta) · manifest 3622b56
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-5 0C/0H/1M/4L · regressions 0 · over-cap 0 · adjacent 1
+  1 · Med · CAUSED-BY · §5 D2, U · pass-set recorded before the merge, not on 7608b0e · gate cannot attribute a failure · record it on the base first
+  2 · Low · CAUSED-BY · Beat 13, D4 · crossing 768px with Save in flight undefined · request completes after the flow closes · state the busy case
+  3 · Low · CAUSED-BY · §2 Day · staffing line lacks the in-range gate · shows a need desktop does not · add "in range that day"
+  4 · Low · CAUSED-BY · P5 · "same 2X as 1440" has no comparand · check undecidable · use literals
+  5 · Low · CAUSED-BY · §5 Harness (3) · contradicts inherited H3/H4 allowances · literal reading fails every run · add the exception
+Human gate:  none new — ordinary verdict. Disclosure: Beat 10 changed a user-locked decision on relayed direction; no personal re-lock by Chris observed.
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2d9a223 · Verdict NOT CONVERGED · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+## Limits
+
+- **Nothing was run:** no app, build, test or check script. All findings come from reading source and git at HEAD, where `src/` and `scripts/` equal `7608b0e`.
+- **What I verified myself:** base lineage, the Sunday day code, the guard and its check, the save path, week navigation and trip-link citations, and findings 1 and 5. Findings 2–4 and the remaining citations rest on the agents' file and line references.
+- **No rendered baseline at phone width exists**, for the scheduler or for Sunday; that stays with T3 (U1–U3).
+- **No personal plan lock, preview acceptance or release is claimed.**
+- **Commits:** manifest `3622b56` is local on `feat/mobile-crew-scheduler-preview`, plan file only, body byte-identical to `2d9a223`, not pushed. I wrote nothing else.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 3 (wording delta)
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r3-verdict-20261001.md`, sha256 `0b7dba0891c4f970057a90e8334b78605bef0f4c8d55ac914541f3b8975fd0ea`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 39cd871 · Verdict CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+**Proposed verdict: CONVERGED.** All five round-2 wording findings are corrected in plan revision `39cd871`, and the new words introduce no regression. The round-3 manifest is committed (`2f5393d`, plan file only, plan body byte-identical to `39cd871`, not pushed).
+
+## The five corrections
+
+| # | Round-2 finding | Status | What the plan now says | Checked against |
+|---|---|---|---|---|
+| 1 | D2's pass-set was recorded before the merge | Resolved | New U4: T3 runs D2's checks on `7608b0e` and records each result before the first app edit; D2 gates on that record. §2 Frame keeps the existing "Weekly crew texts" button and `.sch-wklbl` label. | Both hooks exist at `Schedule.jsx:1334` and `:1340`. |
+| 2 | Crossing 768px with Save in flight undefined | Resolved | The save is left to finish, nothing is cancelled or undone, the flow or picker closes once it settles, and the crossing starts no write (Beat 13, The flow, D4). | Today's picker refuses to close while busy at `:1413` and `:1468`, as cited. |
+| 3 | Day staffing line lacked the in-range gate | Resolved | Staffing line only "on a saved trip that is in range that day". | Matches the board's gate at `:909–910`; P5's literals are unaffected, since every fixture trip is in range on Thursday. |
+| 4 | "Same `2X` as 1440" had no comparand | Resolved | P5 expects `2X` on X and T. | X is on A-wide and A-short, T is on C and D; matches the fixture's double-booked count of 2. |
+| 5 | Harness wording contradicted the inherited rules | Resolved | "Every request beyond what H3 and H4 allow and beyond those two intercepted writes is refused, logged and fails the run." | Default-deny is preserved; the only added allowances are the two local `assignments` writes. |
+
+The remaining edits (status line, the U-count in §0, the Revision 2 notes) are consistent with these.
+
+One consequence of correction 2 is worth knowing but not a finding: if a save fails while in flight during a crossing, the flow closes once it settles, so the only trace of a partial save is the existing toast. The plan states this, and no check covers the failing case.
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 39cd8713f8d1097f58b70e4bcc22b84499fa1606 · round 3 (wording delta) · manifest 2f5393d
+Verdict:     CONVERGED  (proposed)
+Findings:    none · regressions 0 · over-cap 0 · adjacent 0
+Human gate:  none new — ordinary verdict. Disclosure carried: Beat 10 changed a user-locked decision on relayed direction; no personal plan lock or re-lock by Chris observed.
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 39cd871 · Verdict CONVERGED · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+## Coverage and limits
+
+- **Scope of this pass:** the diff `3622b56..39cd871` in the plan file only, read against my five round-2 findings and the cited source lines. I did not re-audit unchanged sections.
+- **No agent fanout:** I performed this pass myself, per the routing, where `/runaudit` would normally spawn one agent. Rounds 1 and 2 used four and two agents.
+- **Convergence rests on the three rounds together:** round 1 at `2e01618`, round 2 at `2d9a223` (all twelve original findings resolved, base and guard verified), and this pass.
+- **Nothing was run:** no app, build, test or check script, in any round. `src/` and `scripts/` at HEAD equal the build base `7608b0e`.
+- **Not yet observed:** no rendered baseline at phone width exists for the scheduler or for Sunday, and the D2 pass-set on the base is unrecorded. Both are T3's pre-edit steps (U1–U4).
+- **Not claimed:** no personal plan lock, preview acceptance or release.
+- **Carried backlog item:** `check-password-recovery.mjs` exits non-zero in the Sunday evidence file while its unit test passes; pre-existing and auth-related.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T4 Build vs Plan
+
+Transcribed verbatim from the reviewer's complete report (T4, session `c1dd064c-7fa0-490f-bd75-a45544793a1c`, emitted to `/tmp/mobile-t4-verdict-20261001.md`, sha256 `493a3c1d6882e9bc3cf45ce1af63b58880bb9376dc1c247fdf0aa7f2030cebb9`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T4 Build vs Plan · c1dd064c-7fa0-490f-bd75-a45544793a1c · docs/plans/crew_mobile_preview.md @ 39cd871 · build 7608b0e..1e6bde1 (report e6b52e2) · GO — Tier 1: 0 · Tier 2: 0 · disclosed deviations: 4 · P12 @ 768 literal miss carried unwaived · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T4 Build vs Plan — F66 mobile crew scheduler: GO
+
+**GO to T5.** The build matches the plan: 0 runtime blockers, 0 real bugs, 4 disclosed deviations, none unreported. P12 at 768 is a literal miss that meets the plan's intent; I am not waiving it and no acceptance by Chris is claimed.
+
+    Role:        T4 Build vs Plan · agent/session c1dd064c-7fa0-490f-bd75-a45544793a1c
+                 (https://claude.ai/code/session_013uYMKrGAi4pMTMF7SDwLtR; session name unread — Bash denied)
+    Artifact:    docs/plans/crew_mobile_preview.md @ 39cd8713f8d1097f58b70e4bcc22b84499fa1606
+                 · build 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report at e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Checks:      passed E1, E2, plan-vs-code for all four views and the flow, desktop preservation
+                 · failed 0 · deferred 0 · literal miss 1 (P12 @ 768, intent met, not waived)
+                 · unverified by T4: builder-run results (below)
+    Brand check: block present; UI standard and canonical image verified by me; gaps: DOCX not read by T3 or T4; one wording slip
+    Verdict:     GO — to T5; P12 @ 768 carried unwaived
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder session (`6bdefad7-…`), and I wrote, ran and recorded nothing.
+
+## Where the evidence comes from
+
+- **Coordinator-supplied (I did not run these):** HEAD `e6b52e2`, clean status, the name-status diff, the empty source→head diff over `src`/`scripts`/config, the `Schedule.jsx` diff, and the three ancestry results.
+- **My own inspection:** the plan, the build report's F66 section, the three new source files, `Schedule.jsx`, the check script and fixture, the committed result files, 15 screenshots, the brand registry, the UI standard in full, and the canonical image.
+- **Builder-recorded, not re-run by anyone independent:**
+  - the 86/86 browser run (`results.json`);
+  - the 24-pass / 16-non-zero set — `checks-base.txt` and `checks-after.txt` are line-for-line identical;
+  - the desktop pixel comparison (`d3-desktop-board.json`).
+- **Builder statement only, no committed log:** `check-mobile-preview` on the source (166 pass, 0 writes), and the ESLint totals. The build itself is implied by the 86-check run, which compiles the checkout.
+
+I scoped GO to what T4 owns: build-vs-plan, E2 ("read from the diff by T4") and the Brand check. Plan §5 G makes P–F the Smoke Test, run after T4–T6, so the two statement-only items are for Smoke to close with saved logs. If you read the T4 card as needing them now, those two logs are the only evidence to supply.
+
+## P12 at 768
+
+- **What the build does:** on the phone layout the Job column is fixed at 132px and each day is at least 68px (`SchedulePhone.css:146-152`), so the whole grid needs 608px. The 768 frame is about 750px, so Job plus all seven days fit and nothing scrolls sideways.
+- **What I saw:** `board-768.png` shows Job plus MON 10/05 through SUN 10/11 fully inside the frame, legible. `board-360.png` shows Job plus three days with the fourth cut off, so it scrolls there.
+- **Containment and sticky parts:** the board frame scrolls both ways, the date header sticks to the top, and the Job header and labels stick left with opaque backgrounds (`SchedulePhone.css:139-149`, `App.css:1125`).
+- **How the check handles it:** it asserts scrolling only where the grid overflows and otherwise writes a note (`check-crew-mobile.mjs:521-525`). The last-column, Job-column and header assertions still run at 768.
+- **Is the report accurate:** yes. Deviation 1 and the `results.json` note describe exactly this. The "86 of 86 pass" row counts 768 P12 as a pass under a title that says "sideways scroll"; the Outcome line and Deviations correct that, so I do not treat it as hidden.
+- **Judgment:** the plan's intent for Board is that every column stays reachable with Job labels fixed. At 768 every column is visible without scrolling, so the intent is met and the literal sentence is not. The Smoke record should carry it as a note, not a clean pass.
+
+## Punch-list
+
+**Tier 1 — runtime blockers: 0.** No schema, migration or new backend call exists, so there is no live-schema probe to run.
+
+**Tier 2 — real bugs: 0.**
+
+**Deviations, all disclosed in the report:**
+1. P12 at 768, above.
+2. Review shows an extra "On this trip now" line (`SchedulePhone.jsx:252`).
+3. Other-job warnings read "Also on 9103, 9104" (`schedulePhone.js:57`); desktop shows the bare numbers (`Schedule.jsx:1541`). Same rule, same jobs.
+4. P13 uses a link into the fixture's own week, so week-snapping is not re-proved. The phone-specific part, opening on Board when `?job=` is present, is in the `Schedule.jsx` diff.
+
+**Notes for Smoke, not blockers:**
+- The "date header stays while rows scroll" assertion does not confirm rows actually scrolled (`check-crew-mobile.mjs:515-517`). The 360 and 768 screenshots show rows running past the frame, so it was not vacuous here.
+- A trip set to need no crew is built (`schedulePhone.js:20-23`) but not in the fixture, as the report says.
+- No 430 screenshots are committed, and I did not open the 390 week, day and board images.
+
+## Built to spec (my reading, file:line)
+
+- **Save path (E2):** phone Save re-finds the row by key and calls `changeRowAssignments(row, name, days)` (`Schedule.jsx:572-578`), the same shape as desktop (`:547-552`). The diff has no hunk inside that function (`:502-545`).
+- **No new backend call:** no `supabase`, `fetch` or `.from(` in `SchedulePhone.jsx` or `schedulePhone.js`; the `Schedule.jsx` diff adds none.
+- **Zero-diff list (E1):** the only existing source file changed is `Schedule.jsx`; `App.css`, every existing `lib/` file, the shell and config are untouched, per the supplied diff.
+- **Days:** every view maps over `dates` with the existing `DAYS` / `DAYS_LONG` (`Schedule.jsx:1358`); no day list or track count in new code or CSS.
+- **Same guards as a desktop drop:** `canTakeCrew` (`schedulePhone.js:9-11`) mirrors `handleAssignCrew` (`Schedule.jsx:463`); Select all reuses `assignableDays` (`:1655`).
+- **Legacy and unavailable rows:** read-only in Day and Person (`SchedulePhone.jsx:94-99`, `:148-150`); no Assign crew on Board (`Schedule.jsx:1236`).
+- **Modal flow:** page and capacity strip are inert while it is open (`Schedule.jsx:1369`, `:1378`); crossing 768 closes drafts with no write and lets an in-flight save finish (`:582-594`).
+- **Status actions:** same arguments and same out-all-week rule as the desktop chip (`SchedulePhone.jsx:166-171` vs `Schedule.jsx:1343-1350`).
+- **Desktop:** both media queries are `screen` and ≤768/≤600 (`SchedulePhone.css:10`, `:213`). The picker and crew popup only gain `&& !phone` (`Schedule.jsx:1503`, `:1567`). `base/board-1440.png` and `after/board-1440.png` look identical to me.
+- **Strip scoping:** every strip rule hangs off `[data-phone-view]`, set only when `phone` is true on the one mounted route (`ScheduleLayout.jsx:409`).
+- **Check coverage:** the script exercises every P, D1 and D4 item as the plan words it. Only the two assignment writes are allowed, and any other write fails the check (`crew-mobile-fixture.mjs:135`, `:150`).
+
+## Brand check
+
+- **Sources I opened:** the registry; `source-docs/SUBCON_COMMAND_UI_STANDARD_LAUNCH.md` in full; `visual/crew-schedule-canonical.png`; and the Visual Brand Guide reading copy, searched for phone rules.
+- **Report claims that hold:**
+  - New surfaces use the route's own tokens (`src/schedule/index.css:5-42`).
+  - Every literal colour and shadow in the new CSS already exists in `App.css` (`:879`, `:1024`, `:1181`, `:1802`, `:1815`).
+  - The reading copy has no phone rule beyond "check mobile/tablet behavior" (line 222).
+  - No phone reference exists, so no phone comparison was possible; the report says so.
+- **Against the standard:** the new surfaces use green and teal where the standard says cyan (selected tab, primary button, focus ring) and Barlow body text where it says Inter. Both are inherited from the route and are the plan's delegated Beat 8. The report states this as pre-existing, not as "no deviations". The 1440 screenshot differs from the canonical image the same way in base and build.
+- **Gaps:**
+  - The governing `.docx` was not re-read by T3 (disclosed), and I cannot read it with these tools. Only the reading copy was checked.
+  - The report lists "8px radius", but the staffing tag uses 6px (`SchedulePhone.css:105`). That value already exists in `App.css`, so it is a wording slip, not a new radius.
+- **Unreported deviations found:** none.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T4 Build vs Plan · c1dd064c-7fa0-490f-bd75-a45544793a1c · docs/plans/crew_mobile_preview.md @ 39cd871 · build 7608b0e..1e6bde1 (report e6b52e2) · GO — Tier 1: 0 · Tier 2: 0 · disclosed deviations: 4 · P12 @ 768 literal miss carried unwaived · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+I read this as an ordinary verdict: no scope change, no locked decision changed, no human gate. If you read the P12 judgment as touching Beat 2, it needs Chris personally.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |`
+
+Transcribe it only if the repo's audit table takes T4 rows; I did not confirm that it does.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T5 Code Review
+
+Transcribed verbatim from the reviewer's complete report (T5, session `c6c044ee-5371-4f6b-9f91-32d9ec3cdc03`, emitted to `/tmp/mobile-t5-verdict-20261001.md`, sha256 `9b847664cf8a22a26d1dcc90b23ecfc294ed0ae8907fec31a0affe1a91378557`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T5 Code Review · c6c044ee-5371-4f6b-9f91-32d9ec3cdc03 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING, filed as one backlog item · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T5 Code Review — F66 mobile crew scheduler: 0 BLOCKS-SHIP
+
+**Zero blockers in `7608b0e..1e6bde1`; the review ends here.** I found one SHOULD-FIX and three HARDENING items, all for a single backlog row. Target status is PRODUCT for the three source files and SAFETY-NET for the check script and fixture, which got one pass.
+
+    Role:        T5 Code Review · agent/session c6c044ee-5371-4f6b-9f91-32d9ec3cdc03
+                 (https://claude.ai/code/session_01Hv3r1TGu3YZioh21zvHnDV; UUID read from the session scratchpad path, agent name unread — Bash denied)
+    Artifact:    diff 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report checkpoint e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Verdict:     0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder (`6bdefad7-…`), the T4 reviewer (`c1dd064c-…`), or the plan or audit sessions. I wrote, ran and recorded nothing.
+
+## Findings
+
+| # | Finding | Severity | Materiality | Action |
+|---|---|---|---|---|
+| 1 | A fast double tap on Review lands on Save and writes without the review being read. Both are the last, right-aligned button in the same bottom action row (`SchedulePhone.jsx:239`, `:263`; `SchedulePhone.css:193`). `flow-days-390.png` and `flow-review-390.png` show them in the same spot. The write is exactly what the user picked, which is what desktop does with no review at all. | Medium | SHOULD-FIX | Backlog |
+| 2 | If a save fails and the reload after it also fails, Review keeps the stale row while saying "This shows what is on the trip now" (`SchedulePhone.jsx:258`). A retry then recomputes from that stale row and can re-insert a day already saved. The cause is in the unchanged shared path (`Schedule.jsx:275–279`, `:537–540`), and the desktop picker has the same exposure. | Low | HARDENING | Backlog |
+| 3 | The flow has no focus trap, and Escape only works while focus is inside it (`SchedulePhone.jsx:268–269`). Keyboard focus can reach the shell's controls; the build report discloses this. Leaving the route that way unmounts the flow with no write. | Low | HARDENING | Backlog |
+| 4 | The D4 "Save in flight" check waits for the flow to leave the DOM (`check-crew-mobile.mjs:639`). It leaves as soon as the viewport widens, because `flowOpen = phone && !!flow` (`Schedule.jsx:1364`). So the check proves one write and a completed save, not that the draft is cleared after the save settles. By source reading it is cleared (`Schedule.jsx:590–594`). This is an incomplete assertion, not a fail-open. | Low | HARDENING | Backlog |
+
+`0 ship-blockers; 4 filed as one backlog item. Done.`
+
+## Coverage (my own source reading)
+
+- **Row ownership and week bounds:** clean.
+  - The draft holds only the row key (`Schedule.jsx:562`). Review and Save both re-find the row in the loaded week (`:574`, `:1363`), and a missing row offers only Close (`SchedulePhone.jsx:189–193`).
+  - Week navigation, the switch and the strip are inert while the flow is open (`Schedule.jsx:1369`, `:1378`), so the week cannot change under a draft.
+  - Existing days come from that row's own assignments (`:329–331`), so a sibling trip is never touched.
+- **Assignment state and partial-failure retry:** clean apart from finding 2.
+  - Review's add and remove (`schedulePhone.js:61–68`) match what the save computes (`Schedule.jsx:507–513`).
+  - After a delete-only failure the row reloads, so a retry adds nothing and removes only what is left.
+  - A second save is refused by the busy ref (`:503`) and the disabled buttons.
+- **Resize during save:** clean. Crossing while busy defers the close until the save settles (`:582–594`), and the crossing itself starts no write. On a failed save after crossing, the draft still closes.
+- **Focus and close:** clean apart from finding 3. Focus moves into the dialog on each step (`SchedulePhone.jsx:181`) and returns to the opener if it is still on the page (`Schedule.jsx:566–571`). Every close path is blocked while busy.
+- **Counts and warnings:** clean.
+  - Short and unknown-need come from `crewWeekSummary` over the board's rows, and double-booked from the board's own map (`schedulePhone.js:38–45`).
+  - Day cards follow the board cell rule (`:20–23`; `Schedule.jsx:960–979`).
+  - Day warnings mirror the desktop picker (`schedulePhone.js:49–58`; `Schedule.jsx:1532–1541`).
+- **Legacy, unavailable and archived:** clean.
+  - `canTakeCrew` equals the desktop drop guard (`schedulePhone.js:9–11`; `Schedule.jsx:463`).
+  - Legacy and unavailable rows are read-only in Day, Person and Board (`SchedulePhone.jsx:94–99`, `:148–150`; `Schedule.jsx:1236`).
+  - Archived people are still stopped by the unchanged save guard (`:510–512`).
+- **Desktop:** clean.
+  - The diff adds only `&& !phone` to the two dialogs, attributes that are undefined at desktop, and a pass-through wrapper on the trip link.
+  - There is no hunk inside `changeRowAssignments` and no new backend call.
+  - Both media queries are `screen` and ≤768 / ≤600 (`SchedulePhone.css:10`, `:213`).
+- **Checks, one pass:** no silent fail-open found.
+  - Failed checks, refused requests and shell writes all exit non-zero (`check-crew-mobile.mjs:665`).
+  - The hosted mode allows no writes (`:151`; `crew-mobile-fixture.mjs:135`, `:150`).
+  - The P12 skip at 768 is written as a note, already carried by T4.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** HEAD, clean status, the name-status diff, the empty source-to-head diff, the `Schedule.jsx` diff, the three ancestry results, and the 86/86 summary.
+- **Builder-recorded:** I read the committed `results.json` and it matches that summary. Nobody independent has re-run it.
+- **Images I opened:** `flow-days-390`, `flow-review-390`, `day-360`, and `after/board-1440`.
+- **Not done:**
+  - I ran nothing. The one Bash call I made, to read my session name, was denied, and I did not retry.
+  - `mobile-preview-fixtures.mjs` is outside the diff. I only confirmed by search that it has a catch-all route that blocks and logs, so the hosted default-deny rests on that unchanged file.
+  - The tap-through in finding 1 is established from source and screenshots, not on a device.
+  - No brand sources were loaded.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T5 Code Review · c6c044ee-5371-4f6b-9f91-32d9ec3cdc03 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING, filed as one backlog item · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |`
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T6 Security Review
+
+Transcribed verbatim from the reviewer's complete report (T6, session `fced4921-aef6-4263-badc-acd8fda0c783`, emitted to `/tmp/mobile-t6-verdict-20261001.md`, sha256 `4379e29402cd8a78b58ad83349c5742a489478ac3242636200dc0bd598659d0b`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T6 Security Review · fced4921-aef6-4263-badc-acd8fda0c783 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING, filed as one backlog item · source and synthetic evidence only; production and hosted preview untested · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T6 Security Review — F66 mobile crew scheduler: 0 exploitable-today
+
+**Zero exploitable-today findings in `7608b0e..1e6bde1`; safe to proceed to Smoke and Preview.** I found one HARDENING item for the backlog and nothing pre-existing to file. The diff adds no backend call, no new write path and no new authorization surface.
+
+    Role:        T6 Security Review · agent/session fced4921-aef6-4263-badc-acd8fda0c783
+                 (https://claude.ai/code/session_01Kh8TD4bsS22EbQTBy97Vfa; UUID read from the session scratchpad path, agent name unread — Bash denied)
+    Artifact:    diff 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report checkpoint e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Mode:        per-PR (.claude/commands/audit.md), severity per security-audit SKILL.md, materiality per /security-review-limiter
+    Verdict:     0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder (`6bdefad7-…`), the T2 (`d456ca7b-…`), T4 (`c1dd064c-…`) or T5 (`c6c044ee-…`) session. I wrote, ran and recorded nothing.
+
+## Findings
+
+| # | Finding | Exploitable today? | Materiality | Action |
+|---|---|---|---|---|
+| 1 | The check script's write refusal on a hosted URL is opt-in. With `QA_URL` set to a preview and `CREW_MOBILE_HOSTED` unset, `allowWrites` stays true (`check-crew-mobile.mjs:134`, `:151`) and the save checks tap Save on the hosted bundle, against the plan's "never taps Save" rule for hosted runs. | No. The two assignment writes are still answered inside the browser (`crew-mobile-fixture.mjs:135–148`), and everything else falls to the shell's default-deny. Nothing reaches the real backend. | HARDENING (Low) | Backlog |
+
+`0 exploitable-today; safe to ship to tested preview. 1 filed as one backlog item.`
+
+## Coverage (my own source reading)
+
+- **Authorization and write paths (OWASP A01, ASVS V4):** clean.
+  - The three new source files import no `supabase` and make no network call; the `Schedule.jsx` diff adds none either.
+  - The phone save goes only through the existing `changeRowAssignments` (`Schedule.jsx:572–578`). The supplied diff has no hunk inside that function (`:502–545`).
+  - The existing guards still run on that path: unavailable row, busy, archived person, in-range, saved trip, and delete by row id (`:503`, `:510–515`, `:530–531`).
+  - `canTakeCrew` matches the desktop drop guard (`schedulePhone.js:9–11`; `Schedule.jsx:463`), and legacy and unavailable rows render no edit control (`SchedulePhone.jsx:94–99`, `:148–150`; `Schedule.jsx:1236`).
+  - Desktop has no client role gate on this route, so the phone view removes none. Server-side access rules are untouched.
+- **Data exposure:** clean. The phone views render only the jobs, crew, assignments and statuses the desktop route already loads. Nothing new is fetched, stored or logged.
+- **Injection and unsafe links (React XSS, A03):** clean.
+  - The new files have no `dangerouslySetInnerHTML`, `eval`, storage access or `window.open`. All text is rendered through React.
+  - The one link is `'tel:' + person.phone` (`SchedulePhone.jsx:128`). The fixed prefix rules out a script scheme, and the same pattern already exists at `Schedule.jsx:1585`.
+  - `SchedulePhone.css` has no `url(` or `@import`.
+- **Preview archive guard:** intact. `CallLog.jsx:81` and `vite.config.js:10` still carry the guard, and neither file is in the supplied name-status diff.
+- **Fixture write protections:** clean apart from finding 1.
+  - Only `POST` and `DELETE` on `assignments` are allowed, and only when `allowWrites` is true. Every other write is logged as refused and passed to the shell handler (`crew-mobile-fixture.mjs:135`, `:150–151`).
+  - The shell handler answers every `*.supabase.co` request locally and aborts every other non-GET or off-origin request (`mobile-preview-fixtures.mjs:64–90`). WebSockets never connect and service workers are blocked (`:53`, `:63`).
+  - Refused requests, shell writes and shell blocks all fail the run (`check-crew-mobile.mjs:158`, `:665`).
+  - The local build uses a synthetic backend name and key (`:50–51`), and the session token is a fixture string (`mobile-preview-fixtures.mjs:57`).
+- **Secrets:** clean. A search of the new scripts, the new source, the `crew-mobile` evidence folder and handoffs v303/v304 found no JWT, service-role key, real project host or bypass token.
+- **Not applicable to this diff:** RLS, grants, edge functions, schema, auth, env, dependencies and public pages. None changed, per the supplied name-status diff.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** HEAD, clean status, the name-status diff, the empty source-to-head diff, the `Schedule.jsx` diff, the three ancestry results, and the 86/86 summary.
+- **Builder-recorded:** the committed `results.json` shows a local URL, `hosted: false`, 0 failed, 0 shell writes and 0 refused. Nobody independent has re-run it.
+- **Images I opened:** `person-390.png` and `flow-review-390.png`. Both show synthetic names only.
+- **Not done:**
+  - I ran nothing. My one Bash call, to read my session name, was denied and I did not retry. I did not fetch, so I make no claim about remote state.
+  - **Real production is untested.** Everything here is source reading plus synthetic local evidence: no hosted run, no real sign-in, no live RLS probe.
+  - The preview shares the production database. A signed-in person's saves there are real; this slice gives them a phone layout for saves they can already make on desktop.
+  - `mobile-preview-fixtures.mjs` is outside the diff. I read it in full, but the hosted default-deny rests on that unchanged file.
+  - Byte-identity of `changeRowAssignments` rests on the supplied diff and the builder's claim; I could not run the comparison.
+  - I searched `CLAUDE_RLS.md` for the scheduler tables and found no mention; I did not read it in full, because no policy changed.
+  - No brand sources were loaded.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T6 Security Review · fced4921-aef6-4263-badc-acd8fda0c783 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING, filed as one backlog item · source and synthetic evidence only; production and hosted preview untested · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |`
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T6 Security Review, delta (check scripts)
+
+Transcribed verbatim from the reviewer's complete report (T6, session `fced4921-aef6-4263-badc-acd8fda0c783`, emitted to `/tmp/mobile-t6-delta-verdict-20261001.md`, sha256 `dfb2ec80467fba695a652fd9c6b05a6804d88af153ac2acc6c1df7df71fbbe04`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the author of the reviewed change, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T6 Security Review (delta) · fced4921-aef6-4263-badc-acd8fda0c783 · diff b1227ff..39a9900 (test-only: preview-access header hook, production-host refusal, hosted archive probe, smoke evidence) · 0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING, added to O15 · no token in source output paths or saved evidence; default-deny intact · source and saved evidence only, nothing run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T6 Security Review, delta — preview-access token hook: 0 exploitable-today
+
+**Zero exploitable-today findings in `b1227ff..39a9900`: no token is disclosed in source or saved evidence, and default-deny is intact.** I found three HARDENING items, all for the existing O15 backlog row. This does not reopen my recorded verdict on `7608b0e..1e6bde1`.
+
+    Role:        T6 Security Review (delta) · agent/session fced4921-aef6-4263-badc-acd8fda0c783
+                 (https://claude.ai/code/session_01Kh8TD4bsS22EbQTBy97Vfa — same session as the verdict recorded at b1227ff)
+    Artifact:    diff b1227ff..39a9900 — scripts/check-crew-mobile.mjs, scripts/crew-mobile-fixture.mjs,
+                 scripts/check-preview-autoarchive-hosted.mjs (new), evidence under evidence/crew-mobile/smoke/
+    Verdict:     0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+## Findings
+
+| # | Finding | Exploitable today? | Materiality | Action |
+|---|---|---|---|---|
+| 1 | The token goes to whatever non-local host `QA_URL` names; there is no allow-list such as `*.vercel.app` (`crew-mobile-fixture.mjs:110`; `check-preview-autoarchive-hosted.mjs:24`). A mistyped `QA_URL` would hand that host the short-lived token. | No. It needs the operator to point the script at a wrong host. The recorded runs used the stated preview origin. | HARDENING | O15 |
+| 2 | The token header is set with `route.continue({ headers })` (`crew-mobile-fixture.mjs:112`; `check-preview-autoarchive-hosted.mjs:26`). As I recall Playwright's behaviour, overridden headers also follow redirects the request triggers, so a redirect off the preview origin could carry the token with it. I did not check this against the installed version. | No. Only Vercel's own edge could issue such a redirect from this origin, and the recorded runs show zero refused or external requests. | HARDENING | O15 |
+| 3 | The production-host refusal is a list of three names (`check-crew-mobile.mjs:135`; `check-preview-autoarchive-hosted.mjs:18`). It would not catch a production `*.vercel.app` alias, and in `check-crew-mobile.mjs` it sits after the baseline and capture modes (`:74–131`), which never reach it. | No. Even against a production bundle, every backend request is still answered or refused in the browser, so no real read or write follows. | HARDENING | O15 |
+
+`0 exploitable-today; safe to proceed. 3 added to O15.`
+
+## Coverage (my own source and evidence reading)
+
+- **Token disclosure:** clean.
+  - The token is read from the environment and used only as a request header (`crew-mobile-fixture.mjs:109–113`; `check-preview-autoarchive-hosted.mjs:23–27`).
+  - No `console.log` or `writeFile` in the three scripts includes it; the result objects carry only URL, counts, write and refusal lists and page errors (`check-preview-autoarchive-hosted.mjs:52–54`; `check-crew-mobile.mjs:666–667`).
+  - It is never put in a URL, in page storage or in an init script, so page code and screenshots cannot see it.
+  - A search of `docs/agent-handoffs/**`, handoffs v30x and the scripts for JWT-shaped strings, bearer values, token query strings and the header name found only the three source lines above.
+  - I read both hosted console logs, both archive-guard JSON files and the head of the hosted `results.json`: no token.
+- **Token scope:** the header is added only when the request origin exactly equals the app origin and the method is GET or HEAD. It is never added to a Supabase request, since that host cannot equal the app origin.
+- **Default-deny:** intact.
+  - Other methods to the app origin fall through to the shell handler, which aborts them and fails the run.
+  - GET and HEAD to the app origin were already allowed by the shell (`mobile-preview-fixtures.mjs:87`), so the hook opens nothing new.
+  - The new archive probe answers `tenant_config` and the candidate query locally and passes every `call_log` write to the shell, which refuses it. The local control run shows exactly that: `PATCH` seen, refused by the shell.
+- **Saved hosted evidence:**
+  - The scheduler run was against the stated preview origin, `hosted: true`: 25 pass, 21 local-only skipped, 0 shell writes, 0 refused.
+  - The archive-guard run against the same origin shows 0 candidate queries and 0 writes, with stages set and two eligible rows on offer.
+  - The two screenshots I opened (`calllog-archive-guard-skip.png`, `end-390-P11-…png`) show synthetic names only.
+- **Screenshot filename change:** the name is built from the check title, sanitised to letters, digits and hyphens. No path or secret risk.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** the diff text, the clean `e2a9628` state, the empty app-source diff since `1e6bde1`, and the smoke totals.
+- **Not done:**
+  - I ran nothing and made no live request. Whether the token reached only the preview origin at run time rests on source reading and the zero-refused logs, not on a network capture.
+  - I opened two of the fifteen hosted screenshots.
+  - How the token was obtained and passed in (`vercel env run`, shell history, CI logs) is outside the diff and unseen.
+  - Real production and any signed-in use remain untested.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T6 Security Review (delta) · fced4921-aef6-4263-badc-acd8fda0c783 · diff b1227ff..39a9900 (test-only: preview-access header hook, production-host refusal, hosted archive probe, smoke evidence) · 0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING, added to O15 · no token in source output paths or saved evidence; default-deny intact · source and saved evidence only, nothing run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 39a9900 · diff b1227ff..39a9900 · T6 security review, delta | 3 (0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING) | 3 Low | clean — non-blockers to O15 | preview-token-host-scope |`
+
+Stopping here.
+````

@@ -1,0 +1,89 @@
+SC Handoff v303 — Sunday parity merged into the mobile crew scheduler branch (F60 → F66 integration) — 2026-10-01
+
+SESSION SUMMARY
+T3 (t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9), routed by the
+coordinator, did one thing: merged the stable Sunday checkpoint into
+feat/mobile-crew-scheduler-preview, as docs/plans/sunday-scheduling.md §3
+"Integration with the mobile slice" (body bbe71e4) describes. Dependency
+integration only. NO new mobile UI code. NOT merged to main, NOT in
+production. T3 did not push and published no preview (see GIT STATE). Numbered v303 from fetched state (v302 is the
+highest on any remote branch).
+
+CHANGES SHIPPED (to the branch only)
+Merge commit 7608b0e8504416678c43d31f3fedacbf015e7d1e
+  parent 1  3059639108aad22c3076cf692aeea5731657b7a9  mobile lineage
+  parent 2  0a78d32072135e9daa81d85dcb34abc8e1c83dd1  Sunday checkpoint
+The branch now holds the phone shell (28c8468) and Sunday = Saturday parity.
+It also holds the password-recovery fix from main (3145a7a, PR #73), which
+the Sunday branch is built on.
+
+CONFLICTS — three files, all documents, none in application code
+docs/AUDIT_LOG.md — both sides kept verbatim; one "## Gate records" heading;
+  mobile 2026-09-30 records, then B124 and F60 2026-10-01 records.
+docs/agent-handoffs/BUILD-REPORT.md — both prior reports kept verbatim in
+  marked blocks under a new integration section.
+docs/handoffs/SC_Handoff_v298.txt — two different handoffs had this number.
+  The path keeps the B124 password-recovery handoff (main lineage). The
+  Call Log brand preview handoff from the mobile lineage is kept unchanged
+  as SC_Handoff_v298-calllog-brand-preview.txt.
+Merged cleanly though changed on both sides: docs/BACKLOG.md, src/App.jsx,
+src/pages/Login.jsx.
+
+DECISIONS
+None by T3. No verdict or gate record was written, changed or re-worded.
+
+BACKLOG
+F66 row notes the merge; app edits stay on hold. F60 row unchanged.
+
+VERIFICATION (synthetic fixtures only; no sign-in, no real record)
+Ancestors of the merge: 0a78d32, 28c8468, 3059639, 3145a7a.
+src/styles/mobile-shell.css is the same blob as at 28c8468.
+src/schedule/** is identical to 0a78d32. Every Sunday-changed app or script
+file is identical to 0a78d32 except App.jsx and Login.jsx, where the only
+difference is the mobile lineage's own change set.
+package.json, package-lock.json, vercel.json, vite.config.js, supabase/, sql/,
+db/, src/field/ and both mobile plans are unchanged.
+npm run build passes.
+check-mobile-preview: 166 pass, 0 fail, B1 skipped; 0 errors, 0 writes.
+check-preview-autoarchive (automatic-archive guard): pass.
+check-sunday-parity-model M1-M6 pass; check-sunday-parity 30 groups pass.
+Midweek and week text models, crewStatus test, passwordRecovery test: pass.
+Details and limits: docs/agent-handoffs/BUILD-REPORT.md, top section.
+
+NOT DONE / LIMITS
+B1 desktop pixel comparison not run (no base captures for this merge).
+Full existing suite and ESLint not rerun; the 15 failures recorded on base
+were not re-baselined. No hosted preview, phone, real sign-in or real data.
+Sunday surfaces at phone widths not checked — that is the mobile slice.
+Chris's personal T1 lock of the Sunday plan is still not recorded.
+T3 did not verify Chris's workstream authorization at its source; it acted on
+the coordinator's routing.
+
+NOT TOUCHED
+~/sales-command and every other worktree. feat/sunday-saturday-parity
+(0a78d32), feat/calllog-brand-preview (701a209), native Field. No
+dependency, schema, RLS, env, auth or config change. Mobile plan body and
+audit manifest. No force push, rebase, reset or stash.
+
+NEXT SESSION POINTERS
+1. Coordinator publishes the remaining report commits.
+2. Independent baseline check of the combined tree (plan §3 item 4).
+3. T1 revises docs/plans/crew_mobile_preview.md; independent T2 delta.
+4. Only then the mobile crew scheduler build and a combined preview.
+Chris's acceptance of the Sunday preview and of the mobile web preview are
+both still open. No production merge or release.
+
+FILES TO KNOW
+docs/agent-handoffs/BUILD-REPORT.md — integration section, then Report A
+  (Sunday) and Report B (mobile shell), verbatim.
+docs/AUDIT_LOG.md — all gate records from both lineages.
+docs/plans/sunday-scheduling.md §3 — the integration requirement.
+docs/plans/crew_mobile_preview.md — mobile plan, awaiting revision.
+
+GIT STATE
+Branch feat/mobile-crew-scheduler-preview, worktree
+Documents/Codex/2026-09-30/task-3/crew-mobile-preview. Merge 7608b0e plus
+the report commits after it. T3 did not push. Another session published
+merge 7608b0e to origin while the report was being written; the report
+commits were not pushed by T3. A branch push can start an automatic Vercel
+preview build; whether one exists was not checked. Working tree clean.
