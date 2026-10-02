@@ -22,6 +22,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | feat/sunday-saturday-parity @ 745a291 · sunday-scheduling.md (Round 1) | 6 (6 top / 0 over-cap) + 3 adjacent | 0H/4M/2L | accepted-pending-changes | acceptance-bar-gaps |
 | 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
 | 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -827,3 +828,112 @@ This was a source read only. My runtime could not run git or any check, so the h
 | 3 | The model check loads the app's database client in Node with no network block (`check-sunday-parity-model.mjs:13–14`, `:27–35`). | No. It calls pure functions only and the URL is a placeholder. | HARDENING | Backlog |
 
 **0 exploitable-today; safe to ship.** Zero blockers ends this review; no further round is needed.
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 1
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r1-verdict-20261001.md`, sha256 `a7b78d9dafb9a458264b00772f06810c10f39695ffe292bd2cb918b2ce7ae6d3`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2e01618 · Verdict NOT CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9) — for recording this NOT CONVERGED review and its findings only, as T7 routed it. Not approval of any plan change. Not Chris's personal acceptance: the reviewer's own "Human gate: [LOCKED] change" line below stands, and no acceptance of a changed locked decision is recorded here.
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+All four audit agents have returned, so the round-1 audit is complete and a verdict is now supported: **NOT CONVERGED (proposed)**. I am stopping here for parent handoff: nothing recorded, nothing pushed, no new spawns, no app edits.
+
+**Bottom line:** The plan is not safe to build as written. The biggest risk is that on a phone someone could change week mid-assignment and the save would then write days into the wrong week and delete that person's days in the other week, on the real schedule. The second is that the Sunday branch does not contain the mobile shell this plan is built on, so "Sunday first, then mobile" needs a base that carries both. The decision for the parent: the stable base must be `28c8468` plus the Sunday commits, and the plan goes back to T1 for one revision before any build.
+
+**Headline:** 12 in-cap caused-by (2H/10M) · theme: the phone flow reuses desktop state and rules the plan never pins down · 13 over cap · 4 adjacent · no regressions (round 1).
+
+## Top 12 findings (grouped by root cause)
+
+| # | Sev | Source | Plan location | Issue | T1 must resolve |
+|---|---|---|---|---|---|
+| A1 | High | state trace | §2 Frame vs The flow; P3 | Prev / Next stay tappable while the flow is open. The save re-finds the row by key in the current week (`Schedule.jsx:528–533`); on a multi-week trip it then inserts the old week's days again and deletes the person's days in the new week (`:488–494`). | Flow blocks week navigation or closes on week change, with a check. |
+| A2 | High | scope/Sunday | §3 Base and hold | `feat/sunday-saturday-parity` and `main` do not contain `28c8468`; that lineage lacks the mobile shell, breakpoint, check scripts and harness plan. The rule re-checks §0.2 only and the builder judges its own base. | Base = `28c8468` plus Sunday commits or return to T1; delta covers §0.1, §0.2 and every cite; judged by someone other than T3. |
+| A3 | Med | scope/Sunday | Beat 10; Expectation check; E2 | "Six days" and "will not see Sunday" become false on a Sunday base; a phone grid restating `repeat(6…)` would silently drop Sunday at ≤768 only. | Make both base-conditional: phone shows exactly desktop's days; E2 covers CSS track counts. |
+| B1 | Med | state trace | §2 steps 3–4; P8 | Review's source is undefined. After insert-lands-delete-fails (`:501–514`), a snapshot Review still says "added" and Cancel leaves it saved, contradicting "changes nothing". | Review derives from the re-found row; correct P8 wording; add a mixed add-and-remove failure check. |
+| B2 | Med | state trace | Beat 5; §2 Day, Person | Person taps on legacy and unavailable rows are unspecified; existing code does nothing silently (`:444`) or returns false with no message (`:484`). | Exclude those taps, or define removal-only with a message. |
+| B3 | Med | state trace, scope, parity | E2; Beat 6; D4; §2 Person | Picker state needs a person at creation and always renders the desktop modal (`:1412`); the Scheduled Off ranges load only via state that opens the desktop popup (`:602–622`, `:1476`). Crossing 768px with either open is unspecified. | Name who owns flow state, what is suppressed at ≤768, and that crossing the breakpoint closes without writing; add to D4. |
+| C1 | Med | parity, harness | §2 Week; P4; P5 | The three Week counts have no single rule: "unknown need" has two definitions (`crewScheduleRows.js:31` vs `crewWeekSummary.js:17`), counts are trips beside a per-job badge, and per-day `2X` has no desktop rendering to match (`:913`). | State each rule and unit; replace "equals 1440" with literal fixture counts or a named source. |
+| C2 | Med | parity | §2 Day; P5 | A zero-crew trip with a known need has no staffing text on desktop, only a tooltip (`:917–918`); the fixture has no such trip. | Define the card text; add the trip to the fixture. |
+| C3 | Med | parity | §2 Week; P4 | Badge-list trip links close the list and scroll a board row that is not on screen (`:147–161`). | Define the link's phone behaviour. |
+| C4 | Med | parity, harness | P15; P3 | "No numbers from another week" contradicts the existing held snapshot (`:200–211`, `:1341–1350`); the fixture has no way to hold a load. | Restate against existing behaviour or declare new phone-only behaviour; give the fixture a hold. |
+| D1 | Med | scope, state trace, parity | §1; §4; Beat 11; P11; P14 | §1 promises review before any save, but Board toggles, ✕, status DONE and Scheduled Off Remove write on one tap at phone width. Four status actions for a person out all week lets Sick overwrite Scheduled Off; status saves ignore errors (`:771–780`). | Narrow §1; list the one-tap writes in the Expectation check; keep desktop's hide rule. |
+| D2 | Med | harness | §5 G | The hosted check set is inherited from another plan's A/C/D, which this plan does not have, on a deployment wired to production. | Name the hosted subset; exclude save-activating checks. |
+
+**The big design call:** make the flow modal. It blocks week navigation the way trip editing already does (`Schedule.jsx:137–140`) and closes without writing when the viewport crosses 768px, as the shell drawer does (`App.jsx:414–420`). That closes A1 and most of B3 with existing patterns.
+
+**Scope-cut:** not triggered — round 1, and no single section holds 40% of findings.
+
+## Additional findings (over cap)
+
+| Sev | Issue |
+|---|---|
+| Med | P10 "sends no request" is false: the existing catch reloads the week. Should read "no write". |
+| Low | "Saving sends nothing" on no change still reloads. |
+| Low | Review says "removing from this trip" when only the visible week is removed. |
+| Low | Select all silently drops existing out or out-of-trip days. |
+| Low | Day labels come from private six-entry arrays, not `dates`. |
+| Low | Day's default day is undefined when today is not in the week. |
+| Low | A requirement-0 trip with no crew has no Day card; Board is the only route and the plan does not say so. |
+| Low | The capacity strip is shared with five other screens; new ≤768 rules need scoping to this route. |
+| Low | Whether the strip stays above all four views is unstated. |
+| Low | Fixed clock has no instant or timezone. |
+| Low | Fixture reset per width and a held response are unstated. |
+| Low | If D2 is not performed, nothing exercises a desktop save. |
+| Low | Three stated behaviours have no check; the fixture omits the job link shape `loadJobs` needs. |
+
+## Adjacent findings (backlog)
+
+| Sev | Backlog one-liner |
+|---|---|
+| Med | + Job and Actions dialogs have 380–500px minimum widths and overflow a 360px screen with no scroll. |
+| Low | A name missing from the crew list gets the "archived" message on any add. |
+| Low | Deep-link scroll targets are `display: contents`; the board may not scroll, and re-scrolls after each save while `?job=` is in the URL. |
+| Low | An out person still counts as crew, so a trip staffed by a Sick person shows no gap. |
+
+## T1 revision prompt (held — parent has paused routing)
+
+```
+Revise docs/plans/crew_mobile_preview.md for round-1 findings A1–A3, B1–B3, C1–C4, D1–D2 only.
+- A1/B3: the flow is modal; week navigation is blocked while it is open; crossing 768px closes it without writing. Add checks to P and D4.
+- A2/A3: §3 base rule = 28c8468 plus the Sunday commits, or back to T1; delta covers §0.1, §0.2 and all cites, judged by someone other than T3. Beat 10 and the Expectation check become base-conditional; E2 covers CSS track counts.
+- B1: Review derives from the re-found row; fix P8 wording; add a mixed failure check.
+- B2: define or exclude person taps on legacy and unavailable rows.
+- C1–C4: state each Week count's rule and unit; define the zero-crew card text and add that trip to the fixture; define badge-link behaviour; restate P15.
+- D1/D2: narrow §1; list one-tap writes; keep desktop's status hide rule; name the hosted check subset.
+Add no new mechanism beyond these. Commit as "Plan revision pass 1 — round-1 audit response (0C/2H/10M/0L) · pattern: reused-state-contract-gaps". Then a fresh T2 on the new revision.
+```
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 2e01618 · round 1 · manifest 3059639
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-12 0C/2H/10M/0L · regressions 0 · over-cap 13 · adjacent 4
+Human gate:  [LOCKED] change — resolving A3 rewrites Beat 10 and the Expectation check, both locked from the user's direction; base choice (A2) is the parent's
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2e01618 · Verdict NOT CONVERGED · Date 2026-10-01
+Next:        held for parent — _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate → T1 revision
+```
+
+## Limitations and disclosures
+
+- **Source base:** everything was read at `28c8468` only. Nothing was run — no app, tests, builds or scripts.
+- **What I verified myself:** A1, A2 (by git), B1, B2, C3, C4, the `2X` part of C1, and the status hide rule in D1. The rest rest on the agents' file and line citations, which I did not re-open.
+- **No personal plan lock** by Chris was observed; the plan says so in §A.
+- **Agent launch** went ahead on the task packet's instruction, without the personal confirmation `/runaudit` asks for, and before the consolidation hold arrived.
+- **Commits:** manifest `3059639` is local on `feat/mobile-crew-scheduler-preview`, plan file only, not pushed. I wrote nothing else.
+````
