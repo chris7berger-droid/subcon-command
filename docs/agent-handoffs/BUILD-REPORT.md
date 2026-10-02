@@ -43,12 +43,12 @@ Not repeated at Smoke, because saved results already exist for this exact app so
 ### Changes made at this step
 
 - **App source: none.**
-- **Check scripts (commit `39a9900`), which the reviews did read at `1e6bde1`:** the fixture adds the preview token to same-origin GET/HEAD requests when one is present and the target is not local; the check script refuses production hosts and can keep a screenshot per check; one new hosted probe script. Local behavior is unchanged: the full local run with the committed scripts is also 86 of 86 (`local/results-with-committed-scripts.json`). The recorded Smoke run above used the scripts as reviewed. **Plan §5 G says a commit after the reviews re-opens them; T7 decides whether this harness-only change needs a delta look.**
+- **Check scripts (commit `39a9900`), which the reviews did read at `1e6bde1`:** the fixture adds the preview token to same-origin GET/HEAD requests when one is present and the target is not local; the check script refuses production hosts and can keep a screenshot per check; one new hosted probe script. Local behavior is unchanged: the full local run with the committed scripts is also 86 of 86 (`local/results-with-committed-scripts.json`). The recorded Smoke run above used the scripts as reviewed. Plan §5 G says a commit after the reviews re-opens them. **Closed 2026-10-01: T6 reviewed the delta `b1227ff..39a9900` — 0 exploitable-today, 0 SHOULD-FIX, 3 HARDENING (recorded in `docs/AUDIT_LOG.md` at `4e015f4`, standing §9). No delta decision is pending.** T4 and T5 were not asked to re-read the check scripts.
 - **Report wording:** the Brand check's radius line now names the existing 8px and 6px radii (T4's wording note).
 
 ### Review follow-ups — filed, not fixed
 
-Backlog **O15** groups the five non-blocking findings: T5's four (double tap on Review can land on Save; stale Review after a failed save and a failed reload; no focus trap in the flow; the D4 in-flight check's incomplete assertion) and T6's one (the check script refuses hosted writes only when `CREW_MOBILE_HOSTED=1` is set). None was changed in this pass.
+Backlog **O15** groups the eight non-blocking findings — the five below, plus the three from T6's delta review of the check scripts (no host allow-list for the preview token; the token header possibly following a redirect, which the reviewer did not verify and is not a proven leak; the production-host refusal being a short name list placed after two modes): T5's four (double tap on Review can land on Save; stale Review after a failed save and a failed reload; no focus trap in the flow; the D4 in-flight check's incomplete assertion) and T6's one (the check script refuses hosted writes only when `CREW_MOBILE_HOSTED=1` is set). None was changed in this pass.
 
 ### Brand check at Smoke
 

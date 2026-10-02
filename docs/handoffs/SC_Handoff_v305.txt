@@ -40,11 +40,12 @@ No app source change. Check scripts only (39a9900): an origin-scoped
 preview-token hook in crew-mobile-fixture.mjs, a production-host refusal
 and per-check screenshots in check-crew-mobile.mjs, and the new
 check-preview-autoarchive-hosted.mjs. These files were read by the reviews
-at 1e6bde1; T7 decides whether the harness-only change needs a delta look.
+at 1e6bde1, so the change was sent back for a delta look (see UPDATE).
 
 BACKLOG
 F66 → In Progress (tested preview; awaiting acceptance).
 New O15: T5's four and T6's one non-blocking findings, one row, not fixed.
+(Now eight items — see UPDATE.)
 
 NOT DONE / LIMITS
 No real phone. No signed-in use, real record, or real backend call.
@@ -86,3 +87,20 @@ GIT STATE
 Branch feat/mobile-crew-scheduler-preview. This pass: 39a9900 (check
 scripts) and the evidence and records commit that holds this file. Not
 pushed by T3. Working tree clean.
+
+UPDATE — DELTA REVIEW CLOSED (same day)
+T6 reviewed the check-script change b1227ff..39a9900: 0 exploitable-today,
+0 SHOULD-FIX, 3 HARDENING. Recorded verbatim in docs/AUDIT_LOG.md at 4e015f4,
+acceptance standing (§9). No delta decision is pending. T4 and T5 were not
+asked to re-read the check scripts.
+The three items are added to O15, not fixed: no host allow-list for the
+preview token; the token header possibly following a redirect — the reviewer
+did NOT verify this against the installed Playwright, so it is unverified,
+not a proven leak; the production-host refusal is a short name list placed
+after the baseline and capture modes.
+No test was rerun and no source changed in this closeout. All reviews, Smoke
+and the hosted run are clear. Chris's acceptance is still pending and is not
+claimed. No merge or production release.
+GIT STATE now: 4e015f4 (delta gate record), then the closeout commit that
+holds this update. Not pushed by T3; the coordinator pushes and updates the
+draft PR (#75).
