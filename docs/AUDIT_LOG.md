@@ -24,6 +24,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -1042,6 +1043,68 @@ Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads th
 - **No rendered baseline at phone width exists**, for the scheduler or for Sunday; that stays with T3 (U1–U3).
 - **No personal plan lock, preview acceptance or release is claimed.**
 - **Commits:** manifest `3622b56` is local on `feat/mobile-crew-scheduler-preview`, plan file only, body byte-identical to `2d9a223`, not pushed. I wrote nothing else.
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 3 (wording delta)
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r3-verdict-20261001.md`, sha256 `0b7dba0891c4f970057a90e8334b78605bef0f4c8d55ac914541f3b8975fd0ea`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 39cd871 · Verdict CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+**Proposed verdict: CONVERGED.** All five round-2 wording findings are corrected in plan revision `39cd871`, and the new words introduce no regression. The round-3 manifest is committed (`2f5393d`, plan file only, plan body byte-identical to `39cd871`, not pushed).
+
+## The five corrections
+
+| # | Round-2 finding | Status | What the plan now says | Checked against |
+|---|---|---|---|---|
+| 1 | D2's pass-set was recorded before the merge | Resolved | New U4: T3 runs D2's checks on `7608b0e` and records each result before the first app edit; D2 gates on that record. §2 Frame keeps the existing "Weekly crew texts" button and `.sch-wklbl` label. | Both hooks exist at `Schedule.jsx:1334` and `:1340`. |
+| 2 | Crossing 768px with Save in flight undefined | Resolved | The save is left to finish, nothing is cancelled or undone, the flow or picker closes once it settles, and the crossing starts no write (Beat 13, The flow, D4). | Today's picker refuses to close while busy at `:1413` and `:1468`, as cited. |
+| 3 | Day staffing line lacked the in-range gate | Resolved | Staffing line only "on a saved trip that is in range that day". | Matches the board's gate at `:909–910`; P5's literals are unaffected, since every fixture trip is in range on Thursday. |
+| 4 | "Same `2X` as 1440" had no comparand | Resolved | P5 expects `2X` on X and T. | X is on A-wide and A-short, T is on C and D; matches the fixture's double-booked count of 2. |
+| 5 | Harness wording contradicted the inherited rules | Resolved | "Every request beyond what H3 and H4 allow and beyond those two intercepted writes is refused, logged and fails the run." | Default-deny is preserved; the only added allowances are the two local `assignments` writes. |
+
+The remaining edits (status line, the U-count in §0, the Revision 2 notes) are consistent with these.
+
+One consequence of correction 2 is worth knowing but not a finding: if a save fails while in flight during a crossing, the flow closes once it settles, so the only trace of a partial save is the existing toast. The plan states this, and no check covers the failing case.
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 39cd8713f8d1097f58b70e4bcc22b84499fa1606 · round 3 (wording delta) · manifest 2f5393d
+Verdict:     CONVERGED  (proposed)
+Findings:    none · regressions 0 · over-cap 0 · adjacent 0
+Human gate:  none new — ordinary verdict. Disclosure carried: Beat 10 changed a user-locked decision on relayed direction; no personal plan lock or re-lock by Chris observed.
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 39cd871 · Verdict CONVERGED · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+## Coverage and limits
+
+- **Scope of this pass:** the diff `3622b56..39cd871` in the plan file only, read against my five round-2 findings and the cited source lines. I did not re-audit unchanged sections.
+- **No agent fanout:** I performed this pass myself, per the routing, where `/runaudit` would normally spawn one agent. Rounds 1 and 2 used four and two agents.
+- **Convergence rests on the three rounds together:** round 1 at `2e01618`, round 2 at `2d9a223` (all twelve original findings resolved, base and guard verified), and this pass.
+- **Nothing was run:** no app, build, test or check script, in any round. `src/` and `scripts/` at HEAD equal the build base `7608b0e`.
+- **Not yet observed:** no rendered baseline at phone width exists for the scheduler or for Sunday, and the D2 pass-set on the base is unrecorded. Both are T3's pre-edit steps (U1–U4).
+- **Not claimed:** no personal plan lock, preview acceptance or release.
+- **Carried backlog item:** `check-password-recovery.mjs` exits non-zero in the Sunday evidence file while its unit test passes; pre-existing and auth-related.
 
 Stopping here.
 ````
