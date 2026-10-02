@@ -28,6 +28,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 39a9900 · diff b1227ff..39a9900 · T6 security review, delta | 3 (0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING) | 3 Low | clean — non-blockers to O15 | preview-token-host-scope |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -1403,6 +1404,84 @@ This is an ordinary verdict: no scope change, no locked decision changed, no hum
 ## Proposed audit-log row (not recorded)
 
 `| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |`
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T6 Security Review, delta (check scripts)
+
+Transcribed verbatim from the reviewer's complete report (T6, session `fced4921-aef6-4263-badc-acd8fda0c783`, emitted to `/tmp/mobile-t6-delta-verdict-20261001.md`, sha256 `dfb2ec80467fba695a652fd9c6b05a6804d88af153ac2acc6c1df7df71fbbe04`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the author of the reviewed change, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T6 Security Review (delta) · fced4921-aef6-4263-badc-acd8fda0c783 · diff b1227ff..39a9900 (test-only: preview-access header hook, production-host refusal, hosted archive probe, smoke evidence) · 0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING, added to O15 · no token in source output paths or saved evidence; default-deny intact · source and saved evidence only, nothing run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T6 Security Review, delta — preview-access token hook: 0 exploitable-today
+
+**Zero exploitable-today findings in `b1227ff..39a9900`: no token is disclosed in source or saved evidence, and default-deny is intact.** I found three HARDENING items, all for the existing O15 backlog row. This does not reopen my recorded verdict on `7608b0e..1e6bde1`.
+
+    Role:        T6 Security Review (delta) · agent/session fced4921-aef6-4263-badc-acd8fda0c783
+                 (https://claude.ai/code/session_01Kh8TD4bsS22EbQTBy97Vfa — same session as the verdict recorded at b1227ff)
+    Artifact:    diff b1227ff..39a9900 — scripts/check-crew-mobile.mjs, scripts/crew-mobile-fixture.mjs,
+                 scripts/check-preview-autoarchive-hosted.mjs (new), evidence under evidence/crew-mobile/smoke/
+    Verdict:     0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+## Findings
+
+| # | Finding | Exploitable today? | Materiality | Action |
+|---|---|---|---|---|
+| 1 | The token goes to whatever non-local host `QA_URL` names; there is no allow-list such as `*.vercel.app` (`crew-mobile-fixture.mjs:110`; `check-preview-autoarchive-hosted.mjs:24`). A mistyped `QA_URL` would hand that host the short-lived token. | No. It needs the operator to point the script at a wrong host. The recorded runs used the stated preview origin. | HARDENING | O15 |
+| 2 | The token header is set with `route.continue({ headers })` (`crew-mobile-fixture.mjs:112`; `check-preview-autoarchive-hosted.mjs:26`). As I recall Playwright's behaviour, overridden headers also follow redirects the request triggers, so a redirect off the preview origin could carry the token with it. I did not check this against the installed version. | No. Only Vercel's own edge could issue such a redirect from this origin, and the recorded runs show zero refused or external requests. | HARDENING | O15 |
+| 3 | The production-host refusal is a list of three names (`check-crew-mobile.mjs:135`; `check-preview-autoarchive-hosted.mjs:18`). It would not catch a production `*.vercel.app` alias, and in `check-crew-mobile.mjs` it sits after the baseline and capture modes (`:74–131`), which never reach it. | No. Even against a production bundle, every backend request is still answered or refused in the browser, so no real read or write follows. | HARDENING | O15 |
+
+`0 exploitable-today; safe to proceed. 3 added to O15.`
+
+## Coverage (my own source and evidence reading)
+
+- **Token disclosure:** clean.
+  - The token is read from the environment and used only as a request header (`crew-mobile-fixture.mjs:109–113`; `check-preview-autoarchive-hosted.mjs:23–27`).
+  - No `console.log` or `writeFile` in the three scripts includes it; the result objects carry only URL, counts, write and refusal lists and page errors (`check-preview-autoarchive-hosted.mjs:52–54`; `check-crew-mobile.mjs:666–667`).
+  - It is never put in a URL, in page storage or in an init script, so page code and screenshots cannot see it.
+  - A search of `docs/agent-handoffs/**`, handoffs v30x and the scripts for JWT-shaped strings, bearer values, token query strings and the header name found only the three source lines above.
+  - I read both hosted console logs, both archive-guard JSON files and the head of the hosted `results.json`: no token.
+- **Token scope:** the header is added only when the request origin exactly equals the app origin and the method is GET or HEAD. It is never added to a Supabase request, since that host cannot equal the app origin.
+- **Default-deny:** intact.
+  - Other methods to the app origin fall through to the shell handler, which aborts them and fails the run.
+  - GET and HEAD to the app origin were already allowed by the shell (`mobile-preview-fixtures.mjs:87`), so the hook opens nothing new.
+  - The new archive probe answers `tenant_config` and the candidate query locally and passes every `call_log` write to the shell, which refuses it. The local control run shows exactly that: `PATCH` seen, refused by the shell.
+- **Saved hosted evidence:**
+  - The scheduler run was against the stated preview origin, `hosted: true`: 25 pass, 21 local-only skipped, 0 shell writes, 0 refused.
+  - The archive-guard run against the same origin shows 0 candidate queries and 0 writes, with stages set and two eligible rows on offer.
+  - The two screenshots I opened (`calllog-archive-guard-skip.png`, `end-390-P11-…png`) show synthetic names only.
+- **Screenshot filename change:** the name is built from the check title, sanitised to letters, digits and hyphens. No path or secret risk.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** the diff text, the clean `e2a9628` state, the empty app-source diff since `1e6bde1`, and the smoke totals.
+- **Not done:**
+  - I ran nothing and made no live request. Whether the token reached only the preview origin at run time rests on source reading and the zero-refused logs, not on a network capture.
+  - I opened two of the fifteen hosted screenshots.
+  - How the token was obtained and passed in (`vercel env run`, shell history, CI logs) is outside the diff and unseen.
+  - Real production and any signed-in use remain untested.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T6 Security Review (delta) · fced4921-aef6-4263-badc-acd8fda0c783 · diff b1227ff..39a9900 (test-only: preview-access header hook, production-host refusal, hosted archive probe, smoke evidence) · 0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING, added to O15 · no token in source output paths or saved evidence; default-deny intact · source and saved evidence only, nothing run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 39a9900 · diff b1227ff..39a9900 · T6 security review, delta | 3 (0 exploitable-today · 0 SHOULD-FIX · 3 HARDENING) | 3 Low | clean — non-blockers to O15 | preview-token-host-scope |`
 
 Stopping here.
 ````
