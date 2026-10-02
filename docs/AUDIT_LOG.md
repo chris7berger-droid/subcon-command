@@ -421,3 +421,80 @@ Supporting record (verbatim):
 - **Canonical image:** opened; it shows six columns, and the report correctly claims no column-count match.
 - **Sunday treatment:** in the four screenshots Sunday's column and card carry Saturday's treatment, with no new colour, type or radius visible.
 - **Gaps:** P1 is an unreported deviation, and P2 is missing evidence.
+
+### 2026-10-01 — F60 Sunday parity — T4 Build vs Plan, round 2 (delta)
+
+Transcribed verbatim from the reviewer's proposed gate record (T4, emitted to `/tmp/sunday-t4-r2-verdict-20261001.md`), followed by how each check was established, its limits and its brand check, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer emitted no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **Proposed verdict: GO.** P1 is fixed and P2's evidence is present. The shell-dependent checks are now covered by the coordinator's runs, except the full existing check suite, which rests on the builder's log from before the fix.
+
+```
+Role:        T4 Build vs Plan (delta) · agent/session https://claude.ai/code/session_01UcymLRm6N9ZtrHaUwDdi2k
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0)
+Artifact:    docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+             · build 3145a7a49984015cbfa30013f502d24c45c9358a..0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+             (source 3f6b3cf + fix 019997ba8d5b62ea72c1b824f9ef46e127849cb9)
+Checks:      passed: P1, P2, E1, E2, E3, E4, M1–M6, B1–B15, H1–H2, K1–K4, D1–D2, X1–X2,
+             T1–T2, L1, W1–W3, F1–F2
+             passed on builder record only: E5 (full existing suite, run at 3f6b3cf, not rerun)
+             failed: none
+             deferred: P (preview), N (native device), U4 (production Sunday rows), mobile slice
+Brand check: sources and screenshots verified; the one deviation (P1) is fixed and now reported
+Verdict:     GO
+Date:        2026-10-01
+Next:        T7 · proposed record only, not recorded
+```
+
+```
+BUILD vs PLAN · docs/plans/sunday-scheduling.md · 1 reviewer
+🔴 Tier 1 blockers: 0   🟠 Tier 2 bugs: 0   🟢 deferred: 4
+SMOKE TEST: GO
+Top blocker: none
+```
+
+This is an ordinary verdict: it changes no scope and no locked decision. No personal plan lock or acceptance by Chris is claimed; the plan's §A provenance stands.
+
+- **Acceptance:** standing (§9)
+
+Supporting record (verbatim):
+
+#### How each check was established
+
+I ran no shell commands. I was one read-only reviewer with no delegation tool, so I applied the procedure's layer checks directly, not through parallel reviewers.
+
+**My own source and image inspection**
+- **P1 fixed:** `src/schedule/App.css:960` is now 136px, which is the 62px label plus seven 8px dots with 3px gaps. In `after/pool-1280.png`, `after/pool-1440.png` and the re-rendered `after/board-1280.png`, all seven dots and day letters sit inside the chip.
+- **P1 now guarded:** the check asserts no dot or letter passes the chip's content box, at both widths (`scripts/check-sunday-parity.mjs:175–188`).
+- **P2 evidence present:** I opened these, and each shows seven days with Sunday in Saturday's treatment and no clipping.
+  - At 1280: assign picker, Sunday-conflict picker, Sick picker, crew week popup, expanded-row toggles and deferred-start chips.
+  - At one size: both prints.
+- **Build report:** it now states that P1 was a real deviation, and it lists the surfaces it did not look at.
+
+**Coordinator-executed, assessed by me**
+- **Reviewed revision:** HEAD is `0197e0f`.
+- **Plan unchanged:** the plan diff since `bbe71e4` touches only the audit manifest.
+- **E1:** the diff over the protected and expected-zero-diff paths is empty.
+- **E2 and scope:** I read the full `src` diff. It contains only the seven-day changes, `weekOffsetFor` and the one pool rule. There is no new Supabase call and no change to the save, status or Scheduled Off write paths.
+- **E5 "unedited":** the changed-file list shows only the four named existing checks were modified.
+- **No schema objects:** nothing under `supabase/` changed, so the procedure's live-schema probe does not apply.
+- **Model and browser checks:** M1–M6 pass with the required timezone set, and all 30 browser groups pass, including the new pool-dot assertion. These match what the code does on my read.
+- **E4:** `npm run build` exits 0. ESLint totals are 176 errors and 43 warnings, equal to base.
+
+#### Limits and named gaps
+
+- **E5 not rerun after the fix.** The full suite result (23 pass, same 15 failing as base) is the builder's log at `3f6b3cf`. The later change is one CSS rule, the new check and docs, so I accept it; smoke should rerun the suite. The 15 failures are original, not regressions. Trip ownership is covered by B4, B7 and the model checks.
+- **ESLint per file.** Only totals were supplied, so "no new finding in a touched file" rests on equal totals plus the builder's statement.
+- **Final working-tree status missing.** The coordinator's last `git status` output was cut off in the packet. Two screenshots were regenerated and reportedly restored (`daily-1440.png`, `sick-picker-1440.png`); I did not open either.
+- **1440 variants not opened.** For the new pickers, popup and toggles I looked at 1280 only.
+- **Long crew names untried.** The pool chip's name area is 11px narrower, and only fixture names were rendered. Worth a glance at the preview.
+- **Repo rules read by search.** For the repo `CLAUDE.md` and `docs/DEVELOPMENT_PROTOCOL.md`, I read the matching sections (UI rules, Workflow Rule 8, the Build vs Plan gate), not the whole files. Nothing there conflicts with this verdict.
+
+#### Brand check (corrected)
+
+- **Authority:** resolved through the registry; the UI standard `.md` governs.
+- **Sections read:** §10 "Tables / schedules" and "Crew panels", §14, §17 and §18 "AI coding-agent acceptance checklist". I did not open §1.
+- **Canonical image:** opened; it shows six columns, and no column-count match is claimed.
+- **Changed UI:** across the board, strip, pool, Daily, Calendar week, pickers, popup, toggles and prints, Sunday carries Saturday's treatment. The diff adds no colour, font, radius, shadow or token. The only sizing change is the pool dots block.
+- **Deviations:** one, P1, now fixed and reported.
+- **Not introduced by this build:** the report notes the app's teal accent differs from the standard's cyan on both base and build.
+- **Not looked at by anyone:** Home, Jobs, Billing, the weekly-texts page, `/crew`, the Scheduled Off modal and Calendar month, as the report states. Those are label and text changes, asserted by the checks.
