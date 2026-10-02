@@ -132,6 +132,7 @@ if (process.env.CREW_MOBILE_CAPTURE) {
 
 // ── §5 checks ──────────────────────────────────────────────────────────────
 const HOSTED = process.env.CREW_MOBILE_HOSTED === '1'
+if (/(^|\.)(scmybiz\.com|sccmybiz\.com|salescommand\.app)$/.test(new URL(BASE).hostname)) { console.error('Refusing to run against a production host.'); process.exit(2) }
 const shell = await import('./mobile-preview-fixtures.mjs') // its write/refusal logs fail the run (H4)
 const { crewWeekRows } = await import('../src/schedule/lib/crewScheduleRows.js')
 const { crewWeekSummary } = await import('../src/schedule/lib/crewWeekSummary.js')
@@ -140,7 +141,9 @@ const NEXT_LABEL = 'Oct 12 – Oct 18, 2026'
 const WIDTHS = (process.env.QA_WIDTHS || (HOSTED ? '390,768' : '360,390,430,768')).split(',').map(Number)
 const browser = await launch()
 const results = [], notes = []
+let current = ''
 async function check(name, fn, { local = false } = {}) {
+  current = name
   if (HOSTED && local) { results.push({ name, pass: null, skipped: 'local only (§5 G)' }); return }
   try { await fn(); results.push({ name, pass: true }); console.log('PASS ' + name) }
   catch (e) { results.push({ name, pass: false, error: e.message.split('\n').slice(0, 6).join(' | ') }); console.log('FAIL ' + name + ' :: ' + e.message.split('\n')[0]) }
@@ -157,7 +160,8 @@ async function withS(width, fn, opts = {}) {
     assert.deepEqual(s.errors, [], 'page errors')
     assert.deepEqual(s.log.refused, [], 'refused scheduler writes')
   } finally {
-    if (process.env.QA_SHOTS && s.page) await s.page.screenshot({ path: `${OUT}/last-${width}.png` }).catch(() => {})
+    // QA_SHOTS=1: keep the screen each check ended on (used for the hosted run's evidence).
+    if (process.env.QA_SHOTS && s.page) await s.page.screenshot({ path: `${OUT}/end-${current.replace(/[^a-z0-9]+/gi, '-').slice(0, 40).replace(/-$/, '')}.png` }).catch(() => {})
     await s.context.close()
   }
 }

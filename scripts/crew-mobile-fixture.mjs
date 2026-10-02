@@ -103,6 +103,15 @@ const TABLES = ['jobs', 'job_mobilizations', 'crew', 'assignments', 'crew_status
 // handler, which refuses and logs them, so any save fails the run.
 export async function openScheduler(browser, width, { fixture = makeFixture(), allowWrites = true } = {}) {
   const context = await makeContext(browser, width)
+  // Hosted preview behind Vercel protection (§5 G): the short-lived OIDC token
+  // is added to GET/HEAD requests for the preview's own origin only. It never
+  // goes to another host and is never logged. Everything else is unchanged.
+  const previewToken = process.env.VERCEL_OIDC_TOKEN, appOrigin = new URL(BASE).origin
+  if (previewToken && !/^(127\.0\.0\.1|localhost)$/.test(new URL(BASE).hostname)) {
+    await context.route(url => url.origin === appOrigin, route => ['GET', 'HEAD'].includes(route.request().method())
+      ? route.continue({ headers: { ...route.request().headers(), 'x-vercel-trusted-oidc-idp-token': previewToken } })
+      : route.fallback())
+  }
   // The shell fixture stamps its synthetic session with the real clock; this
   // check runs on a fixed later clock, so keep that session unexpired there.
   await context.addInitScript(({ storageKey, expires }) => {
