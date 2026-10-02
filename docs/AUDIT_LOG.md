@@ -23,6 +23,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
 | 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2e01618` · `docs/plans/crew_mobile_preview.md` | 29 (12 in cap · 13 over cap · 4 adjacent) | in cap 0C/2H/10M/0L | accepted-pending-changes | reused-state-contract-gaps |
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -936,4 +937,111 @@ Next:        held for parent — _protocol.md §9 acceptance → T3 transcriptio
 - **No personal plan lock** by Chris was observed; the plan says so in §A.
 - **Agent launch** went ahead on the task packet's instruction, without the personal confirmation `/runaudit` asks for, and before the consolidation hold arrived.
 - **Commits:** manifest `3059639` is local on `feat/mobile-crew-scheduler-preview`, plan file only, not pushed. I wrote nothing else.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T2 Plan Audit, round 2 (delta)
+
+Transcribed verbatim from the reviewer's complete report (`t2-crew-mobile` / `d456ca7b-9288-4294-8c21-4d077a8bf3d1`, emitted to `/tmp/mobile-t2-r2-verdict-20261001.md`, sha256 `ea99aa5e893f97761f5f83a0ca62160ae3b84d8f86d541e8321843fee6422085`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, which did not author the review or the plan. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2d9a223 · Verdict NOT CONVERGED · Date 2026-10-01
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+Both delta agents have returned, so round 2 is complete. **Proposed verdict: NOT CONVERGED** — narrowly. All twelve round-1 findings are resolved and the combined base is sound, but five small new plan-text gaps remain (1 Med, 4 Low), and the T2 rule is that any in-cap finding blocks convergence.
+
+**Bottom line:** The revised plan fixed everything from round 1, and the combined starting point really does carry both the seven-day Sunday work and the phone shell with its preview safety guard. What is left is about five sentences of plan text, the main one being that the list of "checks that must still pass" was recorded before the merge, so nobody has confirmed those checks pass on the actual starting point. No new mechanism is needed and nothing for Chris to decide; it is one short T1 wording pass and a one-agent re-check.
+
+**Headline:** 0 regressions · 5 caused-by (0C/0H/1M/4L) · theme: acceptance-bar wording left behind by the revision · 1 adjacent · trend 12 → 5.
+
+## Round-1 findings: all resolved
+
+| ID | Status | Evidence |
+|---|---|---|
+| A1 | Resolved | Flow is modal (Beat 13, P16); week only moves through `changeWeek` (`Schedule.jsx:137–146`) and a one-shot `?week=` effect (`:189–195`). |
+| A2 | Resolved | `7608b0e` is the merge of `3059639` and `0a78d32`; `src/` and `scripts/` are unchanged from there to HEAD; §3 stops the build on any other base. Verified by git, by me and the agent. |
+| A3 | Resolved | Seven-day labels, `wkDates` loop to 7, both grids `repeat(7, 1fr)`; Beat 10 and E2 forbid a day or track count in new code. |
+| B1 | Resolved | Review computed from the re-found row; P8(b)'s expected state follows from `:497–520`. |
+| B2 | Resolved | Legacy and unavailable rows start no flow; consistent with `:444`, `:484`, `:495`, `:857`. |
+| B3 | Resolved | Own draft; desktop picker and popup not rendered at ≤768px; open person held in the existing state so the range load (`:602–622`) runs unchanged. |
+| C1 | Resolved, one residual (finding 4) | Short and Unknown are `crewWeekSummary.js:20–26`; Double-booked is `:342–352`. Fixture counts 4 / 1 / 2 follow from the code. |
+| C2 | Resolved | "need N" defined for a zero-crew trip; Job E added. |
+| C3 | Resolved | Link opens Board with the row expanded (`:150–161`, `CrewWeekCapacity.jsx:20–22`). |
+| C4 | Resolved | P15 restated against the held snapshot (`:200–211`, `:1341–1349`). |
+| D1 | Resolved | §1 narrowed; one-tap saves listed; desktop's status hide rule kept (`:1191–1193`, `:1282–1289`). |
+| D2 | Resolved, one gap (finding 1) | Hosted subset named and save-free. |
+
+## Combined base — verified
+
+- **Lineage:** `28c8468`, `3059639` and `0a78d32` are ancestors of `7608b0e` and of HEAD.
+- **Sunday side:** `src/schedule/**` and the Sunday checks are identical to `0a78d32`. Dates and ranges are intact: week end uses the last of seven dates (`:199`, `:205`), and no Sunday-specific rule exists in the picker or save.
+- **Mobile side:** `mobile-shell.css`, `CallLog.jsx`, `vite.config.js` and the three mobile scripts are identical to `28c8468`. The breakpoint and drawer are at the `src/App.jsx` lines the plan cites.
+- **Archive guard:** `CallLog.jsx:81` and `vite.config.js:10` are in place. `scripts/check-preview-autoarchive.mjs` runs with `archive_stages ['Lost']` and two eligible candidates, and asserts preview makes no query, write or banner while production is unchanged. The plan holds it at zero diff and makes it a gate, so no new test is needed.
+- **Citations:** every `file:line` in the changed sections points at the stated code.
+- **Harness:** write-blocking is preserved; only the two `assignments` writes are answered in the browser, locally. The hosted walk needs no write.
+
+## New findings (all in cap)
+
+| # | Sev | Plan location | Issue | T1 must resolve |
+|---|---|---|---|---|
+| 1 | Med | §5 D2; §5 U | "Every check that exits zero on the base" points at `checks-after.txt`, recorded on the Sunday build (`3f6b3cf`) before the merge. About 15 of its 23 passing checks have no recorded result on `7608b0e`. One of them, `check-crew-week-text.mjs`, drives this route at 390px and needs the "Weekly crew texts" button and `.sch-wklbl` (`:78`, `:123–131`). A failure after the build could not be attributed. | Add a U item: T3 records the D2 pass-set on `7608b0e` before the first app edit. State that the phone header keeps the hooks that check reads. |
+| 2 | Low | Beat 13; §2 The flow; D4 | "Closes with no write on crossing 768px" is undefined while a save is in flight. The desktop picker refuses to close while busy (`:1413`, `:1468`). | State the busy case: defer the close until the save settles, or accept and say so. |
+| 3 | Low | §2 Day staffing line | The text drops the board's in-range gate (`:909–910`). A saved trip with a crew day outside its dates would get a "need" line desktop does not show and Week does not count. | Add "in range that day". |
+| 4 | Low | P5 | "Same `2X` as 1440" has no comparand: the board suppresses `2X` on short or unknown cells (`:913`), so on Thursday only D's cell shows it. This is the part of C1 that P4 fixed and P5 did not. | Replace with the literals: `2X` on X and T. |
+| 5 | Low | §5 Harness, change (3) | "Every request to a host other than the app's … fails the run" contradicts the inherited rule allowing Google Fonts GETs, which the unedited fixture passes through (`mobile-preview-fixtures.mjs:87`), and the four POST reads. | Say "beyond what H3 and H4 allow". |
+
+**Adjacent (backlog):** `check-password-recovery.mjs` exits non-zero in `checks-after.txt` while its unit test passes. It is one of the 15 excluded checks and is auth-related; not caused by this plan.
+
+**Scope-cut:** considered because three of five findings sit in §5. Not recommended: the acceptance bar is the gate itself, and each fix is one sentence, not a mechanism.
+
+## T1 revision prompt
+
+```
+Revise docs/plans/crew_mobile_preview.md for round-2 findings 1–5 only. Wording only; add no mechanism.
+1. §5 U: T3 records the D2 pass-set on 7608b0e before the first app edit; D2 gates on that recorded set. State the phone header keeps the "Weekly crew texts" button and the .sch-wklbl week label.
+2. Beat 13 / D4: state what happens when 768px is crossed while Save is in flight.
+3. §2 Day: staffing line shows only when the trip is in range that day.
+4. P5: replace "same 2X as 1440" with "2X on X and T".
+5. §5 Harness (3): "beyond what H3 and H4 allow".
+Commit as "Plan revision pass 2 — round-2 audit response (0C/0H/1M/4L) · pattern: acceptance-wording-residue". Then a one-agent T2 delta.
+```
+
+## Proposed AUDIT_LOG row
+
+| Date | Artifact | Findings | Severity mix | Outcome | Pattern |
+|---|---|---|---|---|---|
+| 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `2d9a223` · `docs/plans/crew_mobile_preview.md` · round 2 delta | 6 (5 in cap · 0 over cap · 1 adjacent) | in cap 0C/0H/1M/4L · 0 regressions | accepted-pending-changes | acceptance-wording-residue |
+
+## T2 output
+
+```
+Role:        T2 Plan Audit · agent/session t2-crew-mobile · d456ca7b-9288-4294-8c21-4d077a8bf3d1
+Audited:     subcon-command · plan docs/plans/crew_mobile_preview.md @ 2d9a22350521ab246ccc2ac66ee92c46799a0312 · round 2 (delta) · manifest 3622b56
+Verdict:     NOT CONVERGED  (proposed)
+Findings:    top-5 0C/0H/1M/4L · regressions 0 · over-cap 0 · adjacent 1
+  1 · Med · CAUSED-BY · §5 D2, U · pass-set recorded before the merge, not on 7608b0e · gate cannot attribute a failure · record it on the base first
+  2 · Low · CAUSED-BY · Beat 13, D4 · crossing 768px with Save in flight undefined · request completes after the flow closes · state the busy case
+  3 · Low · CAUSED-BY · §2 Day · staffing line lacks the in-range gate · shows a need desktop does not · add "in range that day"
+  4 · Low · CAUSED-BY · P5 · "same 2X as 1440" has no comparand · check undecidable · use literals
+  5 · Low · CAUSED-BY · §5 Harness (3) · contradicts inherited H3/H4 allowances · literal reading fails every run · add the exception
+Human gate:  none new — ordinary verdict. Disclosure: Beat 10 changed a user-locked decision on relayed direction; no personal re-lock by Chris observed.
+Proposed gate record: Role T2 · Agent/session t2-crew-mobile d456ca7b-9288-4294-8c21-4d077a8bf3d1 · Artifact docs/plans/crew_mobile_preview.md @ 2d9a223 · Verdict NOT CONVERGED · Date 2026-10-01
+Next:        _protocol.md §9 acceptance → T3 transcription → T7 re-reads the gate
+```
+
+## Limits
+
+- **Nothing was run:** no app, build, test or check script. All findings come from reading source and git at HEAD, where `src/` and `scripts/` equal `7608b0e`.
+- **What I verified myself:** base lineage, the Sunday day code, the guard and its check, the save path, week navigation and trip-link citations, and findings 1 and 5. Findings 2–4 and the remaining citations rest on the agents' file and line references.
+- **No rendered baseline at phone width exists**, for the scheduler or for Sunday; that stays with T3 (U1–U3).
+- **No personal plan lock, preview acceptance or release is claimed.**
+- **Commits:** manifest `3622b56` is local on `feat/mobile-crew-scheduler-preview`, plan file only, body byte-identical to `2d9a223`, not pushed. I wrote nothing else.
+
+Stopping here.
 ````
