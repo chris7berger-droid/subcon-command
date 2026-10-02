@@ -1,0 +1,695 @@
+{
+  "url": "http://127.0.0.1:5196",
+  "widths": [
+    360,
+    390,
+    430,
+    640,
+    768
+  ],
+  "checks": [
+    {
+      "name": "360 A3 drawer equals 1440 sidebar (Admin)",
+      "pass": true
+    },
+    {
+      "name": "390 A3 drawer equals 1440 sidebar (Admin)",
+      "pass": true
+    },
+    {
+      "name": "430 A3 drawer equals 1440 sidebar (Admin)",
+      "pass": true
+    },
+    {
+      "name": "768 A3 drawer equals 1440 sidebar (Admin)",
+      "pass": true
+    },
+    {
+      "name": "360 A3 drawer equals 1440 sidebar (Manager)",
+      "pass": true
+    },
+    {
+      "name": "390 A3 drawer equals 1440 sidebar (Manager)",
+      "pass": true
+    },
+    {
+      "name": "430 A3 drawer equals 1440 sidebar (Manager)",
+      "pass": true
+    },
+    {
+      "name": "768 A3 drawer equals 1440 sidebar (Manager)",
+      "pass": true
+    },
+    {
+      "name": "360 A3 drawer equals 1440 sidebar (Sales)",
+      "pass": true
+    },
+    {
+      "name": "390 A3 drawer equals 1440 sidebar (Sales)",
+      "pass": true
+    },
+    {
+      "name": "430 A3 drawer equals 1440 sidebar (Sales)",
+      "pass": true
+    },
+    {
+      "name": "768 A3 drawer equals 1440 sidebar (Sales)",
+      "pass": true
+    },
+    {
+      "name": "360 drawer close modes and focus",
+      "pass": true
+    },
+    {
+      "name": "360 layout /",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/home",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/calllog",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/calllog/900",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/leads",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/proposals",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/invoices",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/customers",
+      "pass": true
+    },
+    {
+      "name": "360 layout /sales/customers/customer-0",
+      "pass": true
+    },
+    {
+      "name": "360 drawer preserves edited job",
+      "pass": true
+    },
+    {
+      "name": "360 CallLog filter, table scroll and selected job",
+      "pass": true
+    },
+    {
+      "name": "360 Customer detail table tabs",
+      "pass": true
+    },
+    {
+      "name": "360 A6 shell height, last row clears jump button",
+      "pass": true
+    },
+    {
+      "name": "360 A9 Directory from drawer",
+      "pass": true
+    },
+    {
+      "name": "360 A10 layers: drawer over badge, jump and embedded headers; modal over drawer",
+      "pass": true
+    },
+    {
+      "name": "360 C1 homes: numbers fit, Your Book tile opens Call Log filtered",
+      "pass": true
+    },
+    {
+      "name": "360 C3 Call Log detail",
+      "pass": true
+    },
+    {
+      "name": "360 C5 P1 control sizes",
+      "pass": true
+    },
+    {
+      "name": "360 D2-D5 list actions in view and row open",
+      "pass": true
+    },
+    {
+      "name": "360 Directory geometry",
+      "pass": true
+    },
+    {
+      "name": "360 standard inquiry ten steps",
+      "pass": true
+    },
+    {
+      "name": "360 change order wizard",
+      "pass": true
+    },
+    {
+      "name": "360 A8 /crew has no sideways scroll",
+      "pass": true
+    },
+    {
+      "name": "390 drawer close modes and focus",
+      "pass": true
+    },
+    {
+      "name": "390 layout /",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/home",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/calllog",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/calllog/900",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/leads",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/proposals",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/invoices",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/customers",
+      "pass": true
+    },
+    {
+      "name": "390 layout /sales/customers/customer-0",
+      "pass": true
+    },
+    {
+      "name": "390 drawer preserves edited job",
+      "pass": true
+    },
+    {
+      "name": "390 CallLog filter, table scroll and selected job",
+      "pass": true
+    },
+    {
+      "name": "390 Customer detail table tabs",
+      "pass": true
+    },
+    {
+      "name": "390 A6 shell height, last row clears jump button",
+      "pass": true
+    },
+    {
+      "name": "390 A9 Directory from drawer",
+      "pass": true
+    },
+    {
+      "name": "390 A10 layers: drawer over badge, jump and embedded headers; modal over drawer",
+      "pass": true
+    },
+    {
+      "name": "390 C1 homes: numbers fit, Your Book tile opens Call Log filtered",
+      "pass": true
+    },
+    {
+      "name": "390 C3 Call Log detail",
+      "pass": true
+    },
+    {
+      "name": "390 C5 P1 control sizes",
+      "pass": true
+    },
+    {
+      "name": "390 D2-D5 list actions in view and row open",
+      "pass": true
+    },
+    {
+      "name": "390 Directory geometry",
+      "pass": true
+    },
+    {
+      "name": "390 standard inquiry ten steps",
+      "pass": true
+    },
+    {
+      "name": "390 change order wizard",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /sales/proposals/proposal-0",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /sales/invoices/20010",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /sales/team",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /sales/archive",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/home",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/jobs",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/schedule",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/calendar",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/daily",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/materials",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/billing",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/production-rate",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/schedules",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/import",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /schedule/settings",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/today",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/jobs",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/crews",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/timeclock",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/dailylogs",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /field/loadouts",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/triage",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/aging",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/action",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/health",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/cff",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /ar/invoices",
+      "pass": true
+    },
+    {
+      "name": "390 smoke /settings",
+      "pass": true
+    },
+    {
+      "name": "390 A8 /crew has no sideways scroll",
+      "pass": true
+    },
+    {
+      "name": "430 drawer close modes and focus",
+      "pass": true
+    },
+    {
+      "name": "430 layout /",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/home",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/calllog",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/calllog/900",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/leads",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/proposals",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/invoices",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/customers",
+      "pass": true
+    },
+    {
+      "name": "430 layout /sales/customers/customer-0",
+      "pass": true
+    },
+    {
+      "name": "430 drawer preserves edited job",
+      "pass": true
+    },
+    {
+      "name": "430 CallLog filter, table scroll and selected job",
+      "pass": true
+    },
+    {
+      "name": "430 Customer detail table tabs",
+      "pass": true
+    },
+    {
+      "name": "430 A6 shell height, last row clears jump button",
+      "pass": true
+    },
+    {
+      "name": "430 A9 Directory from drawer",
+      "pass": true
+    },
+    {
+      "name": "430 A10 layers: drawer over badge, jump and embedded headers; modal over drawer",
+      "pass": true
+    },
+    {
+      "name": "430 C1 homes: numbers fit, Your Book tile opens Call Log filtered",
+      "pass": true
+    },
+    {
+      "name": "430 C3 Call Log detail",
+      "pass": true
+    },
+    {
+      "name": "430 C5 P1 control sizes",
+      "pass": true
+    },
+    {
+      "name": "430 D2-D5 list actions in view and row open",
+      "pass": true
+    },
+    {
+      "name": "430 Directory geometry",
+      "pass": true
+    },
+    {
+      "name": "430 standard inquiry ten steps",
+      "pass": true
+    },
+    {
+      "name": "430 change order wizard",
+      "pass": true
+    },
+    {
+      "name": "430 A8 /crew has no sideways scroll",
+      "pass": true
+    },
+    {
+      "name": "640 standard inquiry ten steps",
+      "pass": true
+    },
+    {
+      "name": "640 change order wizard",
+      "pass": true
+    },
+    {
+      "name": "768 drawer close modes and focus",
+      "pass": true
+    },
+    {
+      "name": "768 layout /",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/home",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/calllog",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/calllog/900",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/leads",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/proposals",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/invoices",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/customers",
+      "pass": true
+    },
+    {
+      "name": "768 layout /sales/customers/customer-0",
+      "pass": true
+    },
+    {
+      "name": "768 drawer preserves edited job",
+      "pass": true
+    },
+    {
+      "name": "768 CallLog filter, table scroll and selected job",
+      "pass": true
+    },
+    {
+      "name": "768 Customer detail table tabs",
+      "pass": true
+    },
+    {
+      "name": "768 A6 shell height, last row clears jump button",
+      "pass": true
+    },
+    {
+      "name": "768 A9 Directory from drawer",
+      "pass": true
+    },
+    {
+      "name": "768 A10 layers: drawer over badge, jump and embedded headers; modal over drawer",
+      "pass": true
+    },
+    {
+      "name": "768 D2-D5 list actions in view and row open",
+      "pass": true
+    },
+    {
+      "name": "768 Directory geometry",
+      "pass": true
+    },
+    {
+      "name": "768 standard inquiry ten steps",
+      "pass": true
+    },
+    {
+      "name": "768 change order wizard",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /sales/proposals/proposal-0",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /sales/invoices/20010",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /sales/team",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /sales/archive",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/home",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/jobs",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/schedule",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/calendar",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/daily",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/materials",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/billing",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/production-rate",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/schedules",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/import",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /schedule/settings",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/today",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/jobs",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/crews",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/timeclock",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/dailylogs",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /field/loadouts",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/triage",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/aging",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/action",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/health",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/cff",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /ar/invoices",
+      "pass": true
+    },
+    {
+      "name": "768 smoke /settings",
+      "pass": true
+    },
+    {
+      "name": "Manager route authorization",
+      "pass": true
+    },
+    {
+      "name": "Sales route authorization",
+      "pass": true
+    },
+    {
+      "name": "360 Login geometry and input sizes",
+      "pass": true
+    },
+    {
+      "name": "desktop collapse and breakpoint restore",
+      "pass": true
+    },
+    {
+      "name": "B1 desktop pixels vs base",
+      "pass": null,
+      "skipped": "QA_DESKTOP_BASE / QA_DESKTOP_BASE_REPEAT / QA_DESKTOP_AFTER not set"
+    }
+  ],
+  "errors": [],
+  "writes": [],
+  "blocked": [],
+  "b1": null,
+  "summary": {
+    "checks": 167,
+    "passed": 166,
+    "failed": 0,
+    "literal_failures_waived": 0,
+    "skipped": 1,
+    "page_errors": 0,
+    "writes": 0,
+    "blocked": 0
+  }
+}

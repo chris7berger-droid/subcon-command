@@ -1,0 +1,88 @@
+SC Handoff v305 — Mobile crew scheduler (F66), Smoke and Preview — 2026-10-01
+
+SESSION SUMMARY
+T3 (t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9), routed by the
+coordinator after T4, T5 and T6 cleared, ran the Smoke Test locally and the
+save-free subset on the hosted preview. Both pass. Stopped at the tested
+preview. NOT pushed by T3, NOT merged, NOT in production. Chris's acceptance
+is pending and is not claimed.
+
+WHAT WAS TESTED
+App source 1e6bde1 — unchanged since the reviews (src/, package files and
+build config identical at HEAD).
+Deployment dpl_5WFGRLnXpBco5wHBTGeXmvv5eGCn, target preview, Ready, built
+from 1e6bde1:
+https://sales-command-6pd0whlah-chris7berger-droids-projects.vercel.app
+
+GATES READ (docs/AUDIT_LOG.md)
+T2 CONVERGED eeb4190 · T4 GO a13087d · T5 0 BLOCKS-SHIP 9613663 ·
+T6 0 exploitable-today b1227ff.
+
+RESULTS
+Local Smoke, synthetic fixture, no sign-in:
+  check-crew-mobile 86 of 86 pass at 360, 390, 430, 768 and 1440.
+  check-mobile-preview (phone shell) 166 pass, B1 skipped, 0 writes.
+  check-sunday-parity-model M1-M6 and check-sunday-parity 30 groups pass.
+  check-preview-autoarchive pass. Build and the three lib tests pass.
+  ESLint 176 errors / 43 warnings, equal to base, per file.
+Hosted, every backend request intercepted, writes refused:
+  save-free subset at 390 and 768: 25 pass, 0 fail, 21 local-only skipped;
+  0 writes attempted, 0 refused requests.
+  Archive guard on the deployed bundle, with archive stage "Lost" set and
+  two eligible rows on offer: 0 candidate queries, 0 call_log writes.
+  Control on a local non-preview build: the query and the update are
+  attempted and refused, so the probe detects the archive.
+P12 at 768 is a note, not a clean pass: all seven days fit, so the Board
+does not scroll sideways there. Intent met per T4; literal miss not waived.
+
+CHANGES SHIPPED (to the branch only)
+No app source change. Check scripts only (39a9900): an origin-scoped
+preview-token hook in crew-mobile-fixture.mjs, a production-host refusal
+and per-check screenshots in check-crew-mobile.mjs, and the new
+check-preview-autoarchive-hosted.mjs. These files were read by the reviews
+at 1e6bde1; T7 decides whether the harness-only change needs a delta look.
+
+BACKLOG
+F66 → In Progress (tested preview; awaiting acceptance).
+New O15: T5's four and T6's one non-blocking findings, one row, not fixed.
+
+NOT DONE / LIMITS
+No real phone. No signed-in use, real record, or real backend call.
+Touch drag not assessed. A zero-need trip is not in the fixture.
+The preview is NOT a sandbox: it shares the production database. Only the
+Call Log automatic archive is skipped there. A signed-in person's saves,
+Board day toggles, ✕ and status actions change the real schedule.
+Phone-width brand comparison not performed: no reference exists. The brand
+guide DOCX was not re-read; its reading copy was searched.
+
+HOW THE HOSTED RUN WAS REACHED
+vercel env run from a scratch folder holding a copy of the project link, so
+a fresh short-lived token was used. It went only to the preview's own
+origin as a request header and was never logged or saved. The canonical
+~/sales-command checkout was not changed; its .env.local holds an expired
+token and was not used.
+
+NOT TOUCHED
+~/sales-command and every other worktree. feat/sunday-saturday-parity,
+feat/calllog-brand-preview, native Field. App source, dependencies, config,
+schema, auth, env, project and protection settings. The plan.
+
+NEXT SESSION POINTERS
+1. Coordinator publishes these commits and the draft PR (#75). A push builds
+   a new preview; the one tested here is the deployment named above.
+2. Chris looks at the preview on a real phone, read-only unless he means to
+   change the real schedule, and decides on acceptance.
+3. No merge or production release without Chris. O15 holds the follow-ups.
+
+FILES TO KNOW
+docs/agent-handoffs/BUILD-REPORT.md — Smoke and Preview section on top, the
+  build section under it.
+docs/agent-handoffs/evidence/crew-mobile/smoke/ — local and hosted results,
+  logs and hosted screenshots.
+scripts/check-crew-mobile.mjs — header lists its modes. Hosted runs must set
+  CREW_MOBILE_HOSTED=1 and QA_STORAGE_KEY=sb-pbgvgjjuhnpsumnowuym-auth-token.
+
+GIT STATE
+Branch feat/mobile-crew-scheduler-preview. This pass: 39a9900 (check
+scripts) and the evidence and records commit that holds this file. Not
+pushed by T3. Working tree clean.

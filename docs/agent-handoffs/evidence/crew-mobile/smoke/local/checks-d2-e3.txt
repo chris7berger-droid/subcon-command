@@ -1,0 +1,8 @@
+0 scripts/check-sunday-parity-model.mjs :: PASS: Sunday = Saturday parity model checks M1–M6
+0 scripts/check-sunday-parity.mjs :: PASS: Sunday = Saturday parity browser checks (30 groups)
+0 scripts/check-preview-autoarchive.mjs :: PASS: preview skips archive query/write/banner; production and non-preview match original behavior; Vite maps all four environment cases. All Supabase calls were local stubs.
+0 src/schedule/lib/assignmentIdentity.test.mjs :: assignmentIdentity tests passed
+0 src/schedule/lib/crewStatus.test.mjs :: crewStatus assertions passed
+0 src/schedule/lib/scheduleCrew.test.mjs :: scheduleCrew tests passed
+0 npm run build :: ✓ built in 394ms
+0 scripts/check-mobile-preview.mjs :: {"checks": 167, "passed": 166, "failed": 0, "literal_failures_waived": 0, "skipped": 1, "page_errors": 0, "writes": 0, "blocked": 0}

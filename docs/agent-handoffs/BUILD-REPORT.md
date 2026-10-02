@@ -1,3 +1,78 @@
+## F66 — Smoke Test and Preview (2026-10-01)
+
+**Smoke passes locally on the reviewed source, and the save-free subset passes on the hosted preview with every backend request intercepted. Stopped at the tested preview. Chris's acceptance is pending. Not merged, not in production. Not pushed by T3.**
+
+    Role:        T3 Build · mode: build (smoke + preview) · agent/session t3-crew-mobile / 6bdefad7-da48-4732-b78a-f804c6c558d9
+    Plan:        docs/plans/crew_mobile_preview.md @ 39cd871 · gates verified in docs/AUDIT_LOG.md: T2 CONVERGED (eeb4190) · T4 GO (a13087d) · T5 0 BLOCKS-SHIP (9613663) · T6 0 exploitable-today (b1227ff)
+    App source:  1e6bde178b2ffcf5816ba10573d38a127f8347fd — `src/`, package files and build config are unchanged since; `git diff 1e6bde1..HEAD` over them is empty
+    Deployment:  dpl_5WFGRLnXpBco5wHBTGeXmvv5eGCn · target **preview** · Ready · built from 1e6bde1 (GitHub deployment record) · https://sales-command-6pd0whlah-chris7berger-droids-projects.vercel.app
+    Outcome:     Smoke pass · hosted subset pass · P12 at 768 carried as a note, not a clean pass
+    Completion:  code built: yes · data applied: none · authenticated access: not exercised · Chris accepted: not T3's to claim
+
+### Local Smoke — reviewed source, synthetic fixture, no sign-in
+
+| Check | Result | Saved at `evidence/crew-mobile/smoke/local/` |
+|---|---|---|
+| `check-crew-mobile.mjs` — P1–P17 at 360, 390, 430, 768; D1, D4 at 1440 | **86 of 86 pass.** 0 page errors, 0 refused requests, only the two allowed fake assignment writes | `results.json`, `console.log` |
+| `check-mobile-preview.mjs` (phone shell) | 166 pass, 0 fail, B1 skipped; 0 writes, 0 refused | `phone-shell-results.json` (base run: `phone-shell-results-base.json`) |
+| `check-sunday-parity-model.mjs` | pass, M1–M6 | `checks-d2-e3.txt` |
+| `check-sunday-parity.mjs` | pass, 30 groups | `checks-d2-e3.txt` |
+| `check-preview-autoarchive.mjs` (source-level guard check) | pass | `checks-d2-e3.txt` |
+| `npm run build`; `assignmentIdentity`, `crewStatus`, `scheduleCrew` tests | pass | `checks-d2-e3.txt` |
+| ESLint | 176 errors, 43 warnings on base and now; per-file counts identical | `eslint-base-vs-now.txt` |
+
+Not repeated at Smoke, because saved results already exist for this exact app source: the 40-check pass-set against base (`after/checks-after.txt`, same 24 pass) and the 1440 pixel comparison (`after/d3-desktop-board.json`: 2,844 pixels against a base-vs-base 5,959).
+
+**P12 at 768, stated plainly:** the Job column and all seven days fit the frame, so the Board does not scroll sideways at 768. At 360, 390 and 430 it does. The plan's wording says it scrolls at every width. T4 judged the intent met and did not waive the literal miss; neither does T3. The 86-of-86 figure counts that check as passed with this note attached.
+
+### Hosted run — the real preview bundle, nothing real behind it
+
+- **Access:** `vercel env run` from a scratch copy of the project link, giving a short-lived token. The token was sent only as a request header to the preview's own origin, on GET and HEAD. It was never logged or saved, and never sent to Supabase, fonts or any other host. No user cookie, no sign-in, no protection or project setting changed. (The canonical checkout's `.env.local` holds an expired token from April; it was read, not used or changed.)
+- **Interception:** a synthetic session; every Supabase request answered in the browser from the fixture; `CREW_MOBILE_HOSTED=1`, so even the two assignment writes are refused and would fail the run; WebSockets never connect; service workers blocked.
+- **Subset run (plan §5 G), at 390 and 768, plus the 1440 reference:** P1–P5, P7, P11–P14, P16 and the display half of P17. **25 pass, 0 fail, 21 local-only skipped.** 0 writes attempted, 0 refused requests. `evidence/crew-mobile/smoke/hosted/results.json`, `console.log`, and 13 screenshots taken from the hosted bundle.
+- **What the subset touches:** it opens the flow and cancels it. It opens the status, Scheduled Off, Edit Dates and Remove Scheduled Off dialogs and closes them without confirming. On desktop it opens the picker by drag and cancels. It never taps Save, DONE or a confirm.
+- **Not run hosted, by plan:** P6, P8–P10, P15, the Sunday save, D4. They save or need fixture switches and are local only.
+
+### Preview archive guard
+
+- **Source-level (local):** `check-preview-autoarchive.mjs` passes. `CallLog.jsx` and `vite.config.js` are unchanged since `28c8468`.
+- **Hosted, observed on the deployed bundle:** `scripts/check-preview-autoarchive-hosted.mjs` loads Call Log on the preview with a synthetic tenant that has archive stage "Lost" and two eligible rows on offer. Result: **0 archive candidate queries, 0 `call_log` writes, 0 refused requests** (`hosted/calllog-archive-guard-skip.json`, `.png`).
+- **Control, local non-preview build:** the same probe sees 1 candidate query and a `PATCH` for both rows, refused by the fixture (`hosted/calllog-archive-guard-archive.json`). So the probe does detect the archive when it runs.
+- **What this proves and does not:** the deployed bundle skips the automatic archive on page load. It says nothing about any other write. **The preview is not a sandbox.** It shares the production database, and a signed-in person who taps Save, a Board day toggle, ✕ or a status action there changes the real schedule.
+
+### Changes made at this step
+
+- **App source: none.**
+- **Check scripts (commit `39a9900`), which the reviews did read at `1e6bde1`:** the fixture adds the preview token to same-origin GET/HEAD requests when one is present and the target is not local; the check script refuses production hosts and can keep a screenshot per check; one new hosted probe script. Local behavior is unchanged: the full local run with the committed scripts is also 86 of 86 (`local/results-with-committed-scripts.json`). The recorded Smoke run above used the scripts as reviewed. **Plan §5 G says a commit after the reviews re-opens them; T7 decides whether this harness-only change needs a delta look.**
+- **Report wording:** the Brand check's radius line now names the existing 8px and 6px radii (T4's wording note).
+
+### Review follow-ups — filed, not fixed
+
+Backlog **O15** groups the five non-blocking findings: T5's four (double tap on Review can land on Save; stale Review after a failed save and a failed reload; no focus trap in the flow; the D4 in-flight check's incomplete assertion) and T6's one (the check script refuses hosted writes only when `CREW_MOBILE_HOSTED=1` is set). None was changed in this pass.
+
+### Brand check at Smoke
+
+Unchanged from the build section below, with the radius wording corrected. Sources: the registry, the UI standard read in full, the canonical image opened, the Visual Brand Guide reading copy searched. The DOCX itself was not re-read by T3 or T4. New phone surfaces use the Schedule route's existing tokens, which is pre-existing and not a claim of "no deviations". A phone-width brand comparison was not performed: no reference exists.
+
+### Not performed
+
+- A real phone. Emulated Chrome only.
+- Any signed-in use, real record, or real backend read or write, local or hosted.
+- Drag by touch.
+- A trip set to need no crew (not in the plan's fixture).
+- B1 desktop pixels in the phone shell check (no capture folders supplied; skipped as before).
+- Widths other than 360, 390, 430, 768 and 1440 locally; 390, 768 and 1440 hosted.
+
+### Remaining
+
+- Chris's look on a real phone and his acceptance. Acceptance of Sunday parity and of the mobile web preview are also still open.
+- The coordinator publishes these commits and the draft PR. A push starts a new preview deployment; the one tested here is `dpl_5WFGRLnXpBco5wHBTGeXmvv5eGCn` at `1e6bde1`.
+- No merge or production release without Chris.
+
+The build section follows unchanged apart from the one radius line.
+
+---
+
 ## F66 — Mobile crew scheduler: Crew Schedule at phone width (2026-10-01)
 
 **Built and locally checked. At ≤768px `/schedule/schedule` has Week, Day, Person and Board views and a person → days → review → save flow that saves through the existing assignment path. Desktop is unchanged. Stopped at the T3 build gate for independent review. Not pushed by T3, no preview walked, not merged, not in production.**
@@ -76,7 +151,7 @@ Nothing else differs from the plan that T3 knows of.
   - `visual/crew-schedule-canonical.png`, opened.
   - `source-docs/Subcon_Command_Visual_Brand_Guide.readable.txt` searched for phone, tablet, touch and breakpoint rules: none beyond "check mobile/tablet behavior". The DOCX itself was not re-read; the plan records T1's full read.
 - **Changed surfaces:** the phone switch, Week list, Day cards, Person detail, the assign flow, and phone sizing of the existing board, week header, capacity strip head and dialogs. All at ≤768px on this route only.
-- **Tokens:** every new surface uses the Schedule route's existing tokens (`--bg-card`, `--header-dark`, `--command-green`, `--danger`, `--teal`, the Barlow fonts, 8px radius). That palette is the route's own, not the standard's cyan set. **This is pre-existing and is reported as such, not as "no deviations".** No new color, font, radius or mark asset was added. The mark is untouched.
+- **Tokens:** every new surface uses the Schedule route's existing tokens (`--bg-card`, `--header-dark`, `--command-green`, `--danger`, `--teal`, the Barlow fonts, and the route's existing 8px and 6px radii — corrected at Smoke: the staffing tag uses the existing 6px). That palette is the route's own, not the standard's cyan set. **This is pre-existing and is reported as such, not as "no deviations".** No new color, font, radius or mark asset was added. The mark is untouched.
 - **Phone-width brand comparison: not performed.** No governing document defines a phone layout or reference, so there is nothing to compare against.
 - **1440:** unchanged within the base's own pixel noise (D3), so no new claim is made against the canonical image.
 

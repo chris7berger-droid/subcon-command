@@ -1,0 +1,228 @@
+{
+  "summary": {
+    "url": "https://sales-command-6pd0whlah-chris7berger-droids-projects.vercel.app/schedule/schedule",
+    "hosted": true,
+    "widths": [
+      390,
+      768
+    ],
+    "notes": [
+      "768 P12: Job plus all seven days fit the frame, so the board has no sideways scroll at this width"
+    ],
+    "checks": 46,
+    "passed": 25,
+    "failed": 0,
+    "skipped": 21,
+    "shellWrites": 0,
+    "shellRefused": 0
+  },
+  "results": [
+    {
+      "name": "D1 desktop 1440: no phone control; pool, board, strip; one-step picker; chip opens the crew week popup",
+      "pass": true
+    },
+    {
+      "name": "390 P1 route loads in the shell; no sideways scroll; menu button and drawer work",
+      "pass": true
+    },
+    {
+      "name": "390 P2 switch: Week, Day, Person, Board; Week selected; 44×44; tappable",
+      "pass": true
+    },
+    {
+      "name": "390 P3 week label matches 1440; header in view in all four views; Next / This Week keep the view",
+      "pass": true
+    },
+    {
+      "name": "390 P4 Week: numbers match the 1440 strip; counts match the fixture; badges; trip link opens Board; day opens Day",
+      "pass": true
+    },
+    {
+      "name": "390 P5 Day: opening day; Thursday cards equal the 1440 rows; staffing lines; read-only legacy/unavailable; Free and Out",
+      "pass": true
+    },
+    {
+      "name": "390 P6 assign Flo Fern to Job B Thursday: person → days → review → one POST with trip identity",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P6 assign Finn Fig to Job B Thursday: person → days → review → one POST with trip identity",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P7 Cancel, Back and close at every step write nothing",
+      "pass": true
+    },
+    {
+      "name": "390 P8a both writes fail: message shown, stays on Review, nothing saved; busy blocks a second request; then succeeds",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P8b only the DELETE fails: Review shows what is on the trip now and what is still to do",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P9 sibling trips: removing X from A-short Friday deletes that one row only",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P10 warnings warn and do not block; archived person shows the existing message and writes nothing",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P11 Person: list matches the 1440 pool; trip lines; Scheduled Off; status actions open their dialogs inside the viewport",
+      "pass": true
+    },
+    {
+      "name": "390 P12 Board: Job plus seven days, sideways scroll in its frame, fixed Job column and date header, row editor, Assign crew",
+      "pass": true
+    },
+    {
+      "name": "390 P13 a ?job=&week=&trip= link opens Board on that week with that row marked",
+      "pass": true
+    },
+    {
+      "name": "390 P14 added controls are 44×44 and tappable; the flow is a named dialog that takes and returns focus",
+      "pass": true
+    },
+    {
+      "name": "390 P15 loading, held week, empty week, failed read and Retry",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "390 P16 the flow is modal: week navigation and the switch cannot be tapped or focused; no desktop picker",
+      "pass": true
+    },
+    {
+      "name": "390 P17 seven days ending Sunday in every view, with the 1440 labels",
+      "pass": true
+    },
+    {
+      "name": "390 P17 choosing Sunday for F1 on A-wide saves one POST carrying the Sunday date",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P1 route loads in the shell; no sideways scroll; menu button and drawer work",
+      "pass": true
+    },
+    {
+      "name": "768 P2 switch: Week, Day, Person, Board; Week selected; 44×44; tappable",
+      "pass": true
+    },
+    {
+      "name": "768 P3 week label matches 1440; header in view in all four views; Next / This Week keep the view",
+      "pass": true
+    },
+    {
+      "name": "768 P4 Week: numbers match the 1440 strip; counts match the fixture; badges; trip link opens Board; day opens Day",
+      "pass": true
+    },
+    {
+      "name": "768 P5 Day: opening day; Thursday cards equal the 1440 rows; staffing lines; read-only legacy/unavailable; Free and Out",
+      "pass": true
+    },
+    {
+      "name": "768 P6 assign Flo Fern to Job B Thursday: person → days → review → one POST with trip identity",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P6 assign Finn Fig to Job B Thursday: person → days → review → one POST with trip identity",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P7 Cancel, Back and close at every step write nothing",
+      "pass": true
+    },
+    {
+      "name": "768 P8a both writes fail: message shown, stays on Review, nothing saved; busy blocks a second request; then succeeds",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P8b only the DELETE fails: Review shows what is on the trip now and what is still to do",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P9 sibling trips: removing X from A-short Friday deletes that one row only",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P10 warnings warn and do not block; archived person shows the existing message and writes nothing",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P11 Person: list matches the 1440 pool; trip lines; Scheduled Off; status actions open their dialogs inside the viewport",
+      "pass": true
+    },
+    {
+      "name": "768 P12 Board: Job plus seven days, sideways scroll in its frame, fixed Job column and date header, row editor, Assign crew",
+      "pass": true
+    },
+    {
+      "name": "768 P13 a ?job=&week=&trip= link opens Board on that week with that row marked",
+      "pass": true
+    },
+    {
+      "name": "768 P14 added controls are 44×44 and tappable; the flow is a named dialog that takes and returns focus",
+      "pass": true
+    },
+    {
+      "name": "768 P15 loading, held week, empty week, failed read and Retry",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "768 P16 the flow is modal: week navigation and the switch cannot be tapped or focused; no desktop picker",
+      "pass": true
+    },
+    {
+      "name": "768 P17 seven days ending Sunday in every view, with the 1440 labels",
+      "pass": true
+    },
+    {
+      "name": "768 P17 choosing Sunday for F1 on A-wide saves one POST carrying the Sunday date",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "D4 1440 → 390 → 1440 keeps the week and returns the desktop layout",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "D4 flow open on Review at 390: widening closes it, writes nothing, opens no desktop picker",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "D4 Save in flight at 390: widening sends no further write; the save completes, then the flow closes; no desktop picker",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "D4 person open at 390: widening opens no crew week popup",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    },
+    {
+      "name": "D4 desktop picker and crew week popup open at 1440: narrowing closes them with no write",
+      "pass": null,
+      "skipped": "local only (§5 G)"
+    }
+  ],
+  "shellWrites": [],
+  "shellRefused": []
+}
