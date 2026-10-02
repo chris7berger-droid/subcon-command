@@ -1,6 +1,6 @@
 ## Status
 
-**F60 — Sunday = Saturday parity. Built and locally checked on `feat/sunday-saturday-parity`. T4 round 1 returned NO-GO; its P1 is fixed and its P2 evidence is added in `019997b`. Stopped at the T3 gate for the T4 delta review. No preview, not merged, not in production.**
+**F60 — Sunday = Saturday parity. Built, reviewed (T4 GO, T5 0 blockers, T6 0 exploitable-today), smoke-tested, and walked read-only on a Ready Vercel preview with synthetic data. Stopped for Chris's preview acceptance. Not merged, not in production.**
 
 | | |
 |---|---|
@@ -10,7 +10,7 @@
 | Fix for T4 round 1 | `019997ba8d5b62ea72c1b824f9ef46e127849cb9` |
 | Builder | T3 `t3-sunday-parity` · `2c23e844-d27d-4995-bdcc-7b0ef7430cb0` · https://claude.ai/code/session_01JQBVvRqXkNRVdkMBL7VRDh |
 
-Completion: code built **yes** · data applied **n/a (none)** · authenticated access verified **no** (synthetic fixtures only) · Chris accepted **no — not T3's to claim**.
+Completion: code built **yes** · data applied **n/a (none)** · authenticated access verified **no** (synthetic session and data only, locally and on the preview) · Chris accepted **no — pending his preview walk**.
 
 Outcome: bar met locally for every §5 check T3 can run, with the limits listed under "What this does not show". P (Vercel preview) and N (native device) are not T3-build steps.
 
@@ -24,9 +24,67 @@ Outcome: bar met locally for every §5 check T3 can run, with the limits listed 
 | T3 Build | committed `3f6b3cf` | this file |
 | T4 Build vs Plan, round 1 | NO-GO — P1 fails; several checks unverified because the reviewer could not run commands · standing (§9) | `docs/AUDIT_LOG.md`, `96e8eea` |
 | T3 fix for T4 | committed `019997b` (P1 fixed, P2 evidence added) | this file |
-| T4 delta review / T5 / T6 / Smoke / Preview / Chris | not started | — |
+| T4 Build vs Plan, round 2 | GO · standing (§9) | `docs/AUDIT_LOG.md`, `31f1b13` |
+| T5 Code Review | 0 BLOCKS-SHIP · 0 SHOULD-FIX · 4 HARDENING · standing (§9) | `docs/AUDIT_LOG.md`, `9633576` |
+| T6 Security Review | 0 exploitable-today · 1 SHOULD-FIX (pre-existing) · 2 HARDENING · standing (§9) | `docs/AUDIT_LOG.md`, `6de19ad` |
+| Smoke + Preview | pass, with the limits below | this file |
+| Chris Acceptance | **pending** | — |
+
+All three reviews cover source `019997b`. `git diff 019997b..6de19ad` over `src`, `scripts`, `index.html`, `package.json`, `vite.config.js`, `public` and `vercel.json` is empty: only records changed after the reviewed source.
 
 T2's two non-blocking notes were applied as written: B13 is compared on the Monday–Saturday **day columns** (not week-wide pool totals), and the week-link check asserts that **no read for another week is sent**, which is tighter than W2's wording.
+
+## For Chris at the preview
+
+Preview: https://sales-command-git-feat-sund-2db8ee-chris7berger-droids-projects.vercel.app (PR #74, draft). It uses the production database, so anything saved there is real.
+
+What you will see:
+- A **Sunday column** on the crew board, the capacity strip, Daily and the Calendar week view, and Sunday in the pickers, pool dots, crew popup and prints. Weeks read "Sep 28 – Oct 4".
+- A **Sunday-only trip** now shows on its week's board and can be staffed like a Saturday trip.
+
+What comes with it, because Saturday already works this way:
+1. **Select all** on a trip that spans a weekend picks Sunday too.
+2. A trip spanning a weekend shows **Sunday as needing crew**.
+3. **Capacity and completion percentages include Sunday**, so they read lower in weeks with no Sunday crew.
+4. **Time off saved as Monday–Saturday does not cover Sunday.** That person shows free on Sunday, and their pool chip is **no longer greyed out** — it is a normal chip you can drag, with six off days and an open Sunday. Someone off all seven days is still greyed.
+5. The **Midweek Update** text runs through Sunday.
+6. **Open Crew Schedule** from a job's trips now opens the right week for trips that start on a Friday, Saturday or Sunday.
+
+Not changed: Saturday and Monday–Friday rules, the Month view, job-card day counts, billing numbers, the phone layouts, native Field, the Time Clock. There is no way to turn weekends off yet; that is the later work you set aside.
+
+None of the list above has been put to you before. Your walk is also the only signed-in check with real records.
+
+## Smoke and preview — 2026-10-01
+
+**Smoke (local, source `019997b`, tree at `6de19ad`)**
+
+| Check | Result | Run by |
+|---|---|---|
+| Browser parity check, 30 groups | pass | T3 at `019997b`; coordinator independently (exit 0, `/tmp/sunday-independent-browser.log`) |
+| Model check M1–M6, `TZ=America/Los_Angeles` | pass | T3; coordinator independently (`/tmp/sunday-independent-model.log`) |
+| `npm run build` | pass | T3; coordinator independently |
+| ESLint | 176 errors / 43 warnings, equal to base; per-file counts for every touched file equal to base | coordinator (`/tmp/sunday-independent-lint-comparison.txt`); T3 totals at `3f6b3cf` |
+| Every existing check, rerun for smoke | 23 pass, 15 fail — the same 15 as base and as the `3f6b3cf` run (`evidence/sunday-parity/checks-smoke.txt`) | T3, this pass |
+
+The smoke rerun closes the limit T4 and T5 named (the full suite had last run before the fix). It regenerated one screenshot (`after/daily-1440.png`), which was restored to the committed version; the tree was clean before these records were written.
+
+**Hosted preview walk (read-only)**
+
+- Served deployment: `dpl_77UMw7UTsm12ggwgEufM9RqBCA55`, status Ready, built from `6de19ad5f245d3d0d160ae50b8fca57a48232a3b` per the GitHub commit status and `vercel inspect` of the branch URL at 17:13 PDT. Its app source equals the reviewed `019997b`. The served bundle's hash was not read from the page itself.
+- Method: `scripts/check-sunday-parity-preview.mjs`, run through `vercel env run` from a linked checkout, the repo's existing way past Deployment Protection. Protection was left on; the short-lived token went only to the preview's own origin.
+- **What kind of evidence this is:** the real hosted bundle in the real app shell, with a **synthetic session injected into the browser — not a real sign-in** — and every database request answered from the synthetic fixture. Every write is refused and fails the run; sockets are closed; other hosts are aborted. Pickers were opened and closed; nothing was saved.
+- Result: pass (`evidence/sunday-parity/preview/run.txt`, screenshots beside it). Zero writes attempted. One auth call (`GET /auth/v1/user`) was answered by the fixture. No socket was opened. `fonts.googleapis.com` was aborted, so the preview screenshots use fallback fonts.
+- Walked, at 1440 and 1280 inside the app shell with the sidebar: seven columns MON 09/28 … SUN 10/04; week reads Monday–Sunday; the Sunday-only trip row; the SUN 4 card; no sideways scroll, no clipped label, pool dots inside their chips; assign picker with only Sun enabled; Sick picker with seven chips; crew week popup. Also: a Sunday `?week=` link opening its own week with no other week read; Calendar week Mon 28 … Sun 4; Daily's seven columns.
+- This is the first check with the sidebar present. The local harness mounts the Schedule module without the shell, so the board is narrower here; at 1280 the day cells are tight but nothing clips.
+
+**Not done, and why**
+- **No signed-in walk with real records.** No agent signs in to the preview because it shares the production database.
+- Hosted walk subset only: no assign, edit, remove, status or Scheduled Off save; no prints, texts, Home, Jobs or Billing on the hosted bundle. Those are covered locally with fixtures.
+- **Native Field:** source and synthetic checks only; no device.
+- Production was not checked for existing Sunday rows (U4).
+- Long crew names in the 11px-narrower pool chip: not tried. Worth a glance at the preview.
+
+**Follow-ups filed, not fixed:** F67 (T5's four hardening items plus T6's two), S16 (pre-existing unescaped print HTML, own track). T5's record says "filed as one backlog item"; the reviewer wrote no file — the rows were written in this pass.
 
 ## T4 round 1 — what was wrong and what changed
 
@@ -67,7 +125,7 @@ Checks:
 - New: `scripts/check-sunday-parity.mjs` (browser, 30 check groups), `scripts/check-sunday-parity-model.mjs` (M1–M6), `scripts/sunday-parity-fixture.mjs` (the plan's §5 fixture, synthetic names).
 - Restated for the seven-day week, as the plan's §3 lists: `scripts/check-crew-midweek-text-model.mjs`, `scripts/check-crew-phone.mjs`, `scripts/check-crew-week-summary.mjs`, `src/schedule/lib/crewStatus.test.mjs`.
 
-Records: this file, `docs/BACKLOG.md` (F60 row; stale "pending merge" note at line 9), `docs/handoffs/SC_Handoff_v302.txt`, evidence under `docs/agent-handoffs/evidence/sunday-parity/`.
+Records: this file, `docs/BACKLOG.md` (F60 row, F67, S16; stale "pending merge" note at line 9), `scripts/check-sunday-parity-preview.mjs` (read-only hosted walk), `docs/handoffs/SC_Handoff_v302.txt`, evidence under `docs/agent-handoffs/evidence/sunday-parity/`.
 
 No schema, migration, RLS, edge function, dependency, config or env change. No new Supabase call site.
 

@@ -56,3 +56,21 @@ P2: focused screenshots added for the pickers, crew week popup, expanded-row
 toggles, pool and both prints (evidence/sunday-parity/after/).
 Rerun: browser check 30 groups pass, model M1-M6 pass, build pass.
 NEXT: T4 delta review of 019997b, then T5, T6, Smoke, preview.
+
+UPDATE — REVIEWS, SMOKE AND PREVIEW (same day)
+Gates recorded in docs/AUDIT_LOG.md: T4 round 2 GO (31f1b13), T5 0 BLOCKS-SHIP
+(9633576), T6 0 exploitable-today (6de19ad). All cover source 019997b; no app
+or script change after it until this pass's new read-only preview script.
+SMOKE: browser 30 groups, model M1-M6, build pass (T3 and coordinator
+independently). Full existing suite rerun: 23 pass, 15 fail, same 15 as base.
+PREVIEW: https://sales-command-git-feat-sund-2db8ee-chris7berger-droids-projects.vercel.app
+(PR #74 draft), deployment dpl_77UMw7UTsm12ggwgEufM9RqBCA55 Ready, from 6de19ad.
+Walked READ-ONLY with scripts/check-sunday-parity-preview.mjs: real hosted
+bundle, synthetic injected session (NOT a real sign-in), all backend requests
+answered from fixtures, writes refused. Pass, zero writes attempted.
+NOT DONE: signed-in walk with real records (Chris's), native device, any save
+on the preview, production Sunday rows.
+BACKLOG: F60 -> In Progress (awaiting acceptance). New F67 (T5/T6 hardening),
+S16 (pre-existing unescaped print HTML).
+NEXT: Chris's preview acceptance. Then merge/release approval. Then mobile
+integration (coordinator). Nothing is merged or released.
