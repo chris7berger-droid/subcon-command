@@ -971,7 +971,7 @@ export function getJobMultiWeekAlert(job, assignments, today) {
 
   while (cursor.getTime() <= endMonday.getTime()) {
     const daysInWeek = []
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       const d = new Date(cursor); d.setDate(d.getDate() + i)
       const ds = _fmtD(d)
       if (ds >= start && ds <= end) daysInWeek.push(ds)
@@ -1754,14 +1754,14 @@ export function getMonday(d) {
 }
 export function wkDates(monday) {
   const r = []
-  for (let i = 0; i < 6; i++) { const dt = new Date(monday); dt.setDate(dt.getDate() + i); r.push(fmtD(dt)) }
+  for (let i = 0; i < 7; i++) { const dt = new Date(monday); dt.setDate(dt.getDate() + i); r.push(fmtD(dt)) }
   return r
 }
 
 // ── Home dashboard aggregates (read-only, §11) ──────────────────────────────
 // All numbers derive from already-loaded data — no new unbounded reads here.
 // The caller (Home.jsx) loads the crew/assignments/jobs slices; every assignments
-// read it hands in for the WEEK map must be date-bounded to Mon–Sat (§11 G3b).
+// read it hands in for the WEEK map must be date-bounded to Mon–Sun (§11 G3b).
 
 // Crew-per-job grouping, keyed by call_log_id → [{name}]. Mirrors Jobs.jsx's
 // `crewByCallLog` memo VERBATIM (source = the `assignments` table, NOT job_crew —
@@ -1801,7 +1801,7 @@ const _SCHEDULING_STATUSES = new Set(['Scheduled', 'In Progress', 'Ongoing'])
 const _BOARD_STATUSES = new Set(['Scheduled', 'In Progress', 'On Hold', 'Ongoing'])
 
 // Compute every Home dashboard number from loaded slices. TWO crew maps (§11 G3a):
-//  • weekAssignments (Mon–Sat window) → capacity strip + "needs crew" + per-day.
+//  • weekAssignments (Mon–Sun window) → capacity strip + "needs crew" + per-day.
 //  • allAssignments (own dates / all-time) → isReady + "not ready", so Home's
 //    readiness matches /jobs exactly (no cross-screen contradiction).
 export function computeHomeDashboard({

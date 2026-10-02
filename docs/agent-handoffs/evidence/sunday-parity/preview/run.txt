@@ -1,0 +1,9 @@
+<claude-code-hint v="1" type="plugin" value="vercel@claude-plugins-official" />
+PASS hosted bundle, 1440 and 1280, inside the app shell: seven columns MON 09/28 … SUN 10/04; reads gte 2026-09-28 lte 2026-10-04; Sunday-only trip row; SUN 4 card 3 / 8 38%; no sideways scroll, no clipped label, pool dots inside their chips; assign picker (only Sun enabled), Sick picker (seven chips) and crew week popup opened and closed without saving
+PASS hosted bundle: ?week=2026-10-04 opens the week of 2026-09-28 and sends no read for another week
+PASS hosted bundle: Calendar week view Mon 28 … Sun 4 with job C's bar in Sun 4; capacity band has seven cards
+PASS hosted bundle: Daily shows seven day columns Mon 9/28 … Sun 10/4
+Auth endpoint calls answered by the fixture: GET /auth/v1/user
+WebSockets closed before connecting: 0 (none)
+Other outbound hosts aborted: fonts.googleapis.com
+PASS: read-only hosted walk, synthetic session and data, zero writes attempted

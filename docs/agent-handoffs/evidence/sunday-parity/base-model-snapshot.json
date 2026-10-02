@@ -1,0 +1,256 @@
+{
+  "M4 billing surface": {
+    "rows": [
+      {
+        "jobId": 6,
+        "callLogId": 106,
+        "requiresPayApp": false,
+        "jobNum": "8106",
+        "jobName": "Job R",
+        "customerName": null,
+        "salesName": null,
+        "workType": null,
+        "isChangeOrder": false,
+        "coNumber": null,
+        "status": "Invoice Sent",
+        "arm": null,
+        "billed": 4000,
+        "authoritative": 10000,
+        "authoritativeResolved": true,
+        "ambiguous": false,
+        "remaining": 6000,
+        "invoiceCount": 1,
+        "sentCount": 1,
+        "lastSent": "2026-09-15",
+        "allPaid": false,
+        "fullyBilled": false,
+        "invoiceBreakdown": [
+          {
+            "id": "inv-R1",
+            "amount": 4000,
+            "sentAt": "2026-09-15",
+            "paid": false
+          }
+        ],
+        "historyLabel": "Partially billed",
+        "productionStage": "Ongoing",
+        "heldSales": false,
+        "override": null
+      },
+      {
+        "jobId": 60,
+        "callLogId": 160,
+        "requiresPayApp": false,
+        "jobNum": "8160",
+        "jobName": "Job R",
+        "customerName": null,
+        "salesName": null,
+        "workType": null,
+        "isChangeOrder": false,
+        "coNumber": null,
+        "status": "Invoice Sent",
+        "arm": "production",
+        "billed": 4000,
+        "authoritative": 10000,
+        "authoritativeResolved": true,
+        "ambiguous": false,
+        "remaining": 6000,
+        "invoiceCount": 1,
+        "sentCount": 1,
+        "lastSent": "2026-09-15",
+        "allPaid": false,
+        "fullyBilled": false,
+        "invoiceBreakdown": [
+          {
+            "id": "inv-S1",
+            "amount": 4000,
+            "sentAt": "2026-09-15",
+            "paid": false
+          }
+        ],
+        "historyLabel": "Partially billed",
+        "productionStage": "Ongoing",
+        "heldSales": false,
+        "override": null
+      }
+    ],
+    "toBill": 12000,
+    "forecast": {
+      "pastDue": {
+        "sum": 0,
+        "count": 0,
+        "invoices": []
+      },
+      "weeks": [
+        {
+          "monday": "2026-09-28T07:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-10-05T07:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-10-12T07:00:00.000Z",
+          "sum": 8000,
+          "count": 2,
+          "invoices": [
+            {
+              "id": "inv-R1",
+              "call_log_id": 106,
+              "proposal_id": "prop-R",
+              "amount": 4000,
+              "discount": 0,
+              "retention_amount": 0,
+              "retention_release_of": null,
+              "sent_at": "2026-09-15T17:00:00+00:00",
+              "paid_at": null,
+              "due_date": "2026-10-15",
+              "status": "Sent",
+              "qb_invoice_id": null,
+              "tenant_id": "fixture-tenant",
+              "call_log": {
+                "display_job_number": "8106",
+                "customer_id": 1,
+                "customers": {
+                  "billing_terms": 30,
+                  "requires_pay_app": false
+                }
+              },
+              "tenant_config": {
+                "default_billing_terms": 30
+              },
+              "_display_job_number": "8106",
+              "_billing_terms": 30,
+              "_requires_pay_app": false,
+              "_default_billing_terms": 30,
+              "_net": 4000,
+              "_expected": "2026-10-15T07:00:00.000Z"
+            },
+            {
+              "id": "inv-S1",
+              "call_log_id": 160,
+              "proposal_id": "prop-S",
+              "amount": 4000,
+              "discount": 0,
+              "retention_amount": 0,
+              "retention_release_of": null,
+              "sent_at": "2026-09-15T17:00:00+00:00",
+              "paid_at": null,
+              "due_date": "2026-10-15",
+              "status": "Sent",
+              "qb_invoice_id": null,
+              "tenant_id": "fixture-tenant",
+              "call_log": {
+                "display_job_number": "8106",
+                "customer_id": 1,
+                "customers": {
+                  "billing_terms": 30,
+                  "requires_pay_app": false
+                }
+              },
+              "tenant_config": {
+                "default_billing_terms": 30
+              },
+              "_display_job_number": "8106",
+              "_billing_terms": 30,
+              "_requires_pay_app": false,
+              "_default_billing_terms": 30,
+              "_net": 4000,
+              "_expected": "2026-10-15T07:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "monday": "2026-10-19T07:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-10-26T07:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-11-02T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-11-09T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-11-16T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-11-23T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-11-30T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-12-07T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-12-14T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-12-21T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        },
+        {
+          "monday": "2026-12-28T08:00:00.000Z",
+          "sum": 0,
+          "count": 0,
+          "invoices": []
+        }
+      ],
+      "heldRetention": {
+        "sum": 0,
+        "count": 0,
+        "invoices": []
+      }
+    }
+  },
+  "M5 alert, only W+1 crew day on Saturday": 0,
+  "M5 alert, only W+1 crew day on Sunday (base)": 1,
+  "M6 job N card": {
+    "hasDate": true,
+    "workDays": 10,
+    "required": 1,
+    "hasTrips": true
+  },
+  "M6 job A card (weekend crew)": {
+    "hasDate": true,
+    "workDays": 12,
+    "required": "varies",
+    "hasTrips": true
+  }
+}

@@ -3,16 +3,16 @@ import { buildCrewMidweekText, buildCrewWeekText, crewCompactDayLabel, crewMidwe
 
 const week = crewWeekDates('2026-09-11')
 assert.deepEqual(week, ['2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11', '2026-09-12', '2026-09-13'])
-assert.deepEqual(crewMidweekDates('2026-09-08'), week.slice(1, 6), 'Tuesday through Saturday of the current week')
-assert.deepEqual(crewMidweekDates('2026-09-07'), week.slice(0, 6), 'Monday through Saturday')
-assert.deepEqual(crewMidweekDates('2026-09-11'), ['2026-09-11', '2026-09-12'], 'Friday and Saturday remain')
-assert.deepEqual(crewMidweekDates('2026-09-12'), ['2026-09-12'], 'Saturday includes today')
-assert.deepEqual(crewMidweekDates('2026-09-13'), [], 'Sunday still has no remaining days')
-assert.deepEqual(crewMidweekDates('2026-09-15'), ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19'])
-assert.deepEqual(crewMidweekDates('2026-09-23'), ['2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26'])
-assert.deepEqual(crewMidweekDates('2026-09-25'), ['2026-09-25', '2026-09-26'])
-assert.deepEqual(crewMidweekDates('2026-09-26'), ['2026-09-26'])
-assert.deepEqual(crewMidweekDates('2026-09-27'), [])
+assert.deepEqual(crewMidweekDates('2026-09-08'), week.slice(1), 'Tuesday through Sunday of the current week')
+assert.deepEqual(crewMidweekDates('2026-09-07'), week, 'Monday through Sunday')
+assert.deepEqual(crewMidweekDates('2026-09-11'), ['2026-09-11', '2026-09-12', '2026-09-13'], 'Friday, Saturday and Sunday remain')
+assert.deepEqual(crewMidweekDates('2026-09-12'), ['2026-09-12', '2026-09-13'], 'Saturday includes today and Sunday')
+assert.deepEqual(crewMidweekDates('2026-09-13'), ['2026-09-13'], 'Sunday is the one remaining day')
+assert.deepEqual(crewMidweekDates('2026-09-15'), ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20'])
+assert.deepEqual(crewMidweekDates('2026-09-23'), ['2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27'])
+assert.deepEqual(crewMidweekDates('2026-09-25'), ['2026-09-25', '2026-09-26', '2026-09-27'])
+assert.deepEqual(crewMidweekDates('2026-09-26'), ['2026-09-26', '2026-09-27'])
+assert.deepEqual(crewMidweekDates('2026-09-27'), ['2026-09-27'])
 assert.equal(crewCompactDayLabel('2026-09-15'), 'TUE 9/15')
 assert.equal(crewCompactDayLabel('2026-09-18'), 'FRI 9/18')
 
@@ -51,7 +51,7 @@ assert.match(result.text, /^UPDATED CREW SCHEDULE — ABBREVIATED\nJose Garcia\n
 assert.match(result.text, /WED 9\/9 — JOB #1906 — with Carlos Ruiz/)
 assert.match(result.text, /THU 9\/10 — \(OFF — MAY CHANGE\)/)
 assert.match(result.text, /FRI 9\/11 — JOB #1842 — with Mike Jones/)
-assert.doesNotMatch(result.text, /SUN 9\/13|SAT 9\/12|TUE 9\/8|MON 9\/7/)
+assert.doesNotMatch(result.text, /SAT 9\/12|TUE 9\/8|MON 9\/7/)
 assert.doesNotMatch(result.text, /Wrong Trip|Call In|SICK|No Show|Lakes Crossing|with no other/i)
 assert.doesNotMatch(result.text, /FRI 9\/11 — \(OFF/)
 assert.doesNotMatch(result.text, /WED 9\/9 — \(OFF/)
@@ -61,7 +61,8 @@ Current schedule from today forward. Schedule may change as jobs shift.
 
 WED 9/9 — JOB #1906 — with Carlos Ruiz
 THU 9/10 — (OFF — MAY CHANGE)
-FRI 9/11 — JOB #1842 — with Mike Jones`)
+FRI 9/11 — JOB #1842 — with Mike Jones
+SUN 9/13 — JOB #1842`)
 
 const weekly = buildCrewWeekText({
   name: 'Garcia, Jose', dates: week, jobs: [job, other], allocations, assignments,
@@ -141,4 +142,4 @@ const antonioWeekly = buildCrewWeekText({ ...antonio, dates: crewWeekDates('2026
 assert.match(antonioWeekly.text, /SATURDAY, SEP 26[\s\S]*7215 - STY 4/)
 assert.match(antonioWeekly.text, /With: Daniel Luna, Victor, Lucas Williams/)
 
-console.log('PASS: midweek today–Saturday window, Antonio production fixture, Sunday empty, compact lines, assignment-over-off, no inferred off, weekly text unchanged')
+console.log('PASS: midweek today–Sunday window, Antonio production fixture, Sunday included, compact lines, assignment-over-off, no inferred off, weekly text unchanged')

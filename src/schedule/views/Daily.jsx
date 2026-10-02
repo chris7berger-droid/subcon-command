@@ -10,7 +10,7 @@ import { scheduleCrewForWeek } from '../lib/scheduleCrew'
    Colors are scoped locally (linen palette) so the view matches the prototype
    regardless of the app's global theme tokens. ── */
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 /* ── helpers ── */
 
@@ -30,13 +30,13 @@ function fmtD(d) {
 function fmtWk(monday) {
   const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const end = new Date(monday)
-  end.setDate(end.getDate() + 5)
+  end.setDate(end.getDate() + 6)
   return ms[monday.getMonth()] + ' ' + monday.getDate() + ' - ' + ms[end.getMonth()] + ' ' + end.getDate() + ', ' + end.getFullYear()
 }
 
 function wkDates(monday) {
   const r = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     const dt = new Date(monday)
     dt.setDate(dt.getDate() + i)
     r.push(fmtD(dt))
@@ -177,7 +177,7 @@ export default function Daily() {
      every live allocation), which also aligns Daily with Schedule/Calendar by
      honoring scheduled_start/end, not just start_date/end_date. (B87) */
   const wkJobs = useMemo(() => {
-    const ws = dates[0], we = dates[5]
+    const ws = dates[0], we = dates.at(-1)
     return jobs.filter(j => overlapsWeek(jobRanges(j, allocsByJobId[j.job_id]), ws, we))
   }, [jobs, dates, allocsByJobId])
 
@@ -198,7 +198,7 @@ export default function Daily() {
   weekCrew.forEach(c => {
     const cn = c.name
     let hasSick = false, hasCall = false, hasNS = false, hasScheduledOff = false
-    for (let di = 0; di < 6; di++) {
+    for (let di = 0; di < dates.length; di++) {
       const st = getCSt(cn, dates[di])
       if (st === 'sick') hasSick = true
       if (st === 'off') hasCall = true
@@ -427,7 +427,7 @@ function DailyStyle() {
       .dly-btn { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:2px solid var(--brdl); background:var(--surface); color:var(--txt); cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
       .dly-btn:hover { background:var(--surface-h); }
 
-      .dly-hdr { display:grid; grid-template-columns:130px repeat(6,1fr); gap:0; padding:0 14px 6px; margin-bottom:2px; }
+      .dly-hdr { display:grid; grid-template-columns:130px repeat(7,1fr); gap:0; padding:0 14px 6px; margin-bottom:2px; }
       .dly-hdr-sm { padding:0 0 4px; margin:0; }
       .dly-hdr-day { font-size:9px; font-weight:700; text-transform:uppercase; color:var(--muted); text-align:center; }
       .dly-today { color:var(--red); }
@@ -440,7 +440,7 @@ function DailyStyle() {
       .dly-card-name { font-size:14px; font-weight:700; }
       .dly-card-badge { font-size:10px; font-weight:600; padding:3px 8px; border-radius:4px; background:var(--s2); border:1px solid var(--brd); flex-shrink:0; }
 
-      .dly-row { display:grid; grid-template-columns:130px repeat(6,1fr); gap:0; align-items:center; padding:3px 14px; border-bottom:1px solid var(--brd); }
+      .dly-row { display:grid; grid-template-columns:130px repeat(7,1fr); gap:0; align-items:center; padding:3px 14px; border-bottom:1px solid var(--brd); }
       .dly-row:last-child { border-bottom:none; }
       .dly-gap-row { border-bottom:none; }
       .dly-gap-name { font-size:9px; color:var(--red); font-weight:600; }

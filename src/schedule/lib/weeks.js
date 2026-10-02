@@ -27,13 +27,13 @@ export function fmtD(d) {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-// Mon → Mon+5 (Sat) range label, e.g. "Jun 16 – Jun 21, 2026".
+// Mon → Mon+6 (Sun) range label, e.g. "Jun 15 – Jun 21, 2026".
 // Accepts a Date or a 'YYYY-MM-DD' string (string-arg handling preserved from Billing.jsx).
 export function fmtWk(monday) {
   const mon = monday instanceof Date ? monday : new Date(monday + 'T00:00:00')
-  const sat = new Date(mon)
-  sat.setDate(mon.getDate() + 5)
+  const sun = new Date(mon)
+  sun.setDate(mon.getDate() + 6)
   const mStr = `${MONTHS[mon.getMonth()]} ${mon.getDate()}`
-  const sStr = `${MONTHS[sat.getMonth()]} ${sat.getDate()}`
-  return `${mStr} – ${sStr}, ${sat.getFullYear()}`
+  const sStr = `${MONTHS[sun.getMonth()]} ${sun.getDate()}`
+  return `${mStr} – ${sStr}, ${sun.getFullYear()}`
 }
