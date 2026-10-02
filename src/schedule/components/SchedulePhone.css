@@ -1,0 +1,216 @@
+/* Crew Schedule at phone width (plan: docs/plans/crew_mobile_preview.md).
+   Every rule sits in a `screen` media query at <=768px, so desktop (>=769px)
+   and print are untouched. Every rule is scoped to the Crew Schedule route:
+   `.sch-layout[data-phone-view]` and `.sch-capacity-wrap[data-phone-view]`
+   exist only on /schedule/schedule at this width, so the capacity strip on
+   the other Schedule screens is unchanged. Colors, fonts and radii are the
+   Schedule route's existing tokens; nothing new is introduced. Day columns
+   are sized per cell, so no rule here states a day or track count. */
+
+@media screen and (max-width: 768px) {
+  /* ── Capacity strip: its head (week, + Job, Actions) stays in every view;
+        badges show in Week only; per-day numbers move into the Week list ── */
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs { padding: 10px 12px; border-radius: 0; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-head { margin-bottom: 0; align-items: center; gap: 8px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-title { font-size: 10px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-week { font-size: 16px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .app-act-btn { min-height: 44px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-days { display: none; }
+  .schedule-root .sch-capacity-wrap[data-phone-view]:not([data-phone-view='week']) :is(.hcs-body, .hcs-loading) { display: none; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-body { gap: 0; margin-top: 8px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-loading { min-height: 44px; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-badges { gap: 8px; padding: 0; border: 0; justify-content: space-between; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-badge { flex-direction: row; width: auto; min-height: 44px; gap: 6px; flex: 1 1 0; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-badge-circle { width: 34px; height: 34px; font-size: 16px; border-width: 2px; flex-shrink: 0; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-badge-value { text-align: left; }
+  .schedule-root .sch-capacity-wrap[data-phone-view] .hcs-check-needs { margin-top: 4px; min-height: 44px; }
+
+  /* ── Frame: header on top, one view below it ─────────────────────────── */
+  .schedule-root .sch-layout[data-phone-view] { padding: 0; }
+  .schedule-root .sch-layout[data-phone-view] .sch-wrap { flex-direction: column; }
+  .schedule-root .sch-layout[data-phone-view] .sch-main { padding: 8px; order: 1; }
+  .schedule-root .sch-layout[data-phone-view] .sch-pool { display: none; }
+  .schedule-root .sch-layout[data-phone-view='person']:not([data-phone-person]) .sch-main { flex: none; }
+  .schedule-root .sch-layout[data-phone-view='person']:not([data-phone-person]) .sch-pool:not([hidden]) {
+    display: block; order: 2; flex: 1; min-height: 0; width: auto; border-right: 0;
+  }
+  .schedule-root .sch-layout[data-phone-view] .sch-chip { min-height: 44px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-chip .sch-sbtns { display: none; }
+
+  .schedule-root .sch-layout[data-phone-view] .sch-wknav { flex-wrap: wrap; gap: 6px; padding: 6px; margin-bottom: 8px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-wknav-steady { margin-bottom: 26px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-wknav .sch-btn { min-height: 44px; min-width: 44px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-wklbl { flex: 1 1 100%; order: -1; font-size: 14px; letter-spacing: 0.5px; min-width: 0; }
+  .schedule-root .sch-layout[data-phone-view] .sch-wknav .sch-btn { flex: 1 1 auto; padding: 6px 8px; }
+
+  .schedule-root .sch-ph-switch { display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
+  .schedule-root .sch-ph-tab,
+  .schedule-root .sch-ph-daybtn {
+    flex: 1 1 0; min-width: 44px; min-height: 44px;
+    font-family: var(--font-heading); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+    border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: var(--bg-card); color: var(--text-primary);
+  }
+  .schedule-root .sch-ph-tab-on { background: var(--header-dark); border-color: var(--header-dark); color: var(--command-green); }
+  .schedule-root .sch-layout[data-phone-view] :is(.sch-ph-tab, .sch-ph-daybtn, .sch-ph-action, .sch-ph-wday, .sch-ph-person, .sch-ph-line, .sch-ph-back, .sch-ph-pick, .sch-ph-dayrow, .sch-ph-close):focus-visible {
+    outline: 2px solid var(--teal); outline-offset: 2px;
+  }
+
+  .schedule-root .sch-ph-pane { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; text-transform: none; }
+  .schedule-root .sch-layout[data-phone-view] .sch-board-pane { display: none; }
+  .schedule-root .sch-layout[data-phone-view='board'] .sch-board-pane { display: flex; }
+
+  .schedule-root .sch-ph-empty { padding: 16px 8px; text-align: center; color: var(--text-secondary); font-family: var(--font-heading); font-size: 14px; text-transform: uppercase; }
+  .schedule-root .sch-ph-muted { color: var(--text-light); font-size: 12px; }
+  .schedule-root .sch-ph-section { font-family: var(--font-heading); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin: 14px 0 6px; }
+  .schedule-root .sch-ph-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .schedule-root .sch-ph-action,
+  .schedule-root .sch-ph-back {
+    min-height: 44px; min-width: 44px; padding: 6px 14px;
+    font-family: var(--font-heading); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+    border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: var(--bg-card); color: var(--text-primary);
+  }
+  .schedule-root .sch-ph-action:disabled { opacity: 0.5; }
+  .schedule-root .sch-ph-primary { background: var(--command-green); border-color: var(--command-green); color: var(--text-primary); }
+  .schedule-root .sch-ph-issue { font-size: 12px; color: var(--danger); margin: 4px 0; }
+  .schedule-root .sch-ph-warn { font-size: 12px; font-weight: 600; color: var(--danger); }
+
+  /* ── Week ─────────────────────────────────────────────────────────────── */
+  .schedule-root .sch-ph-wday {
+    display: flex; flex-direction: column; gap: 4px; width: 100%; min-height: 44px; text-align: left;
+    padding: 8px 10px; margin-bottom: 6px; border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-primary); font-family: var(--font-body); font-size: 13px;
+  }
+  .schedule-root .sch-ph-wday-today { border-color: var(--command-green); }
+  .schedule-root .sch-ph-wday-head { display: flex; align-items: center; gap: 8px; }
+  .schedule-root .sch-ph-wday-name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; text-transform: uppercase; }
+  .schedule-root .sch-ph-today { font-family: var(--font-heading); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal-ink); }
+  .schedule-root .sch-ph-wday-nums,
+  .schedule-root .sch-ph-wday-counts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .schedule-root .sch-ph-wday-nums { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+  .schedule-root .sch-ph-wday-counts { font-size: 12px; color: var(--text-light); }
+  .schedule-root .sch-ph-flag { color: var(--danger); font-weight: 700; }
+
+  /* ── Day ──────────────────────────────────────────────────────────────── */
+  .schedule-root .sch-ph-days { display: flex; gap: 4px; margin-bottom: 8px; }
+  .schedule-root .sch-ph-daybtn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 0; font-size: 12px; min-width: 0; }
+  .schedule-root .sch-ph-daybtn small { font-family: var(--font-body); font-size: 10px; font-weight: 600; opacity: 0.8; }
+  .schedule-root .sch-ph-daybtn-today:not(.sch-ph-tab-on) { border-color: var(--command-green); }
+  .schedule-root .sch-ph-card {
+    padding: 10px; margin-bottom: 8px; border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px;
+    background: var(--bg-card); font-size: 13px;
+  }
+  .schedule-root .sch-ph-card-job { font-family: var(--font-heading); font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+  .schedule-root .sch-ph-card-trip small { color: var(--text-light); }
+  .schedule-root .sch-ph-card-lead { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .schedule-root .sch-ph-need { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 6px; background: var(--header-dark); color: var(--bg-card); font-family: var(--font-heading); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+  .schedule-root .sch-ph-people { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .schedule-root .sch-ph-person {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 12px;
+    border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary); font-family: var(--font-body); font-size: 13px;
+  }
+  .schedule-root .sch-ph-person-ro { border-style: dashed; }
+  .schedule-root .sch-ph-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .schedule-root .sch-ph-list-head { font-family: var(--font-heading); font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
+  .schedule-root .sch-ph-list-row { font-size: 13px; padding: 2px 0; }
+
+  /* ── Person ───────────────────────────────────────────────────────────── */
+  .schedule-root .sch-ph-pname { font-family: var(--font-heading); font-size: 20px; font-weight: 700; text-transform: uppercase; margin-top: 8px; }
+  .schedule-root .sch-ph-tel { display: inline-flex; align-items: center; min-height: 44px; color: var(--blu); }
+  .schedule-root .sch-ph-pstatus { display: flex; gap: 4px; margin-top: 8px; }
+  .schedule-root .sch-ph-pday {
+    flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 0;
+    border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; font-family: var(--font-heading); font-size: 11px;
+    font-weight: 700; text-transform: uppercase; color: var(--command-green);
+  }
+  .schedule-root .sch-ph-pday span, .schedule-root .sch-ph-pday small { color: var(--text-secondary); }
+  .schedule-root .sch-ph-pday-out { color: var(--danger); }
+  .schedule-root .sch-ph-line {
+    display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px; text-align: left; padding: 6px 10px;
+    margin-bottom: 6px; border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: var(--bg-card);
+    color: var(--text-primary); font-family: var(--font-body); font-size: 13px; box-sizing: border-box;
+  }
+  .schedule-root .sch-ph-line-ro { border-style: dashed; justify-content: center; }
+  .schedule-root .sch-ph-line-job { font-weight: 700; }
+  .schedule-root .sch-ph-line-days { font-size: 12px; color: var(--text-light); }
+  .schedule-root .sch-ph-soff { margin-bottom: 8px; font-size: 13px; }
+
+  /* ── Board: whole, scrolling sideways in its own frame ───────────────── */
+  .schedule-root .sch-layout[data-phone-view] .sch-brd { overflow: auto; overscroll-behavior: contain; container-type: inline-size; }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-hdr-row,
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-body { width: max-content; min-width: 100%; }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-hdr-row { display: flex; position: sticky; top: 0; z-index: 3; }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-body { display: block; flex: none; overflow: visible; }
+  .schedule-root .sch-layout[data-phone-view] .sch-board-row-wrap { display: block; }
+  .schedule-root .sch-layout[data-phone-view] .sch-board-row { display: flex; }
+  .schedule-root .sch-layout[data-phone-view] :is(.sch-brd-hdr-job, .sch-brd-job-label) {
+    flex: 0 0 132px; width: 132px; box-sizing: border-box; position: sticky; left: 0; z-index: 2;
+  }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-job-label { background: var(--bg-card); min-height: 48px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-job-name { white-space: normal; overflow-wrap: anywhere; }
+  /* Day cells share any spare width, so a frame wide enough for the whole week shows it without scrolling. */
+  .schedule-root .sch-layout[data-phone-view] :is(.sch-brd-hdr, .sch-brd-cell) { flex: 1 0 68px; min-width: 68px; box-sizing: border-box; }
+  .schedule-root .sch-layout[data-phone-view] :is(.sch-brd-detail, .sch-brd-divider, .sch-brd-empty-msg) {
+    position: sticky; left: 0; width: 100cqw; box-sizing: border-box;
+  }
+  .schedule-root .sch-layout[data-phone-view] .sch-brd-detail { padding: 10px 8px; }
+  .schedule-root .sch-layout[data-phone-view] .sch-det-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .schedule-root .sch-layout[data-phone-view] .sch-dinp { max-width: 100%; box-sizing: border-box; }
+  .schedule-root .sch-layout[data-phone-view] .sch-tg-row,
+  .schedule-root .sch-layout[data-phone-view] .sch-tg-header { overflow-x: auto; }
+  .schedule-root .sch-ph-assign { margin-top: 8px; }
+
+  /* ── Existing dialogs opened on this route: inside the viewport ──────── */
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal {
+    min-width: 0; width: calc(100vw - 24px); max-width: 460px; max-height: calc(100dvh - 24px);
+    overflow-y: auto; box-sizing: border-box; padding: 16px;
+  }
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal-days { flex-wrap: wrap; }
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal .sch-btn { min-height: 44px; min-width: 44px; }
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal-day { min-height: 44px; min-width: 44px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal-actions { gap: 8px; flex-wrap: wrap; }
+
+  /* ── The assign flow ──────────────────────────────────────────────────── */
+  .schedule-root .sch-ph-flow-overlay {
+    position: fixed; inset: 0; z-index: 1000; background: rgba(0, 0, 0, 0.4);
+    display: flex; align-items: stretch; justify-content: center; text-transform: none;
+  }
+  .schedule-root .sch-ph-flow {
+    display: flex; flex-direction: column; width: 100%; max-width: 560px; margin: 12px; padding: 14px;
+    box-sizing: border-box; background: var(--bg-card); border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 14px; outline: none;
+  }
+  .schedule-root .sch-ph-flow-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .schedule-root .sch-ph-flow-title { font-family: var(--font-heading); font-size: 16px; font-weight: 700; text-transform: uppercase; color: var(--command-green); }
+  .schedule-root .sch-ph-close { width: 44px; height: 44px; border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 16px; }
+  .schedule-root .sch-ph-flow-trip { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 10px; overflow-wrap: anywhere; }
+  .schedule-root .sch-ph-flow-trip small { color: var(--text-light); }
+  .schedule-root .sch-ph-flow-step {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px;
+    font-family: var(--font-heading); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);
+  }
+  .schedule-root .sch-ph-flow-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 6px 0; }
+  .schedule-root .sch-ph-flow-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .schedule-root .sch-ph-flow-msg { margin: 8px 0; font-size: 13px; }
+  .schedule-root .sch-ph-pick,
+  .schedule-root .sch-ph-dayrow {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px;
+    padding: 6px 10px; margin-bottom: 4px; text-align: left; box-sizing: border-box;
+    border: 1px solid rgba(28, 24, 20, 0.18); border-radius: 8px; background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary); font-family: var(--font-body); font-size: 14px;
+  }
+  .schedule-root :is(.sch-ph-pick, .sch-ph-dayrow):disabled { opacity: 0.45; }
+  .schedule-root .sch-ph-mark { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--teal-ink); }
+  .schedule-root .sch-ph-dayrow-name { font-family: var(--font-heading); font-size: 15px; font-weight: 700; text-transform: uppercase; }
+  .schedule-root .sch-ph-dayrow-on { background: var(--command-green); border-color: var(--command-green); }
+  .schedule-root .sch-ph-dayrow-warn { border-color: var(--danger); border-width: 2px; }
+  .schedule-root .sch-ph-dayrow-on .sch-ph-warn { color: var(--text-primary); }
+  .schedule-root .sch-ph-rv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(28, 24, 20, 0.12); }
+  .schedule-root .sch-ph-rv span { color: var(--text-light); flex-shrink: 0; }
+  .schedule-root .sch-ph-rv strong { text-align: right; }
+}
+
+@media screen and (max-width: 600px) {
+  /* 16px text entry in dialogs opened from the phone views (no iPhone focus zoom). */
+  .schedule-root:has(.sch-layout[data-phone-view]) .sch-modal :is(input, select, textarea) { font-size: 16px; }
+}
