@@ -498,3 +498,89 @@ I ran no shell commands. I was one read-only reviewer with no delegation tool, s
 - **Deviations:** one, P1, now fixed and reported.
 - **Not introduced by this build:** the report notes the app's teal accent differs from the standard's cyan on both base and build.
 - **Not looked at by anyone:** Home, Jobs, Billing, the weekly-texts page, `/crew`, the Scheduled Off modal and Calendar month, as the report states. Those are label and text changes, asserted by the checks.
+
+### 2026-10-01 — F60 Sunday parity — T5 Code Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T5, emitted to `/tmp/sunday-t5-verdict-20261001.md`), followed by its findings, source coverage and limits, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer proposed no audit-table row, so none is added.
+
+Reviewer's opening line (verbatim): **T5 Code Review: 0 BLOCKS-SHIP findings on the Sunday-parity product diff.** This is a source read only: my runtime could not execute anything, so every "passes" below about builds, checks or git state rests on the coordinator's supplied evidence, not on my own run.
+
+```
+Role:        T5 Code Review
+Agent/session: 89ac91c6-50b9-4818-aaf9-d14f70875541 · https://claude.ai/code/session_01CCHNrCEyrAYz9L7FCNXFKT
+             (independent of builder t3-sunday-parity / 2c23e844-d27d-4995-bdcc-7b0ef7430cb0
+              and T4 reviewer 243c99d8-6bea-415b-af05-c302ca3e194b)
+Artifact:    product diff 3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+             · read at HEAD 0197e0fc535543dd7a4c1985ce2af29fc86f91ae (coordinator-reported)
+             · plan docs/plans/sunday-scheduling.md @ bbe71e4ad1c79db530866fd63ea3631dd1f22520
+Verdict:     0 BLOCKS-SHIP · 0 SHOULD-FIX · 4 HARDENING (one backlog item) — review ends, round 1
+Coverage:    source read only; no commands run; execution evidence is the coordinator's
+Date:        2026-10-01
+Next:        T7 · proposed record only
+```
+
+The session id is taken from this session's scratchpad path and attribution link; I could not run the environment check to confirm it. This is an ordinary verdict: no scope change, no locked decision changed.
+
+No audit-table row is proposed: that table holds plan-audit rounds, and T4 emitted none for the same reason. Chris's preview acceptance and release remain pending.
+
+- **Acceptance:** standing (§9)
+
+Notes that are not the reviewer's words:
+
+- Coordinator's factual note, as given in the T7 routing for this transcription: the reviewer consumed earlier metadata showing two regenerated screenshots as dirty (`daily-1440.png`, `sick-picker-1440.png`). The coordinator had already restored them before the review. The reviewer's "4 filed as one backlog item" is a proposal only: the reviewer edited no file. The grouped follow-up is routed to T3's smoke/report pass.
+- Transcriber's own observation at recording time: `git status` was clean at `31f1b13`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+#### Findings
+
+Target status: the 13 app files are PRODUCT; the new and restated check scripts are SAFETY-NET (one pass, net rule applied).
+
+| # | Finding | Severity | Materiality | Action |
+|---|---|---|---|---|
+| 1 | Two read-bound assertions use `.every()` with no length guard, so they pass on zero reads (`scripts/check-sunday-parity.mjs:517`, `:570`). Not a silent lie: the same scenarios assert rendered dates and counts that need the read (`:514`, `:569`). | Low | HARDENING | Backlog |
+| 2 | The Monday–Saturday "matches base" comparison filters build rows down to rows base already has (`check-sunday-parity.mjs:265`). An unexpected extra row on the build would not fail it; only the Sunday-only trip is checked explicitly (`:272–273`). | Low | HARDENING | Backlog |
+| 3 | Capacity card labels are picked by position, not by the date's weekday (`HomeCapacityStrip.jsx:85`, `:101`). Correct today because all three callers pass a Monday-first seven-day list. | Low | HARDENING | Backlog |
+| 4 | Stale "Mon–Sat" comments in untouched files (`Jobs.jsx:140`, `calendarBars.js:6`) and the dead `wkEnd` helper (`Schedule.jsx:52–56`). The plan leaves these alone. | Trivial | HARDENING | Backlog |
+
+`0 ship-blockers; 4 filed as one backlog item. Done.`
+
+#### What I checked in the source
+
+- **Week links and clock changes:** both `?week=` sites use one helper that rounds the gap between two local-midnight Mondays, so a clock-change hour cannot shift the week (`Schedule.jsx:61–65`, `:130`, `:189–195`). A Friday, Saturday or Sunday date now opens its own week.
+- **Query ranges:** every week read ends on the list's last date.
+  - Board: `Schedule.jsx:199`, `:250–251`
+  - Daily: `Daily.jsx:100–105`, `:180`
+  - Prints: `exports.js:72–77`, `:153–158`
+  - Home, Jobs, band, Subcon summary: `Home.jsx:46–56`, `Jobs.jsx:143`, `WeeklyCapacityBand.jsx:20–28`, `subconSummary.js:92–100`
+  - Calendar: the week range is Monday–Sunday unioned with the month grid (`Calendar.jsx:218–229`).
+- **Leftover six-day assumptions:** a repo-wide search of `src/` found none in live code. The only hits are the unmounted `StatsBar.jsx`, the dead `wkEnd`, and two unused CSS rules.
+- **Trip identity and data preservation:**
+  - The save path is unchanged; deletes are by row id on that trip's rows only (`Schedule.jsx:494`, `:510–512`).
+  - Sunday rows now load into `row.assignments`, and every entry point seeds its selection from that same list: the picker (`:446`), the day toggle (`:543–544`), and the remove button (`:539`). Showing Sunday therefore cannot drop a saved crew day.
+  - Inserts still carry the trip id (`:501–507`).
+- **Seven-date consumers:**
+  - Board rows, capacity and summary follow the passed `dates` (`crewScheduleRows.js:83–102`, `crewWeekSummary.js:14–27`, `CrewWeekCapacity.jsx:12–16`).
+  - `computeHomeDashboard` uses `dates[0]` and `dates[length-1]` (`queries.js:1821–1822`, `:1845`, `:1917`).
+  - The multi-week alert counts seven days (`queries.js:974`) and Jobs passes it the full assignments list (`Jobs.jsx:300`).
+  - Calendar bars handle arbitrary columns (`calendarBars.js:109–139`).
+- **Calculations:** the Home capacity mean divides by the number of days (`Home.jsx:142–146`). Completion % and the lower Sunday-inclusive percentages are the plan's stated consequence, not a defect.
+- **Presets, text, labels:**
+  - The Scheduled Off presets run Monday+6, with all importers renamed (`crewStatus.js:65–73`).
+  - The midweek text on a Sunday returns that one day (`crewWeekText.js:110–114`).
+  - `fmtWk` has no consumer outside Billing and the forecast (`weeks.js:32–39`).
+- **UI bindings:** every label array is seven long and indexed against `dates` (`Schedule.jsx:18–19`, `:1143`, `:1356`, `:1394`, `:1438`, `:1497–1503`; `Daily.jsx:13`; `exports.js:71`, `:151`). The board's full-width rows use `1 / -1`, so the eighth grid column needs no other CSS change (`App.css:1362`, `:1385`, `:1393`).
+- **Safety net:** the "matches base" snapshots cannot be regenerated from the build unnoticed. The checks assert two values only base code produces (`check-sunday-parity.mjs:535–536`, `check-sunday-parity-model.mjs:92`), and a missing snapshot key fails rather than passes.
+- **Recorded T4 result:** read before reviewing; round 2 is GO (`docs/AUDIT_LOG.md:425–500`).
+
+#### Limits
+
+- **Coordinator evidence, not mine:** HEAD `0197e0f`, the changed-file list, the empty diff over protected paths, the build and ESLint totals, and all check runs. The supplied `src` diff matches the files I read.
+- **Full existing suite not rerun after the fix commit:** the "same 15 failures as base" result is the builder's log at `3f6b3cf`. Smoke should rerun it.
+- **Not opened:**
+  - `scripts/sunday-parity-fixture.mjs` and the three restated existing scripts (`check-crew-phone.mjs`, `check-crew-week-summary.mjs`, `crewStatus.test.mjs`) — only the diff of the last one was read.
+  - The zero-diff libs `allocations.js`, `trips.js`, `scheduleCrew.js`, `assignmentIdentity.js`.
+  - `CLAUDE_RLS.md` (no SQL in the diff).
+  - The `/code-review` command file, which is unreadable from this runtime; I followed protocol §9 and the pasted limiter.
+- **Working tree:** two evidence screenshots show as modified and uncommitted (`daily-1440.png`, `sick-picker-1440.png`). Not product; T7 may want them restored before anything is recorded.
+- **Not verified by anyone here:** signed-in real data, the preview, production Sunday rows, and long crew names in the 11px-narrower pool chip.
