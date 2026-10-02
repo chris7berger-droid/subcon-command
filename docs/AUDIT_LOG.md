@@ -19,6 +19,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-07-02 | feat/invoice-email-attachments @ fe388e6 · invoice_email_attachments.md (Round 2) | 7 (1 regression + 6 caused-by) + 1 adjacent | 0H/4M/3L (top-6: 3M/3L; +1 Med regression) | accepted-pending-changes → build-ready (Option 1: bound at upload; plateau broken) | copied-mechanism-misfit (persisting → resolved) |
 | 2026-10-01 | feat/sunday-saturday-parity @ 745a291 · sunday-scheduling.md (Round 1) | 6 (6 top / 0 over-cap) + 3 adjacent | 0H/4M/2L | accepted-pending-changes | acceptance-bar-gaps |
 | 2026-10-01 | feat/sunday-saturday-parity @ bbe71e4 · sunday-scheduling.md (Round 2, delta) | 0 (6 round-1 fixes verified; 0 regressions; 2 non-blocking notes) | clean | converged — build-ready | acceptance-bar-gaps (resolved) |
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -584,3 +585,106 @@ Target status: the 13 app files are PRODUCT; the new and restated check scripts 
   - The `/code-review` command file, which is unreadable from this runtime; I followed protocol §9 and the pasted limiter.
 - **Working tree:** two evidence screenshots show as modified and uncommitted (`daily-1440.png`, `sick-picker-1440.png`). Not product; T7 may want them restored before anything is recorded.
 - **Not verified by anyone here:** signed-in real data, the preview, production Sunday rows, and long crew names in the 11px-narrower pool chip.
+
+### 2026-10-01 — F60 Sunday parity — T6 Security Review, round 1
+
+Transcribed verbatim from the reviewer's proposed gate record (T6, emitted to `/tmp/sunday-t6-verdict-20261001.md`), followed by its reviewed range, coverage, unverified limitations and findings, also verbatim, as the supporting record. Only the Acceptance field is filled in by the transcriber, and only the heading level of the supporting sections was changed to nest them here. The reviewer's proposed audit-log row is transcribed verbatim into the audit table above, with its pattern tag as emitted.
+
+Reviewer's title (verbatim): T6 Security Review — Sunday parity (PR #74): 0 exploitable-today, safe to ship
+
+```
+Role:          T6 Security Review
+Agent/session: f01835a3-31f2-43a3-84ef-27f2ed30888d
+               (independent of builder 2c23e844-d27d-4995-bdcc-7b0ef7430cb0,
+                T4 243c99d8-6bea-415b-af05-c302ca3e194b,
+                T5 89ac91c6-50b9-4818-aaf9-d14f70875541)
+Artifact:      subcon-command · feat/sunday-saturday-parity · PR #74 (draft)
+               3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9
+               · evidence @ 0197e0fc535543dd7a4c1985ce2af29fc86f91ae
+Verdict:       0 exploitable-today · safe to ship · 0 BLOCKS-SHIP,
+               1 SHOULD-FIX (pre-existing), 2 HARDENING · source read only;
+               git state and live access not verified by reviewer
+Date:          2026-10-01
+```
+
+The session identity is taken from this session's scratchpad path, because I could not query it directly. T7 should confirm it against the session registry before transcription.
+
+- **Acceptance:** standing (§9)
+
+Reviewer's proposed audit-log row and closing notes (verbatim):
+
+```
+| 2026-10-01 | feat/sunday-saturday-parity @ 019997b · PR #74 (T6 security, per-branch diff 3145a7a..019997b) | 0 from this diff + 3 non-blocking (1 pre-existing SHOULD-FIX, 2 HARDENING) | clean | clean | pre-existing-print-html-escaping |
+```
+
+The pattern tag is new: I read only the Sunday rows of the log, not its full tag vocabulary. T3 should swap in an existing tag if one fits.
+
+This is a T6 verdict only. It is not Chris's acceptance, and it is not a release or merge claim.
+
+Notes that are not the reviewer's words:
+
+- Coordinator's note, as given in the T7 routing for this transcription: the reviewer's identity `f01835a3-31f2-43a3-84ef-27f2ed30888d` was confirmed by the coordinator against the session registry. The transcriber did not check the registry itself.
+- The pattern tag was not swapped: transcription is verbatim, so the row carries the tag the reviewer emitted.
+- Transcriber's own observation at recording time: `git status` was clean at `9633576`, and `git diff 019997b..HEAD -- src scripts package.json` was empty. No backlog row was written in this pass.
+
+Supporting record (verbatim):
+
+**No BLOCKS-SHIP findings.** The product diff only widens existing signed-in schedule reads and screens from six days to seven. I found no new path for an unauthorized party to read, write or escalate.
+
+This was a source read only. My runtime could not run git or any check, so the hashes, the changed-file list and the "protected paths have no diff" result are the coordinator's evidence, not mine.
+
+#### Reviewed range
+
+- **Range:** `3145a7a49984015cbfa30013f502d24c45c9358a..019997ba8d5b62ea72c1b824f9ef46e127849cb9` (source), with build report and evidence at `0197e0fc535543dd7a4c1985ce2af29fc86f91ae`.
+- **Mode:** per-branch diff under `.claude/commands/audit.md`, gated by `/security-review-limiter`. Round 1.
+- **What I read myself:**
+  - the supplied `src` diff, plus the working-tree files behind it where I needed context (`exports.js` in full, `Schedule.jsx:20–69` and its `?week=` and read sites, `Calendar.jsx:185–259`);
+  - the three new scripts in full (`sunday-parity-fixture.mjs`, `check-sunday-parity.mjs`, `check-sunday-parity-model.mjs`);
+  - `check-crew-phone.mjs` in full;
+  - repo `CLAUDE.md`, `CLAUDE_RLS.md`, `.claude/commands/audit.md` and the Sunday rows of `docs/AUDIT_LOG.md`.
+
+#### Coverage
+
+- **No access-control surface in the diff.** Every changed `src` file is under `src/schedule/` (views, components, lib, CSS). The file list shows nothing under `supabase/`, no `package.json` or lockfile, no public or anon page, no auth or session code. `CLAUDE_RLS.md` is therefore not triggered: no policy, grant or token-gated read is written or changed.
+- **Reads:** same tables, same columns, same signed-in client. Only the upper date bound moves from Monday+5 to Monday+6.
+  - Board: `Schedule.jsx:250–251`.
+  - Prints: `exports.js:77`, `:157–158`.
+  - Calendar: `Calendar.jsx:245–249`. Its range now starts Monday instead of the prior Sunday.
+- **Writes:** no write path is added or changed in the diff. Sunday rows go through the existing assign, remove and status saves.
+- **Date input (`?week=`):** the raw value never reaches a query. It is parsed to a date, an invalid value falls back to the current week, and the read bounds are re-formatted from that date (`Schedule.jsx:61–65`, `:130`, `:197–199`). No injection path and no unbounded read.
+- **Exports and texts:** the diff adds no new output sink.
+  - The prints gain a Sunday column (`exports.js:71–73`, `:151–153`, `:170–174`).
+  - The midweek text gains Sunday (`crewWeekText.js:110–114`).
+  - The phone copy changes are fixed strings (`CrewPhone.jsx`).
+- **Money:** no calculation file is in the diff; the Billing change is the week label only (`weeks.js:32–38`).
+- **Fixture harness, network:** it cannot reach a real database.
+  - The server binds to `127.0.0.1` only (`check-sunday-parity.mjs:28–29`).
+  - Every request to any host other than the fake fixture host is aborted (`:72–73`), and the fixture host is answered in memory.
+  - Any write other than the three expected ones is refused and recorded as an error (`:105–106`).
+  - The Supabase URL and key are placeholders (`:16–17`).
+- **Fixture harness, shipped data:** synthetic.
+  - Names, tenant (`fixture-tenant`), customer and IDs in `sunday-parity-fixture.mjs:11–23`, `:71–78` are invented.
+  - A pattern search of the new scripts, the evidence folder, the build report, handoff v302 and the plan found no keys, tokens, real project hosts, emails or phone numbers.
+  - The two snapshot files carry only the fixture names.
+  - I opened 2 of the 37 screenshots (`after/board-1440.png`, `after/print-daily-crew-status.png`); both show fixture data only.
+
+#### Unverified limitations
+
+- **Git state:** not verified by me. If the working tree I read differs from `019997b` in source, my context reads are of the later tree; the lines I read matched the supplied diff.
+- **Script and doc diffs:** not supplied.
+  - For the three pre-existing scripts I cannot say which lines changed.
+  - `check-crew-midweek-text-model.mjs` and `check-crew-week-summary.mjs` were pattern-searched only, not read.
+  - `crewStatus.test.mjs` was read from the supplied diff only.
+  - The changed docs were pattern-searched for secrets, not read for content.
+- **Screenshots:** 35 of 37 not opened.
+- **Live system:** nothing was checked. I did not verify the tenant policies on `assignments`, `crew_status`, `crew` or `jobs`, the preview, or production Sunday rows. The verdict rests on the diff not changing who can reach those tables.
+
+#### Findings
+
+| # | Finding | Exploitable today? (how) | Materiality | Action |
+|---|---|---|---|---|
+| 1 | **Pre-existing, not from this diff.** The print pages build HTML from stored job names, job numbers, work types, crew names and material notes without escaping (`exports.js:108`, `:120`, `:142`, `:173`). The popup runs in the app's own origin (`:57–58`). | Only by someone who can already save those fields in the same tenant; no anonymous or cross-tenant path is shown. The diff adds a Sunday column, not a new sink. | SHOULD-FIX | Backlog, own track |
+| 2 | **Pre-existing, not from this diff.** `check-crew-phone.mjs` can be pointed at a deployed preview and loads browser cookies from a temp file (`:5`, `:30–37`). Its fixture uses real-looking names and a jobsite name (`:11–19`). | No. All database calls are answered by the fixture and writes are refused (`:61–69`). Whether the names are real people I could not determine. | HARDENING | Backlog; confirm names are synthetic |
+| 3 | The model check loads the app's database client in Node with no network block (`check-sunday-parity-model.mjs:13–14`, `:27–35`). | No. It calls pure functions only and the URL is a placeholder. | HARDENING | Backlog |
+
+**0 exploitable-today; safe to ship.** Zero blockers ends this review; no further round is needed.
