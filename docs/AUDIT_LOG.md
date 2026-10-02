@@ -27,6 +27,7 @@ Append one row per artifact reviewed by the audit terminal. Build terminal commi
 | 2026-10-01 | `feat/mobile-crew-scheduler-preview` @ `39cd871` · `docs/plans/crew_mobile_preview.md` · round 3 wording delta | 0 | none · 0 regressions | accepted | clean |
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · docs/plans/crew_mobile_preview.md · T4 build vs plan | 0 blockers · 0 bugs · 4 disclosed deviations | none blocking · P12 @ 768 literal miss, intent met | GO | disclosed-literal-miss |
 | 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |
+| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |
 
 ## 2026-05-12 — +Add CO wizard + archive-parent WTC hint notes
 
@@ -1315,6 +1316,93 @@ This is an ordinary verdict: no scope change, no locked decision changed, no hum
 ## Proposed audit-log row (not recorded)
 
 `| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T5 code review | 4 (0 BLOCKS-SHIP · 1 SHOULD-FIX · 3 HARDENING) | 1 Med · 3 Low | accepted — non-blockers to one backlog item | review-step-tap-through |`
+
+Stopping here.
+````
+
+### 2026-10-01 — F66 Mobile crew scheduler preview — T6 Security Review
+
+Transcribed verbatim from the reviewer's complete report (T6, session `fced4921-aef6-4263-badc-acd8fda0c783`, emitted to `/tmp/mobile-t6-verdict-20261001.md`, sha256 `4379e29402cd8a78b58ad83349c5742a489478ac3242636200dc0bd598659d0b`) by T3 `t3-crew-mobile` / `6bdefad7-da48-4732-b78a-f804c6c558d9`, the builder, which did not author the review. Only the Acceptance field is filled in by the transcriber. The reviewer's audit-log row is transcribed verbatim into the audit table above.
+
+Proposed gate record (verbatim):
+
+```
+2026-10-01 · T6 Security Review · fced4921-aef6-4263-badc-acd8fda0c783 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING, filed as one backlog item · source and synthetic evidence only; production and hosted preview untested · builder-run checks not independently re-run · Acceptance: <T3 fills>
+```
+
+- **Acceptance:** standing (§9)
+
+Reviewer's full report (verbatim, byte-identical to the source file):
+
+````text
+# T6 Security Review — F66 mobile crew scheduler: 0 exploitable-today
+
+**Zero exploitable-today findings in `7608b0e..1e6bde1`; safe to proceed to Smoke and Preview.** I found one HARDENING item for the backlog and nothing pre-existing to file. The diff adds no backend call, no new write path and no new authorization surface.
+
+    Role:        T6 Security Review · agent/session fced4921-aef6-4263-badc-acd8fda0c783
+                 (https://claude.ai/code/session_01Kh8TD4bsS22EbQTBy97Vfa; UUID read from the session scratchpad path, agent name unread — Bash denied)
+    Artifact:    diff 7608b0e8504416678c43d31f3fedacbf015e7d1e..1e6bde178b2ffcf5816ba10573d38a127f8347fd
+                 · report checkpoint e6b52e2d9ef75746a7a085b205c6973ac58fdd60
+    Mode:        per-PR (.claude/commands/audit.md), severity per security-audit SKILL.md, materiality per /security-review-limiter
+    Verdict:     0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING
+    Date:        2026-10-01
+    Next:        T7 · proposed record only, not recorded
+
+Independence: I am not the builder (`6bdefad7-…`), the T2 (`d456ca7b-…`), T4 (`c1dd064c-…`) or T5 (`c6c044ee-…`) session. I wrote, ran and recorded nothing.
+
+## Findings
+
+| # | Finding | Exploitable today? | Materiality | Action |
+|---|---|---|---|---|
+| 1 | The check script's write refusal on a hosted URL is opt-in. With `QA_URL` set to a preview and `CREW_MOBILE_HOSTED` unset, `allowWrites` stays true (`check-crew-mobile.mjs:134`, `:151`) and the save checks tap Save on the hosted bundle, against the plan's "never taps Save" rule for hosted runs. | No. The two assignment writes are still answered inside the browser (`crew-mobile-fixture.mjs:135–148`), and everything else falls to the shell's default-deny. Nothing reaches the real backend. | HARDENING (Low) | Backlog |
+
+`0 exploitable-today; safe to ship to tested preview. 1 filed as one backlog item.`
+
+## Coverage (my own source reading)
+
+- **Authorization and write paths (OWASP A01, ASVS V4):** clean.
+  - The three new source files import no `supabase` and make no network call; the `Schedule.jsx` diff adds none either.
+  - The phone save goes only through the existing `changeRowAssignments` (`Schedule.jsx:572–578`). The supplied diff has no hunk inside that function (`:502–545`).
+  - The existing guards still run on that path: unavailable row, busy, archived person, in-range, saved trip, and delete by row id (`:503`, `:510–515`, `:530–531`).
+  - `canTakeCrew` matches the desktop drop guard (`schedulePhone.js:9–11`; `Schedule.jsx:463`), and legacy and unavailable rows render no edit control (`SchedulePhone.jsx:94–99`, `:148–150`; `Schedule.jsx:1236`).
+  - Desktop has no client role gate on this route, so the phone view removes none. Server-side access rules are untouched.
+- **Data exposure:** clean. The phone views render only the jobs, crew, assignments and statuses the desktop route already loads. Nothing new is fetched, stored or logged.
+- **Injection and unsafe links (React XSS, A03):** clean.
+  - The new files have no `dangerouslySetInnerHTML`, `eval`, storage access or `window.open`. All text is rendered through React.
+  - The one link is `'tel:' + person.phone` (`SchedulePhone.jsx:128`). The fixed prefix rules out a script scheme, and the same pattern already exists at `Schedule.jsx:1585`.
+  - `SchedulePhone.css` has no `url(` or `@import`.
+- **Preview archive guard:** intact. `CallLog.jsx:81` and `vite.config.js:10` still carry the guard, and neither file is in the supplied name-status diff.
+- **Fixture write protections:** clean apart from finding 1.
+  - Only `POST` and `DELETE` on `assignments` are allowed, and only when `allowWrites` is true. Every other write is logged as refused and passed to the shell handler (`crew-mobile-fixture.mjs:135`, `:150–151`).
+  - The shell handler answers every `*.supabase.co` request locally and aborts every other non-GET or off-origin request (`mobile-preview-fixtures.mjs:64–90`). WebSockets never connect and service workers are blocked (`:53`, `:63`).
+  - Refused requests, shell writes and shell blocks all fail the run (`check-crew-mobile.mjs:158`, `:665`).
+  - The local build uses a synthetic backend name and key (`:50–51`), and the session token is a fixture string (`mobile-preview-fixtures.mjs:57`).
+- **Secrets:** clean. A search of the new scripts, the new source, the `crew-mobile` evidence folder and handoffs v303/v304 found no JWT, service-role key, real project host or bypass token.
+- **Not applicable to this diff:** RLS, grants, edge functions, schema, auth, env, dependencies and public pages. None changed, per the supplied name-status diff.
+
+## Evidence and limits
+
+- **Coordinator-supplied, not run by me:** HEAD, clean status, the name-status diff, the empty source-to-head diff, the `Schedule.jsx` diff, the three ancestry results, and the 86/86 summary.
+- **Builder-recorded:** the committed `results.json` shows a local URL, `hosted: false`, 0 failed, 0 shell writes and 0 refused. Nobody independent has re-run it.
+- **Images I opened:** `person-390.png` and `flow-review-390.png`. Both show synthetic names only.
+- **Not done:**
+  - I ran nothing. My one Bash call, to read my session name, was denied and I did not retry. I did not fetch, so I make no claim about remote state.
+  - **Real production is untested.** Everything here is source reading plus synthetic local evidence: no hosted run, no real sign-in, no live RLS probe.
+  - The preview shares the production database. A signed-in person's saves there are real; this slice gives them a phone layout for saves they can already make on desktop.
+  - `mobile-preview-fixtures.mjs` is outside the diff. I read it in full, but the hosted default-deny rests on that unchanged file.
+  - Byte-identity of `changeRowAssignments` rests on the supplied diff and the builder's claim; I could not run the comparison.
+  - I searched `CLAUDE_RLS.md` for the scheduler tables and found no mention; I did not read it in full, because no policy changed.
+  - No brand sources were loaded.
+
+## Proposed gate record (not recorded)
+
+`2026-10-01 · T6 Security Review · fced4921-aef6-4263-badc-acd8fda0c783 · diff 7608b0e..1e6bde1 (report e6b52e2) · 0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING, filed as one backlog item · source and synthetic evidence only; production and hosted preview untested · builder-run checks not independently re-run · Acceptance: <T3 fills>`
+
+This is an ordinary verdict: no scope change, no locked decision changed, no human gate. No acceptance by Chris is claimed.
+
+## Proposed audit-log row (not recorded)
+
+`| 2026-10-01 | feat/mobile-crew-scheduler-preview @ 1e6bde1 · diff 7608b0e..1e6bde1 · T6 security review | 1 (0 exploitable-today · 0 SHOULD-FIX · 1 HARDENING) | 1 Low | clean — non-blocker to one backlog item | hosted-write-refusal-opt-in |`
 
 Stopping here.
 ````
